@@ -12,7 +12,8 @@ import {
     paymentFailure, 
     renderMyCourses,
     renderClassroom,
-    guardarEntrega
+    guardarEntrega,
+    renderPanelProfesor
 } from './src/controllers/courseController.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -109,6 +110,9 @@ app.get('/classroom/:cursoId', renderClassroom);
 
 // Ruta para guardar entregas de tareas del alumno
 app.post('/entregas', guardarEntrega);
+
+// Panel del profesor para revisar respuestas recibidas
+app.get('/profesor/entregas', renderPanelProfesor);
 
 // Manejo de error 404
 app.use((req, res) => {

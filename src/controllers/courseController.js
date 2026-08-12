@@ -258,3 +258,41 @@ export const guardarEntrega = async (req, res) => {
         return res.status(500).json({ success: false, message: 'Error interno al guardar la entrega' });
     }
 };
+
+// Obtener el listado de entregas realizadas por los alumnos (EXCLUSIVO PROFESOR)
+export const renderPanelProfesor = async (req, res) => {
+    if (!req.session.user) {
+        return res.redirect('/auth/login');
+    }
+
+    const EMAIL_PROFESOR = 'suezsantiago1@gmail.com';
+
+    if (req.session.user.email !== EMAIL_PROFESOR) {
+        return res.status(403).send('<h1>403 - Acceso denegado: Solo el profesor puede ver esta sección.</h1>');
+    }
+
+    try {
+        const db = await dbPromise;
+
+        const entregas = await db.all(`
+            SELECT 
+                e.id,
+                e.contenido,
+                e.fecha,
+                u.nombre AS usuario_nombre,
+                u.email AS usuario_email,
+                c.titulo AS curso_titulo,
+                l.titulo AS leccion_titulo
+            FROM entregas e
+            JOIN usuarios u ON e.usuario_id = u.id
+            JOIN cursos c ON e.curso_id = c.id
+            JOIN lecciones l ON e.leccion_id = l.id
+            ORDER BY e.fecha DESC
+        `);
+
+        return res.render('teacher-panel', { entregas });
+    } catch (error) {
+        console.error('Error al obtener las entregas:', error);
+        return res.redirect('/');
+    }
+};
