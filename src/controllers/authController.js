@@ -94,7 +94,12 @@ export const renderProfile = async (req, res) => {
 
     try {
         const db = await dbPromise;
-        const usuario = await db.get('SELECT id, nombre, email, creado_en FROM usuarios WHERE id = ?', [req.session.user.id]);
+        const usuario = await db.get('SELECT id, nombre, email FROM usuarios WHERE id = ?', [req.session.user.id]);
+        
+        if (!usuario) {
+            return res.redirect('/auth/login');
+        }
+
         return res.render('profile', { usuario, success: null, error: null });
     } catch (error) {
         console.error('Error al obtener el perfil:', error);
@@ -117,7 +122,7 @@ export const updateProfile = async (req, res) => {
         req.session.user.nombre = nombre;
         req.session.user.email = email;
 
-        const usuario = await db.get('SELECT id, nombre, email, creado_en FROM usuarios WHERE id = ?', [usuarioId]);
+        const usuario = await db.get('SELECT id, nombre, email FROM usuarios WHERE id = ?', [usuarioId]);
         return res.render('profile', { usuario, success: 'Datos actualizados correctamente.', error: null });
     } catch (error) {
         console.error('Error al actualizar el perfil:', error);
