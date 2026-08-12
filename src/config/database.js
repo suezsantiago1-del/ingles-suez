@@ -33,7 +33,7 @@ class DatabaseAdapter {
 const dbPromise = (async () => {
     const adapter = new DatabaseAdapter();
     
-    // Crear tablas
+    // Crear tablas en PostgreSQL
     await adapter.pgPool.query(`
         CREATE TABLE IF NOT EXISTS usuarios (
             id SERIAL PRIMARY KEY,
@@ -70,7 +70,7 @@ const dbPromise = (async () => {
 
     await adapter.pgPool.query(`ALTER TABLE cursos ADD COLUMN IF NOT EXISTS imagen_url VARCHAR(255);`);
 
-    // Insertar Cursos si no existen
+    // Insertar Cursos iniciales si no existen
     const countRes = await adapter.pgPool.query("SELECT COUNT(*) FROM cursos");
     if (parseInt(countRes.rows[0].count) === 0) {
         await adapter.run("INSERT INTO cursos (titulo, descripcion, precio, imagen_url) VALUES (?, ?, ?, ?)", [
@@ -87,108 +87,221 @@ const dbPromise = (async () => {
         ]);
     }
 
-    // Limpiar lecciones anteriores e insertar la nueva estructura de Retos
+    // Limpiar lecciones anteriores de la Clase 1 e insertar la nueva estructura sin emojis
     await adapter.pgPool.query("DELETE FROM lecciones WHERE curso_id = 1");
 
     const contenidoClase1 = `
-        <div class="clase-contenido">
+        <div class="clase-contenido" style="color: #1a202c; font-family: system-ui, -apple-system, sans-serif;">
             
+            <header style="margin-bottom: 2rem; border-bottom: 2px solid #0b2238; padding-bottom: 1rem;">
+                <span style="background: #0b2238; color: white; padding: 0.3rem 0.8rem; border-radius: 4px; font-size: 0.75rem; text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px;">FASE DE PRÁCTICA INTERACTIVA</span>
+                <h2 style="color: #0b2238; margin-top: 0.8rem; margin-bottom: 0;">Ejercicios de Alto Rendimiento</h2>
+            </header>
+
             <!-- FASE 1 -->
-            <section class="bloque-fase" style="margin-bottom: 2.5rem;">
-                <h2 style="color: #0b2238; border-bottom: 2px solid #184168; padding-bottom: 0.5rem;">FASE 1: EL BLOQUE DE SALUDOS Y CONTEXTO</h2>
-                <p style="color: #4a5568; font-style: italic;">Lee la situación o pregunta. Piensa la respuesta antes de hacer clic para revelar la solución.</p>
-                
-                <div class="ejercicio-card" style="background: white; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #184168; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-top: 1rem;">
-                    <h3>🕹️ Reto 1.1: El Dilema del Reloj</h3>
-                    <p><strong>Situación:</strong> Son las 19:30 horas (7:30 PM). Te encuentras con un colega en la calle al salir de trabajar y quieres saludarlo correctamente.</p>
-                    <p>¿Cuál de las siguientes opciones es la correcta para iniciar el saludo?</p>
-                    <ul>
-                        <li><strong>[ A ]</strong> Good night!</li>
-                        <li><strong>[ B ]</strong> Good evening!</li>
-                        <li><strong>[ C ]</strong> Good afternoon!</li>
-                    </ul>
-                    
-                    <details style="margin-top: 1.5rem; background: #e3edf5; padding: 1rem; border-radius: 6px; cursor: pointer;">
-                        <summary style="font-weight: bold; color: #0b2238;">🔍 Revelar Respuesta y Validación (Pantalla B)</summary>
-                        <div style="margin-top: 1rem; color: #1a202c; line-height: 1.6;">
-                            <p style="color: #2b6cb0; font-weight: bold;">🛑 ¡Respuesta Correcta: [ B ] Good evening!</p>
-                            <p><strong>Por qué es un reto:</strong> Caer en la trampa de <em>Good night</em> es el error número uno. Aunque ya sea de noche, <em>Good night</em> es exclusivamente una despedida para ir a dormir. Al llegar y saludar a las 19:30, el código correcto es <strong>Good evening</strong>.</p>
+            <section class="bloque-fase" style="margin-bottom: 3rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
+                    <h3 style="margin: 0; color: #0b2238; font-size: 1.1rem; text-transform: uppercase;">FASE 1: El Universo de los Saludos y Contextos</h3>
+                    <span style="font-size: 0.85rem; font-weight: bold; color: #184168;">Impacto en Progreso: +20%</span>
+                </div>
+
+                <div class="ejercicio-card" style="background: white; border: 1px solid #c0d4e5; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
+                        <h4 style="margin: 0; color: #0b2238; font-size: 1.05rem;">Ejercicio 1.1: Simulación de Contextos Reales (Elección Múltiple)</h4>
+                        <span style="background: #edf2f7; color: #4a5568; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Estado: En Progreso</span>
+                    </div>
+
+                    <p style="font-size: 0.95rem; color: #4a5568; margin-bottom: 1.2rem;"><strong>Indicaciones:</strong> Lee atentamente las 5 situaciones e identifica el saludo o despedida adecuado según la hora y la formalidad del contexto.</p>
+
+                    <ol style="line-height: 1.8; color: #2d3748; padding-left: 1.2rem;">
+                        <li style="margin-bottom: 1rem;">
+                            Son las 08:30 AM. Entrás a una oficina corporativa a una entrevista de trabajo.<br>
+                            <span style="font-family: monospace; color: #2b6cb0;">( A ) Good morning! | ( B ) Hi! | ( C ) Good evening!</span>
+                        </li>
+                        <li style="margin-bottom: 1rem;">
+                            Son las 13:15 PM. Saludás a un mozo al entrar a almorzar.<br>
+                            <span style="font-family: monospace; color: #2b6cb0;">( A ) Good night! | ( B ) Good afternoon! | ( C ) See you later!</span>
+                        </li>
+                        <li style="margin-bottom: 1rem;">
+                            Son las 20:00 PM. Te encontrás con tus amigos en un bar para cenar.<br>
+                            <span style="font-family: monospace; color: #2b6cb0;">( A ) Good night! | ( B ) Bye! | ( C ) Good evening!</span>
+                        </li>
+                        <li style="margin-bottom: 1rem;">
+                            Son las 23:30 PM. Te retirás de una reunión de trabajo para irte a dormir a tu casa.<br>
+                            <span style="font-family: monospace; color: #2b6cb0;">( A ) Good evening! | ( B ) Good night! | ( C ) Good morning!</span>
+                        </li>
+                        <li style="margin-bottom: 1rem;">
+                            Te cruzás a un compañero de la facultad en el pasillo a las 16:00 PM y ambos van apurados a clases distintas.<br>
+                            <span style="font-family: monospace; color: #2b6cb0;">( A ) Hi, see you later! | ( B ) Good night, nice to meet you! | ( C ) Good morning!</span>
+                        </li>
+                    </ol>
+
+                    <div style="background: #f7fafc; border: 1px dashed #cbd5e0; padding: 0.8rem; border-radius: 6px; margin-top: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 0.85rem; color: #718096;">[ Contador de lectura / resolución activo ]</span>
+                        <span style="font-size: 0.85rem; font-weight: 600; color: #2b6cb0;">Puntuación asignada: 20 pts</span>
+                    </div>
+
+                    <details style="margin-top: 1.2rem;">
+                        <summary style="background: #0b2238; color: white; padding: 0.8rem 1.2rem; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.9rem; text-align: center; list-style: none;">
+                            PASAR A FASE DE RESPUESTA (Validar Intento)
+                        </summary>
+                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-top: none; padding: 1.2rem; border-radius: 0 0 6px 6px; margin-top: -4px;">
+                            <h5 style="margin-top: 0; color: #0b2238; font-size: 1rem; border-bottom: 1px solid #cbd5e0; padding-bottom: 0.4rem;">Clave de Respuestas y Diagnóstico:</h5>
+                            <ul style="line-height: 1.7; font-size: 0.95rem; color: #2d3748; padding-left: 1.2rem;">
+                                <li><strong>( A ) Good morning!</strong> &rarr; Contexto formal por la mañana.</li>
+                                <li><strong>( B ) Good afternoon!</strong> &rarr; Pasado el mediodía (12:00 PM).</li>
+                                <li><strong>( C ) Good evening!</strong> &rarr; Saludo de llegada por la noche. (Jamás usar Good night para saludar).</li>
+                                <li><strong>( B ) Good night!</strong> &rarr; Despedida definitiva nocturna para ir a descansar.</li>
+                                <li><strong>( A ) Hi, see you later!</strong> &rarr; Saludo informal rápido y despedida corta de pasillo.</li>
+                            </ul>
+                            <div style="margin-top: 1rem; padding: 0.6rem 1rem; background: #f0fff4; border: 1px solid #c6f6d5; border-radius: 4px; color: #22543d; font-size: 0.85rem; font-weight: bold; display: flex; justify-content: space-between;">
+                                <span>Estado del Ejercicio: COMPLETADO</span>
+                                <span>Progreso actualizado: 20%</span>
+                            </div>
                         </div>
                     </details>
                 </div>
             </section>
 
             <!-- FASE 2 -->
-            <section class="bloque-fase" style="margin-bottom: 2.5rem;">
-                <h2 style="color: #0b2238; border-bottom: 2px solid #184168; padding-bottom: 0.5rem;">FASE 2: EL LABORATORIO DEL VERBO TO BE</h2>
-                
-                <div class="ejercicio-card" style="background: white; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #184168; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-top: 1rem;">
-                    <h3>🕹️ Reto 2.1: El Cazador de Errores (Nivel: Difícil)</h3>
-                    <p><strong>El Desafío:</strong> La siguiente oración escrita por un estudiante tiene un error crítico de estructura en el Verbo To Be:</p>
-                    <blockquote style="background: #fff5f5; border-left: 3px solid #e53e3e; padding: 0.8rem 1rem; color: #c53030; font-style: italic;">
-                        "She are a very intelligent doctor, but not am working today."
-                    </blockquote>
-                    <p>Analiza la frase mentalmente. Identifica cuántos errores tiene y cuál es la versión perfecta antes de ver la solución.</p>
-                    
-                    <details style="margin-top: 1.5rem; background: #e3edf5; padding: 1rem; border-radius: 6px; cursor: pointer;">
-                        <summary style="font-weight: bold; color: #0b2238;">🔍 Revelar Diagnóstico y Solución (Pantalla B)</summary>
-                        <div style="margin-top: 1rem; color: #1a202c; line-height: 1.6;">
-                            <p style="color: #c53030; font-weight: bold;">🛑 Diagnóstico del Reto: La oración original tenía dos errores graves.</p>
-                            <ul>
-                                <li><strong>Error 1:</strong> <code>She are</code> &rarr; El pronombre <em>She</em> exige obligatoriamente <strong>is</strong>.</li>
-                                <li><strong>Error 2:</strong> <code>not am working</code> &rarr; En inglés no se puede iniciar una negación soltando el <em>not am</em> sin un sujeto y verbo auxiliar estructurado.</li>
+            <section class="bloque-fase" style="margin-bottom: 3rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
+                    <h3 style="margin: 0; color: #0b2238; font-size: 1.1rem; text-transform: uppercase;">FASE 2: Laboratorio Intensivo del Verbo To Be</h3>
+                    <span style="font-size: 0.85rem; font-weight: bold; color: #184168;">Impacto en Progreso: +60%</span>
+                </div>
+
+                <!-- Ejercicio 2.1 -->
+                <div class="ejercicio-card" style="background: white; border: 1px solid #c0d4e5; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
+                        <h4 style="margin: 0; color: #0b2238; font-size: 1.05rem;">Ejercicio 2.1: Transformación de Oraciones y Detección de Errores</h4>
+                        <span style="background: #edf2f7; color: #4a5568; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Estado: En Progreso</span>
+                    </div>
+
+                    <p style="font-size: 0.95rem; color: #4a5568;"><strong>Indicaciones:</strong> Realiza las transformaciones solicitadas y detecta las fallas gramaticales. Resuelve el bloque completo antes de revelar la validación.</p>
+
+                    <h5 style="color: #184168; margin-bottom: 0.5rem;">Parte I: Completa con am, is o are:</h5>
+                    <ol style="line-height: 1.8; color: #2d3748; padding-left: 1.2rem; margin-bottom: 1.5rem;">
+                        <li>She ________ a talented designer from Córdoba.</li>
+                        <li>Carlos and I ________ ready for the exam.</li>
+                        <li>They ________ not at home right now.</li>
+                        <li>You ________ very good at learning languages.</li>
+                    </ol>
+
+                    <h5 style="color: #184168; margin-bottom: 0.5rem;">Parte II: Corrige el error en cada oración:</h5>
+                    <ol start="5" style="line-height: 1.8; color: #2d3748; padding-left: 1.2rem;">
+                        <li>"I have 26 years old."</li>
+                        <li>"He are a manager in a big company."</li>
+                        <li>"Not am tired today."</li>
+                        <li>"Is they happy with the project?"</li>
+                    </ol>
+
+                    <div style="background: #f7fafc; border: 1px dashed #cbd5e0; padding: 0.8rem; border-radius: 6px; margin-top: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 0.85rem; color: #718096;">[ Contador de lectura / resolución activo ]</span>
+                        <span style="font-size: 0.85rem; font-weight: 600; color: #2b6cb0;">Puntuación asignada: 30 pts</span>
+                    </div>
+
+                    <details style="margin-top: 1.2rem;">
+                        <summary style="background: #0b2238; color: white; padding: 0.8rem 1.2rem; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.9rem; text-align: center; list-style: none;">
+                            PASAR A FASE DE RESPUESTA (Validar Intento)
+                        </summary>
+                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-top: none; padding: 1.2rem; border-radius: 0 0 6px 6px; margin-top: -4px;">
+                            <h5 style="margin-top: 0; color: #0b2238; font-size: 1rem; border-bottom: 1px solid #cbd5e0; padding-bottom: 0.4rem;">Validación del Bloque:</h5>
+                            
+                            <p style="font-weight: bold; color: #184168; margin-bottom: 0.3rem;">Respuestas Parte I:</p>
+                            <p style="font-family: monospace; background: #edf2f7; padding: 0.6rem; border-radius: 4px; color: #2d3748;">1. is | 2. are (Carlos y yo = We) | 3. are | 4. are</p>
+
+                            <p style="font-weight: bold; color: #184168; margin-bottom: 0.3rem; margin-top: 1rem;">Correcciones Parte II:</p>
+                            <ul style="line-height: 1.7; font-size: 0.95rem; color: #2d3748; padding-left: 1.2rem;">
+                                <li><strong>5. I am 26 years old.</strong> (La edad en inglés se ES, no se tiene).</li>
+                                <li><strong>6. He is a manager in a big company.</strong> (He va obligatoriamente con is).</li>
+                                <li><strong>7. I am not tired today.</strong> (Se requiere el sujeto I y el verbo am antes del not).</li>
+                                <li><strong>8. Are they happy with the project?</strong> (They requiere el auxiliar Are para preguntar).</li>
                             </ul>
-                            <p style="background: #f0fff4; border: 1px solid #c6f6d5; padding: 0.8rem; border-radius: 6px; color: #22543d; font-weight: bold;">
-                                ✨ La Oración Corregida: "She is a very intelligent doctor, but she is not working today." (o su forma compacta: isn't working).
-                            </p>
+
+                            <div style="margin-top: 1rem; padding: 0.6rem 1rem; background: #f0fff4; border: 1px solid #c6f6d5; border-radius: 4px; color: #22543d; font-size: 0.85rem; font-weight: bold; display: flex; justify-content: space-between;">
+                                <span>Estado del Ejercicio: COMPLETADO</span>
+                                <span>Progreso actualizado: 50%</span>
+                            </div>
                         </div>
                     </details>
                 </div>
 
-                <div class="ejercicio-card" style="background: white; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #184168; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-top: 1.5rem;">
-                    <h3>🕹️ Reto 2.2: Traducción Cruzada a Contrarreloj</h3>
-                    <p><strong>El Desafío:</strong> Traduce mentalmente esta frase del español al inglés antes de que pasen 10 segundos. No puedes usar ayudas visuales:</p>
-                    <blockquote style="background: #edf2f7; padding: 0.8rem 1rem; border-radius: 4px; font-weight: bold; color: #2d3748;">
-                        "¿Estás cansado hoy? No, no estoy cansado, estoy muy feliz."
-                    </blockquote>
-                    <p>Escribe tu versión en un papel o dila en voz alta antes de revelar.</p>
-                    
-                    <details style="margin-top: 1.5rem; background: #e3edf5; padding: 1rem; border-radius: 6px; cursor: pointer;">
-                        <summary style="font-weight: bold; color: #0b2238;">🔍 Revelar Validación NAtiva (Pantalla B)</summary>
-                        <div style="margin-top: 1rem; color: #1a202c; line-height: 1.6;">
-                            <p style="color: #2b6cb0; font-weight: bold;">🛑 Validación del Reto: Compara tu estructura con la forma nativa ideal:</p>
-                            <p style="font-size: 1.1rem; font-family: monospace; background: #2d3748; color: #63b3ed; padding: 0.8rem; border-radius: 6px;">
-                                "Are you tired today? No, I'm not tired, I am very happy."
-                            </p>
-                            <p><strong>Criterio de Victoria:</strong> Si invertiste el orden en la pregunta (<em>Are you</em> en vez de <em>You are</em>) y usaste la contracción correcta en la negativa (<em>I'm not</em>), superaste el reto con éxito.</p>
+                <!-- Ejercicio 2.2 -->
+                <div class="ejercicio-card" style="background: white; border: 1px solid #c0d4e5; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
+                        <h4 style="margin: 0; color: #0b2238; font-size: 1.05rem;">Ejercicio 2.2: Traducción Compleja de Escenarios</h4>
+                        <span style="background: #edf2f7; color: #4a5568; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Estado: En Progreso</span>
+                    </div>
+
+                    <p style="font-size: 0.95rem; color: #4a5568;"><strong>Indicaciones:</strong> Traduce este diálogo completo al inglés respetando las estructuras de afirmación, negación y pregunta.</p>
+
+                    <div style="background: #f7fafc; border-left: 3px solid #184168; padding: 1rem; border-radius: 4px; line-height: 1.8; color: #2d3748; margin: 1rem 0;">
+                        <p style="margin: 0;"><strong>Persona A:</strong> "¡Hola! Buenas tardes. ¿Cómo estás?"</p>
+                        <p style="margin: 0;"><strong>Persona B:</strong> "Hola, estoy muy bien, ¿y vos? ¿Sos estudiante acá?"</p>
+                        <p style="margin: 0;"><strong>Persona A:</strong> "No, no soy estudiante, soy profesor. Pero ellos sí son estudiantes."</p>
+                    </div>
+
+                    <div style="background: #f7fafc; border: 1px dashed #cbd5e0; padding: 0.8rem; border-radius: 6px; margin-top: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 0.85rem; color: #718096;">[ Contador de lectura / resolución activo ]</span>
+                        <span style="font-size: 0.85rem; font-weight: 600; color: #2b6cb0;">Puntuación asignada: 30 pts</span>
+                    </div>
+
+                    <details style="margin-top: 1.2rem;">
+                        <summary style="background: #0b2238; color: white; padding: 0.8rem 1.2rem; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.9rem; text-align: center; list-style: none;">
+                            PASAR A FASE DE RESPUESTA (Validar Intento)
+                        </summary>
+                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-top: none; padding: 1.2rem; border-radius: 0 0 6px 6px; margin-top: -4px;">
+                            <h5 style="margin-top: 0; color: #0b2238; font-size: 1rem; border-bottom: 1px solid #cbd5e0; padding-bottom: 0.4rem;">Validación del Diálogo:</h5>
+                            <div style="font-family: monospace; font-size: 0.95rem; line-height: 1.8; color: #2d3748; background: #edf2f7; padding: 0.8rem; border-radius: 4px;">
+                                <p style="margin: 0;"><strong>Persona A:</strong> "Hello! Good afternoon. How are you?"</p>
+                                <p style="margin: 0;"><strong>Persona B:</strong> "Hi, I'm very good, and you? Are you a student here?"</p>
+                                <p style="margin: 0;"><strong>Persona A:</strong> "No, I'm not a student, I am a teacher. But they are students."</p>
+                            </div>
+                            <div style="margin-top: 1rem; padding: 0.6rem 1rem; background: #f0fff4; border: 1px solid #c6f6d5; border-radius: 4px; color: #22543d; font-size: 0.85rem; font-weight: bold; display: flex; justify-content: space-between;">
+                                <span>Estado del Ejercicio: COMPLETADO</span>
+                                <span>Progreso actualizado: 80%</span>
+                            </div>
                         </div>
                     </details>
                 </div>
             </section>
 
-            <!-- FASE 3 -->
-            <section class="bloque-fase" style="margin-bottom: 2.5rem;">
-                <h2 style="color: #0b2238; border-bottom: 2px solid #184168; padding-bottom: 0.5rem;">FASE 3: EL JUICIO FINAL DE LA CLASE (Prueba de Fuego)</h2>
-                
-                <div class="ejercicio-card" style="background: #0b2238; color: white; padding: 1.8rem; border-radius: 8px; box-shadow: 0 6px 12px rgba(0,0,0,0.15);">
-                    <h3 style="color: #a4c4de; margin-top: 0;">🕹️ Reto 3.1: La Presentación Ejecutiva en Vivo</h3>
-                    <p><strong>Situación de Alta Exigencia:</strong> Estás frente al CEO de una multinacional de forma imprevista. Tienes que presentarte combinando identidad, procedencia y estado actual en exactamente tres oraciones sin dudar.</p>
-                    <p style="color: #cbd5e0;">Diseña tu estructura en tu mente usando la teoría de la clase antes de activar la validación.</p>
-                    
-                    <details style="margin-top: 1.5rem; background: #184168; padding: 1rem; border-radius: 6px; cursor: pointer; color: white;">
-                        <summary style="font-weight: bold; color: #a4c4de;">🔍 Revelar Modelo de Referencia Estándar (Pantalla B)</summary>
-                        <div style="margin-top: 1rem; color: #e2e8f0; line-height: 1.6;">
-                            <p style="color: #68d391; font-weight: bold;">🛑 Modelo de Referencia Estándar:</p>
-                            <ol style="line-height: 1.8;">
-                                <li><strong>Hello, good morning.</strong> (Saludo temporal correcto)</li>
-                                <li><strong>My name is [Tu Nombre] and I am from Argentina.</strong> (Identidad + Verbo To Be)</li>
-                                <li><strong>I am ready for this project.</strong> (Estado con To Be afirmativo)</li>
-                            </ol>
-                            <p style="background: rgba(255,255,255,0.1); padding: 0.8rem; border-radius: 6px; font-style: italic;">
-                                🏆 <strong>Reto cumplido:</strong> Si lograste decirlo fluido y sin mezclar <em>have</em> con la edad o <em>are</em> con la tercera persona, has desbloqueado el nivel completo de la Clase 1.
-                            </p>
+            <!-- ENTREGABLE FINAL -->
+            <section class="bloque-fase" style="margin-bottom: 2rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; background: #0b2238; color: white; padding: 0.8rem 1.2rem; border-radius: 6px 6px 0 0;">
+                    <h3 style="margin: 0; font-size: 1.1rem; text-transform: uppercase;">ENTREGABLE FINAL (Práctica Manual con Corrección del Profesor)</h3>
+                    <span style="font-size: 0.85rem; font-weight: bold; color: #a4c4de;">Restante para 100%: +20%</span>
+                </div>
+
+                <div style="background: white; border: 1px solid #0b2238; border-top: none; border-radius: 0 0 8px 8px; padding: 1.8rem; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
+                        <h4 style="margin: 0; color: #0b2238; font-size: 1.05rem;">Trabajo Práctico Integrador — Clase 1</h4>
+                        <span style="background: #fffaf0; color: #c05621; border: 1px solid #fbd38d; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Estado: Pendiente de Envío</span>
+                    </div>
+
+                    <p style="font-size: 0.95rem; color: #2d3748; line-height: 1.6;"><strong>Consigna:</strong> Redactá un texto de presentación personal de mínimo 6 oraciones (o enviá una nota de audio de 45 segundos leyéndolo) donde incluyas obligatoriamente los siguientes elementos:</p>
+
+                    <ol style="line-height: 1.7; color: #4a5568; font-size: 0.95rem; padding-left: 1.2rem; margin-bottom: 1.5rem;">
+                        <li>Un saludo formal de acuerdo con el momento en que escribís el ejercicio.</li>
+                        <li>Tu nombre completo y tu edad (utilizando la estructura correcta con el Verbo To Be).</li>
+                        <li>Tu ciudad o país de origen.</li>
+                        <li>Tu ocupación o profesión.</li>
+                        <li>Una oración en negativo sobre cómo te sentís hoy (ejemplo: no estar cansado, no estar nervioso/a).</li>
+                        <li>Una pregunta dirigida al profesor usando el Verbo To Be (ejemplo: preguntarle si está listo/a o si es de Argentina).</li>
+                    </ol>
+
+                    <div style="margin-top: 1.5rem;">
+                        <textarea placeholder="Escribe aquí tu entrega de texto para la revisión del profesor..." style="width: 100%; height: 120px; padding: 0.8rem; border: 1px solid #cbd5e0; border-radius: 6px; font-family: inherit; font-size: 0.95rem; margin-bottom: 1rem; resize: vertical;"></textarea>
+                        
+                        <div style="display: flex; gap: 1rem; justify-content: flex-end; flex-wrap: wrap;">
+                            <button type="button" style="background: #edf2f7; color: #2d3748; border: 1px solid #cbd5e0; padding: 0.7rem 1.2rem; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.9rem;">
+                                [ CAJA DE TEXTO / BOTÓN SUBIR AUDIO ]
+                            </button>
+                            <button type="button" style="background: #184168; color: white; border: none; padding: 0.7rem 1.4rem; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.9rem;">
+                                ENVIAR A REVISIÓN MANUAL
+                            </button>
                         </div>
-                    </details>
+                    </div>
                 </div>
             </section>
 
@@ -198,7 +311,7 @@ const dbPromise = (async () => {
     await adapter.run(`
         INSERT INTO lecciones (curso_id, titulo, modulo, orden, video_url, contenido_html)
         VALUES (?, ?, ?, ?, ?, ?)
-    `, [1, 'Clase 1: Módulo Interactivo de Retos', 'Módulo 1', 1, '', contenidoClase1]);
+    `, [1, 'Clase 1: Saludos, Presentaciones y el Verbo To Be', 'Módulo 1', 1, '', contenidoClase1]);
 
     return adapter;
 })();
