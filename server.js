@@ -36,8 +36,23 @@ app.use(session({
     cookie: { maxAge: 1000 * 60 * 60 * 24 }
 }));
 
-app.use((req, res, next) => {
+// Middleware de variables locales globales
+app.use(async (req, res, next) => {
     res.locals.user = req.session.user || null;
+    res.locals.comprasIds = [];
+
+    if (req.session.user) {
+        try {
+            const db = await dbPromise;
+            const compras = await db.all(
+                'SELECT curso_id FROM compras WHERE usuario_id = ?', 
+                [req.session.user.id]
+            );
+            res.locals.comprasIds = compras.map(c => c.curso_id);
+        } catch (error) {
+            console.error('Error al cargar cursos comprados en middleware:', error);
+        }
+    }
     next();
 });
 

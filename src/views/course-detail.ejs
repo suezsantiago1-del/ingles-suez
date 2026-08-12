@@ -51,15 +51,14 @@
                 <p style="color: #4a5568; font-size: 1.05rem; line-height: 1.6;"><%= curso.descripcion %></p>
 
                 <div style="margin-top: 1.8rem;">
-                    <% if (usuarioInscripto) { %>
+                    <% if (locals.yaComprado) { %>
                         <!-- Opción A: Usuario ya inscripto -->
                         <a href="/classroom/<%= curso.id %>" class="btn-action btn-primary">
-                            Ver curso
+                            Ir al Aula Virtual
                         </a>
                     <% } else { %>
                         <!-- Opción B: Usuario no inscripto -->
-                        <form action="/inscribir" method="POST" style="display: inline;">
-                            <input type="hidden" name="curso_id" value="<%= curso.id %>">
+                        <form action="/checkout/<%= curso.id %>" method="POST" style="display: inline;">
                             <button type="submit" class="btn-action btn-success">
                                 Inscribirme en curso
                             </button>
