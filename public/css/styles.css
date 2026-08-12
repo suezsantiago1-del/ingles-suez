@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=GFS+Didot&family=Montserrat:wght@400;500;600;700;800;900&family=Tenor+Sans&display=swap');
 
 :root {
   --blue-dark: #0A2540;
@@ -23,14 +23,31 @@
   padding: 0;
 }
 
+html, body {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100%;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
 body {
-  font-family: 'Montserrat', system-ui, -apple-system, sans-serif;
+  font-family: 'GFS Didot', serif;
   color: var(--text-primary);
   background-color: var(--bg-main);
   line-height: 1.6;
   position: relative;
-  min-height: 100vh;
-  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Tipografías específicas para títulos y elementos generales */
+h1, h2, h3, h4, h5, h6, .btn-primary, .btn-secondary, .btn-logout, .logo-brand, .badge {
+  font-family: 'Tenor Sans', sans-serif !important;
+}
+
+main {
+  flex: 1;
 }
 
 /* Patrones Geométricos en el Fondo */
@@ -77,13 +94,12 @@ body::after {
   width: 100%;
   max-width: 100%;
   margin: 0;
-  padding: 0.5rem 3.5rem 0.5rem 3.5rem; /* Separación sutil a la izquierda (3.5rem) */
+  padding: 0.5rem 3.5rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-/* Logo con imagen */
 .logo-brand {
   display: flex;
   align-items: center;
@@ -117,6 +133,7 @@ body::after {
   text-transform: uppercase;
   letter-spacing: 0.1em;
   transition: color 0.2s ease;
+  font-family: 'Tenor Sans', sans-serif;
 }
 
 .nav-links a:not(.btn-primary):not(.btn-secondary):not(.btn-logout):hover {
@@ -129,6 +146,7 @@ body::after {
   font-size: 0.85rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
+  font-family: 'Tenor Sans', sans-serif;
 }
 
 /* Botones */
@@ -235,6 +253,7 @@ body::after {
   color: var(--text-muted);
   margin-bottom: 2.5rem;
   font-weight: 500;
+  font-family: 'GFS Didot', serif;
 }
 
 .hero-cta {
@@ -268,6 +287,7 @@ body::after {
 .section-header p {
   color: var(--text-muted);
   font-size: 1.05rem;
+  font-family: 'GFS Didot', serif;
 }
 
 .courses-grid {
@@ -332,6 +352,7 @@ body::after {
   font-size: 0.95rem;
   margin-bottom: 1.75rem;
   flex-grow: 1;
+  font-family: 'GFS Didot', serif;
 }
 
 .card-footer {
@@ -346,6 +367,7 @@ body::after {
   font-size: 1.45rem;
   font-weight: 900;
   color: var(--blue-dark);
+  font-family: 'Tenor Sans', sans-serif;
 }
 
 /* Autenticación */
@@ -393,6 +415,7 @@ body::after {
   color: var(--text-muted);
   font-size: 0.9rem;
   margin-bottom: 2rem;
+  font-family: 'GFS Didot', serif;
 }
 
 .auth-form .form-group {
@@ -407,6 +430,7 @@ body::after {
   color: var(--blue-dark);
   text-transform: uppercase;
   letter-spacing: 0.08em;
+  font-family: 'GFS Didot', serif;
 }
 
 .auth-form input {
@@ -415,7 +439,7 @@ body::after {
   border: 2px solid var(--border);
   border-radius: var(--radius);
   font-size: 0.95rem;
-  font-family: inherit;
+  font-family: 'GFS Didot', serif;
   transition: all 0.2s ease;
   background-color: var(--bg-main);
 }
@@ -425,6 +449,10 @@ body::after {
   border-color: var(--blue-dark);
   background-color: #FFFFFF;
   box-shadow: 0 0 0 3px rgba(10, 37, 64, 0.15);
+}
+
+input, button, select, textarea {
+  font-family: inherit;
 }
 
 .alert-error {
@@ -437,6 +465,7 @@ body::after {
   margin-bottom: 1.5rem;
   text-align: center;
   font-weight: 700;
+  font-family: 'GFS Didot', serif;
 }
 
 .auth-footer {
@@ -444,12 +473,14 @@ body::after {
   text-align: center;
   font-size: 0.95rem;
   color: var(--text-muted);
+  font-family: 'GFS Didot', serif;
 }
 
 .auth-footer a {
   color: var(--blue-dark);
   text-decoration: none;
   font-weight: 800;
+  font-family: 'Tenor Sans', sans-serif;
 }
 
 .auth-footer a:hover {
@@ -461,7 +492,7 @@ body::after {
   background: var(--blue-dark);
   color: var(--blue-light);
   padding: 3rem 1.5rem;
-  margin-top: 5rem;
+  margin-top: auto;
   text-align: center;
   font-size: 0.85rem;
   text-transform: uppercase;
@@ -472,55 +503,4 @@ body::after {
 
 .footer p {
   color: var(--blue-light);
-}
-/* Eliminar bordes blancos de toda la página */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-border;
-}
-
-body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    overflow-x: hidden;
-}
-
-/* Forzar que las fuentes del sitio se apliquen a los inputs y botones */
-input, button, select, textarea {
-    font-family: inherit;
-}
-html, body {
-    margin: 0 !important;
-    padding: 0 !important;
-    width: 100%;
-    overflow-x: hidden;
-}
-
-* {
-    box-sizing: border-box;
-}
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-html, body {
-    margin: 0 !important;
-    padding: 0 !important;
-    width: 100%;
-    min-height: 100vh;
-    background-color: #f8f9fa; /* o el color de fondo preferido */
-}
-
-/* Para que el footer se quede abajo y no queden huecos blancos */
-body {
-    display: flex;
-    flex-direction: column;
-}
-
-main {
-    flex: 1;
 }
