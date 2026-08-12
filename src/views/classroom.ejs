@@ -168,8 +168,8 @@
             }
         }
 
-        // Manejador del envío de revisión manual
-        function submitRevision(btn) {
+        // Manejador del envío de revisión manual con guardado en la Base de Datos
+        async function submitRevision(btn) {
             const parentSection = btn.closest('section') || btn.parentElement;
             const textarea = parentSection ? parentSection.querySelector('textarea') : null;
 
@@ -178,24 +178,53 @@
                 return;
             }
 
-            // Cambiar estado del botón
-            btn.innerText = 'Enviado';
+            const cursoId = "<%= curso.id %>";
+            const leccionId = "<%= leccionActiva ? leccionActiva.id : '' %>";
+            const contenido = textarea ? textarea.value.trim() : '';
+
+            // Estado visual temporal durante el envío
+            const originalText = btn.innerText;
+            btn.innerText = 'Enviando...';
             btn.disabled = true;
-            btn.style.background = '#718096';
-            btn.style.cursor = 'not-allowed';
 
-            // Deshabilitar la caja de texto
-            if (textarea) {
-                textarea.disabled = true;
-                textarea.style.backgroundColor = '#edf2f7';
+            try {
+                const response = await fetch('/entregas', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ cursoId, leccionId, contenido })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Cambiar estado permanente del botón
+                    btn.innerText = 'Enviado';
+                    btn.style.background = '#718096';
+                    btn.style.cursor = 'not-allowed';
+
+                    // Deshabilitar la caja de texto
+                    if (textarea) {
+                        textarea.disabled = true;
+                        textarea.style.backgroundColor = '#edf2f7';
+                    }
+
+                    // Lanzar notificación push (toast)
+                    const toast = document.getElementById('toast-notification');
+                    toast.classList.add('show');
+                    setTimeout(() => {
+                        toast.classList.remove('show');
+                    }, 4000);
+                } else {
+                    alert(data.message || 'Ocurrió un error al guardar tu entrega.');
+                    btn.innerText = originalText;
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                console.error('Error enviando la entrega:', error);
+                alert('Hubo un error de conexión al enviar tu respuesta.');
+                btn.innerText = originalText;
+                btn.disabled = false;
             }
-
-            // Lanzar notificación push (toast)
-            const toast = document.getElementById('toast-notification');
-            toast.classList.add('show');
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 4000);
         }
 
         // Vincular la función automáticamente a los botones de revisión al cargar la página
