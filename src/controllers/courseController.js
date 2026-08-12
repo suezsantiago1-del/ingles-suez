@@ -98,3 +98,27 @@ export const getMisCursos = async (req, res) => {
         res.status(500).send("Error interno del servidor");
     }
 };
+// Manejadores de callbacks de pago
+export const paymentSuccess = async (req, res) => {
+    res.render('payment-status', { 
+        status: 'success', 
+        message: '¡Pago realizado con éxito! Ya tienes acceso a tu curso.',
+        usuario: req.session.usuario || null
+    });
+};
+
+export const paymentFailure = async (req, res) => {
+    res.render('payment-status', { 
+        status: 'failure', 
+        message: 'Hubo un problema al procesar el pago. Por favor, intenta de nuevo.',
+        usuario: req.session.usuario || null
+    });
+};
+
+export const paymentPending = async (req, res) => {
+    res.render('payment-status', { 
+        status: 'pending', 
+        message: 'Tu pago está pendiente de aprobación.',
+        usuario: req.session.usuario || null
+    });
+};
