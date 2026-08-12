@@ -122,9 +122,9 @@ export const paymentSuccess = async (req, res) => {
             const curso = await db.get('SELECT * FROM cursos WHERE id = ?', [cursoId]);
             if (curso) {
                 await db.run(`
-                    INSERT OR IGNORE INTO compras (usuario_id, curso_id, monto_pagado, estado)
-                    VALUES (?, ?, ?, 'completado')
-                `, [usuarioId, curso.id, curso.precio]);
+                    INSERT INTO compras (usuario_id, curso_id)
+                    VALUES (?, ?)
+                `, [usuarioId, curso.id]);
             }
         }
         return res.redirect('/mis-cursos');
@@ -189,7 +189,7 @@ export const renderClassroom = async (req, res) => {
         const curso = await db.get('SELECT * FROM cursos WHERE id = ?', [cursoId]);
         const lecciones = await db.all('SELECT * FROM lecciones WHERE curso_id = ? ORDER BY orden ASC', [cursoId]);
 
-        if (lecciones.length === 0) {
+        if (!lecciones || lecciones.length === 0) {
             return res.send('<h1>Este curso aún no tiene lecciones cargadas.</h1>');
         }
 

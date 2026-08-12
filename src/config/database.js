@@ -46,7 +46,8 @@ const dbPromise = (async () => {
             id SERIAL PRIMARY KEY,
             titulo VARCHAR(255) NOT NULL,
             descripcion TEXT NOT NULL,
-            precio INTEGER NOT NULL
+            precio INTEGER NOT NULL,
+            imagen_url VARCHAR(255)
         );
 
         CREATE TABLE IF NOT EXISTS compras (
@@ -57,20 +58,31 @@ const dbPromise = (async () => {
         );
     `);
 
-    // Insertar cursos iniciales si está vacía
+    // Asegurar que la columna imagen_url exista si la tabla ya había sido creada antes
+    await adapter.pgPool.query(`
+        ALTER TABLE cursos ADD COLUMN IF NOT EXISTS imagen_url VARCHAR(255);
+    `);
+
+    // Insertar cursos iniciales si la tabla está vacía
     const countRes = await adapter.pgPool.query("SELECT COUNT(*) FROM cursos");
     if (parseInt(countRes.rows[0].count) === 0) {
-        await adapter.run("INSERT INTO cursos (titulo, descripcion, precio) VALUES (?, ?, ?)", [
+        await adapter.run("INSERT INTO cursos (titulo, descripcion, precio, imagen_url) VALUES (?, ?, ?, ?)", [
             'Inglés Intensivo Desde Cero',
             'Aprende las bases fundamentales del idioma de forma totalmente práctica y natural.',
-            5000
+            5000,
+            '/img/logo_2.png'
         ]);
-        await adapter.run("INSERT INTO cursos (titulo, descripcion, precio) VALUES (?, ?, ?)", [
+        await adapter.run("INSERT INTO cursos (titulo, descripcion, precio, imagen_url) VALUES (?, ?, ?, ?)", [
             'Conversación y Fluidez Real',
             'Enfocado en hablar sin presiones, mejorar pronunciación y ganar confianza en el día a día.',
-            5000
+            5000,
+            '/img/logo_3.png'
         ]);
     }
+
+    // Actualizar las portadas de los cursos existentes
+    await adapter.run("UPDATE cursos SET imagen_url = '/img/logo_2.png' WHERE titulo LIKE '%Intensivo Desde Cero%'");
+    await adapter.run("UPDATE cursos SET imagen_url = '/img/logo_3.png' WHERE titulo LIKE '%Conversación y Fluidez Real%'");
 
     return adapter;
 })();
