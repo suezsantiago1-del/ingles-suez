@@ -37,7 +37,7 @@ export const processCheckout = async (req, res) => {
     }
 
     const { id } = req.params;
-    const usuario = req.session.user;
+    const usuarioId = req.session.user.id;
 
     try {
         const db = await dbPromise;
@@ -46,6 +46,21 @@ export const processCheckout = async (req, res) => {
         if (!curso) {
             return res.status(404).send('Curso no encontrado');
         }
+
+        // =========================================================================
+        // MODO MODO PRUEBA / GRATUITO TEMPORAL (Inscripción directa)
+        // =========================================================================
+        await db.run(`
+            INSERT INTO compras (usuario_id, curso_id)
+            VALUES (?, ?)
+        `, [usuarioId, curso.id]);
+
+        return res.redirect(`/classroom/${curso.id}`);
+
+        /* 
+        // =========================================================================
+        // MODO PRODUCCIÓN (MERCADO PAGO) - Descomentar cuando quieras volver a cobrar:
+        // =========================================================================
 
         if (!process.env.MP_ACCESS_TOKEN || process.env.MP_ACCESS_TOKEN.trim().length < 10) {
             return res.send(`
@@ -71,15 +86,15 @@ export const processCheckout = async (req, res) => {
                     }
                 ],
                 payer: {
-                    name: String(usuario.nombre),
-                    email: String(usuario.email)
+                    name: String(req.session.user.nombre),
+                    email: String(req.session.user.email)
                 },
                 back_urls: {
                     success: `http://localhost:3000/payment/success?cursoId=${curso.id}`,
                     failure: `http://localhost:3000/payment/failure?cursoId=${curso.id}`,
                     pending: `http://localhost:3000/payment/pending?cursoId=${curso.id}`
                 },
-                external_reference: `USER_${usuario.id}_COURSE_${curso.id}`
+                external_reference: `USER_${usuarioId}_COURSE_${curso.id}`
             }
         });
 
@@ -96,15 +111,11 @@ export const processCheckout = async (req, res) => {
                 </div>
             `);
         }
+        */
+
     } catch (error) {
-        console.error('⚠️ ERROR MERCADO PAGO:', error);
-        return res.send(`
-            <div style="font-family: sans-serif; padding: 2rem; max-width: 600px; margin: 4rem auto; background: #fff5f5; border: 1px solid #feb2b2; border-radius: 8px;">
-                <h2 style="color: #c53030;">Error al conectar con Mercado Pago</h2>
-                <p><strong>Detalle del error:</strong> ${error.message || JSON.stringify(error)}</p>
-                <a href="/course/${id}">Volver al curso</a>
-            </div>
-        `);
+        console.error('Error al procesar la inscripción:', error);
+        return res.redirect(`/course/${id}`);
     }
 };
 
