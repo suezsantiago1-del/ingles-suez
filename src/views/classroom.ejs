@@ -54,16 +54,51 @@
             font-weight: bold;
         }
 
+        /* Componente Notificación Push Toast */
+        .toast-notification {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #0b2238;
+            color: #ffffff;
+            border-left: 5px solid #38a169;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 9999;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease-in-out;
+            pointer-events: none;
+        }
+        .toast-notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
         @media (max-width: 768px) {
             .classroom-container { flex-direction: column; }
             .sidebar-lessons { width: 100%; }
             .main-content { padding: 1rem; }
+            .toast-notification { left: 15px; right: 15px; bottom: 15px; }
         }
     </style>
 </head>
 <body>
 
     <%- include('partials/header') %>
+
+    <!-- Notificación Toast Floater -->
+    <div id="toast-notification" class="toast-notification">
+        <span style="font-size: 1.2rem;">✅</span>
+        <div>
+            <strong style="display: block; font-size: 0.95rem;">¡Entregable Registrado!</strong>
+            <span style="font-size: 0.85rem; color: #a4c4de;">Tu respuesta ha sido enviada para corrección.</span>
+        </div>
+    </div>
 
     <div class="classroom-container">
         <!-- Sidebar -->
@@ -106,7 +141,7 @@
 
     <%- include('partials/footer') %>
 
-    <!-- Script de Interactividad para los Quizzes -->
+    <!-- Script de Interactividad para los Quizzes y Revisiones -->
     <script>
         function checkAnswer(button, isCorrect, feedbackId, explanationText) {
             const container = button.closest('.quiz-question');
@@ -132,6 +167,47 @@
                 feedbackBox.innerHTML = '<strong>Respuesta Incorrecta.</strong> ' + explanationText;
             }
         }
+
+        // Manejador del envío de revisión manual
+        function submitRevision(btn) {
+            const parentSection = btn.closest('section') || btn.parentElement;
+            const textarea = parentSection ? parentSection.querySelector('textarea') : null;
+
+            if (textarea && textarea.value.trim() === '') {
+                alert('Por favor, escribe tu respuesta antes de enviar.');
+                return;
+            }
+
+            // Cambiar estado del botón
+            btn.innerText = 'Enviado';
+            btn.disabled = true;
+            btn.style.background = '#718096';
+            btn.style.cursor = 'not-allowed';
+
+            // Deshabilitar la caja de texto
+            if (textarea) {
+                textarea.disabled = true;
+                textarea.style.backgroundColor = '#edf2f7';
+            }
+
+            // Lanzar notificación push (toast)
+            const toast = document.getElementById('toast-notification');
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 4000);
+        }
+
+        // Vincular la función automáticamente a los botones de revisión al cargar la página
+        document.addEventListener('DOMContentLoaded', () => {
+            const buttons = document.querySelectorAll('button');
+            buttons.forEach(btn => {
+                const text = btn.innerText.toUpperCase();
+                if (text.includes('ENVIAR A REVISIÓN') || text.includes('ENVIAR A REVISIÓN MANUAL')) {
+                    btn.setAttribute('onclick', 'submitRevision(this)');
+                }
+            });
+        });
     </script>
 </body>
 </html>
