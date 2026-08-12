@@ -3,75 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= curso ? curso.titulo : 'Detalle del Curso' %> - INGLÉS SUEZ</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=GFS+Didot&family=Tenor+Sans&display=swap" rel="stylesheet">
+    <title><%= curso.titulo %> - INGLÉS SUEZ</title>
     <link rel="stylesheet" href="/css/styles.css">
     <style>
-        body, p, span, div, a, li, button { font-family: 'GFS Didot', serif; }
-        h1, h2, h3, h4, h5, h6 { font-family: 'Tenor Sans', sans-serif !important; }
-        body { background-color: #e3edf5; margin: 0; padding: 0; color: #1a202c; }
-        .card-header-logo { background: #d3e4f2; padding: 2.5rem 1rem; text-align: center; border-bottom: 2px solid #b2cce0; }
-        .card-header-logo img { height: 120px; width: auto; object-fit: contain; }
+        .course-detail-container {
+            max-width: 900px;
+            margin: 3rem auto;
+            padding: 2rem;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+        }
+        .btn-action {
+            display: inline-block;
+            padding: 0.9rem 1.8rem;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 1rem;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            transition: background 0.2s;
+        }
+        .btn-primary { background: #184168; color: #ffffff; }
+        .btn-primary:hover { background: #0b2238; }
+        .btn-success { background: #0b2238; color: #ffffff; }
+        .btn-success:hover { background: #184168; }
     </style>
 </head>
 <body>
 
     <%- include('partials/header') %>
 
-    <main style="max-width: 900px; margin: 3.5rem auto; padding: 0 1.5rem;">
-        <% if (curso) { %>
-            <div style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 12px 30px rgba(11, 34, 56, 0.12), 0 4px 8px rgba(0, 0, 0, 0.04); border: 1px solid #c0d4e5;">
-                
-                <div class="card-header-logo">
-                    <img src="/img/logo.jpg" alt="INGLÉS SUEZ">
+    <main class="course-detail-container">
+        <div style="display: flex; gap: 2rem; align-items: center; flex-wrap: wrap;">
+            <% if (curso.imagen_url) { %>
+                <img src="<%= curso.imagen_url %>" alt="<%= curso.titulo %>" style="max-width: 280px; border-radius: 8px;">
+            <% } %>
+
+            <div style="flex: 1;">
+                <span style="background: #e2ebd5; color: #184168; padding: 0.3rem 0.8rem; border-radius: 4px; font-size: 0.8rem; font-weight: bold; text-transform: uppercase;">
+                    Curso Oficial
+                </span>
+
+                <h1 style="color: #0b2238; margin-top: 0.8rem; margin-bottom: 0.5rem;"><%= curso.titulo %></h1>
+                <p style="color: #4a5568; font-size: 1.05rem; line-height: 1.6;"><%= curso.descripcion %></p>
+
+                <div style="margin-top: 1.8rem;">
+                    <% if (usuarioInscripto) { %>
+                        <!-- Opción A: Usuario ya inscripto -->
+                        <a href="/classroom/<%= curso.id %>" class="btn-action btn-primary">
+                            Ver curso
+                        </a>
+                    <% } else { %>
+                        <!-- Opción B: Usuario no inscripto -->
+                        <form action="/inscribir" method="POST" style="display: inline;">
+                            <input type="hidden" name="curso_id" value="<%= curso.id %>">
+                            <button type="submit" class="btn-action btn-success">
+                                Inscribirme en curso
+                            </button>
+                        </form>
+                    <% } %>
                 </div>
-
-                <div style="padding: 2.5rem;">
-                    <h1 style="color: #0b2238; font-size: 2.2rem; margin-top: 0; margin-bottom: 1rem;"><%= curso.titulo %></h1>
-                    
-                    <p style="color: #4a5568; font-size: 1.1rem; line-height: 1.7; margin-bottom: 2rem;">
-                        <%= curso.descripcion %>
-                    </p>
-
-                    <div style="background: #f0f6fa; border-radius: 8px; padding: 1.5rem; margin-bottom: 2.5rem; border: 1px solid #c0d4e5;">
-                        <h3 style="color: #0b2238; margin-top: 0; margin-bottom: 0.8rem; font-size: 1.2rem;">¿Qué incluye este programa?</h3>
-                        <ul style="color: #184168; margin: 0; padding-left: 1.2rem; line-height: 1.8; font-size: 1.05rem;">
-                            <li>Acceso ilimitado de por vida a las videoclases.</li>
-                            <li>Materiales complementarios en PDF para descargar.</li>
-                            <li>Ejercicios prácticos de pronunciación y gramática.</li>
-                            <li>Certificado de finalización oficial.</li>
-                        </ul>
-                    </div>
-
-                    <div style="display: flex; justify-content: space-between; align-items: center; border-top: 2px solid #e2ebd5; padding-top: 1.5rem;">
-                        <div>
-                            <span style="font-size: 0.8rem; color: #718096; text-transform: uppercase; display: block;">Inversión Total</span>
-                            <span style="color: #0b2238; font-size: 1.8rem; font-weight: bold; font-family: 'Tenor Sans', sans-serif;">$<%= curso.precio %> ARS</span>
-                        </div>
-
-                        <% if (locals.user) { %>
-                            <form action="/checkout/<%= curso.id %>" method="POST">
-                                <button type="submit" style="background: #0b2238; color: white; padding: 0.9rem 2rem; border-radius: 6px; border: none; font-size: 1rem; cursor: pointer; font-family: 'Tenor Sans', sans-serif;">
-                                    Inscribirme Ahora
-                                </button>
-                            </form>
-                        <% } else { %>
-                            <a href="/auth/login" style="background: #0b2238; color: white; padding: 0.9rem 2rem; border-radius: 6px; text-decoration: none; font-size: 1rem; font-family: 'Tenor Sans', sans-serif;">
-                                Inicia Sesión para Inscribirte
-                            </a>
-                        <% } %>
-                    </div>
-                </div>
-
             </div>
-        <% } else { %>
-            <div style="background: white; border-radius: 12px; padding: 3rem; text-align: center; box-shadow: 0 10px 25px rgba(11, 34, 56, 0.12);">
-                <h2 style="color: #0b2238;">Curso no encontrado</h2>
-                <a href="/" style="color: #184168; font-weight: bold;">Volver al Inicio</a>
-            </div>
-        <% } %>
+        </div>
     </main>
 
     <%- include('partials/footer') %>

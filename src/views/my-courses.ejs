@@ -5,38 +5,54 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mis Cursos - INGLÉS SUEZ</title>
     <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        .courses-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        .course-card {
+            background: #ffffff;
+            border: 1px solid #cbd5e0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+    </style>
 </head>
-<body style="background: #f7fafc; font-family: system-ui, -apple-system, sans-serif;">
+<body>
+
     <%- include('partials/header') %>
 
-    <main style="max-width: 1100px; margin: 3rem auto; padding: 0 1.5rem;">
-        <h1 style="color: #0f2b48; font-size: 2rem; margin-bottom: 0.5rem; text-transform: uppercase;">Mis Cursos</h1>
-        <p style="color: #718096; margin-bottom: 2.5rem;">Accede al contenido de tus cursos inscritos y continúa aprendiendo.</p>
+    <main style="max-width: 1000px; margin: 3rem auto; padding: 0 1.5rem;">
+        <h1 style="color: #0b2238;">Mis Cursos</h1>
+        <p style="color: #4a5568;">Accede a tus programas de formación activos:</p>
 
-        <% if (locals.cursos && cursos.length > 0) { %>
-            <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
+        <div class="courses-grid">
+            <% if (cursos && cursos.length > 0) { %>
                 <% cursos.forEach(curso => { %>
-                    <div style="background: white; border-radius: 10px; width: 330px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.08); display: flex; flex-direction: column;">
-                        <img src="<%= curso.imagen_url %>" alt="<%= curso.titulo %>" style="width: 100%; height: 180px; object-fit: cover;">
-                        <div style="padding: 1.5rem; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between;">
-                            <div>
-                                <h3 style="color: #0f2b48; margin-top: 0; font-size: 1.2rem;"><%= curso.titulo %></h3>
-                                <p style="color: #718096; font-size: 0.88rem; line-height: 1.4;"><%= curso.descripcion %></p>
-                            </div>
-                            <a href="/classroom/<%= curso.id %>" style="display: block; text-align: center; background: #0f2b48; color: white; padding: 0.8rem; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 0.9rem; margin-top: 1.5rem;">
-                                IR AL AULA VIRTUAL →
+                    <div class="course-card">
+                        <div>
+                            <h3 style="color: #0b2238; margin-top: 0;"><%= curso.titulo %></h3>
+                            <p style="color: #718096; font-size: 0.9rem;"><%= curso.descripcion %></p>
+                        </div>
+                        <div style="margin-top: 1.5rem;">
+                            <a href="/classroom/<%= curso.id %>" style="display: block; text-align: center; background: #184168; color: white; padding: 0.7rem; border-radius: 6px; text-decoration: none; font-weight: bold;">
+                                Ver curso
                             </a>
                         </div>
                     </div>
                 <% }); %>
-            </div>
-        <% } else { %>
-            <div style="background: white; padding: 3rem; text-align: center; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
-                <h3 style="color: #4a5568;">Aún no tienes cursos comprados.</h3>
-                <p style="color: #a0aec0; margin-bottom: 1.5rem;">Explora nuestro catálogo e inscríbete para comenzar.</p>
-                <a href="/" style="background: #0f2b48; color: white; padding: 0.8rem 1.5rem; text-decoration: none; border-radius: 6px; font-weight: bold;">Explorar Cursos</a>
-            </div>
-        <% } %>
+            <% } else { %>
+                <p style="color: #718096;">Aún no estás inscripto en ningún curso.</p>
+            <% } %>
+        </div>
     </main>
+
+    <%- include('partials/footer') %>
+
 </body>
 </html>
