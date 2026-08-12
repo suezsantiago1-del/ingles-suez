@@ -230,3 +230,31 @@ export const renderClassroom = async (req, res) => {
         return res.redirect('/mis-cursos');
     }
 };
+
+// Guardar entregas de tareas/revisiones manuales de los alumnos
+export const guardarEntrega = async (req, res) => {
+    if (!req.session.user) {
+        return res.status(401).json({ success: false, message: 'Usuario no autenticado' });
+    }
+
+    const { cursoId, leccionId, contenido } = req.body;
+    const usuarioId = req.session.user.id;
+
+    if (!cursoId || !leccionId || !contenido || contenido.trim() === '') {
+        return res.status(400).json({ success: false, message: 'Datos incompletos para procesar la entrega' });
+    }
+
+    try {
+        const db = await dbPromise;
+
+        await db.run(`
+            INSERT INTO entregas (usuario_id, curso_id, leccion_id, contenido)
+            VALUES (?, ?, ?, ?)
+        `, [usuarioId, cursoId, leccionId, contenido.trim()]);
+
+        return res.json({ success: true, message: 'Entrega guardada correctamente' });
+    } catch (error) {
+        console.error('Error al guardar la entrega del alumno:', error);
+        return res.status(500).json({ success: false, message: 'Error interno al guardar la entrega' });
+    }
+};

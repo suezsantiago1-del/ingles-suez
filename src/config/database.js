@@ -66,6 +66,15 @@ const dbPromise = (async () => {
             video_url VARCHAR(255),
             contenido_html TEXT
         );
+
+        CREATE TABLE IF NOT EXISTS entregas (
+            id SERIAL PRIMARY KEY,
+            usuario_id INTEGER NOT NULL,
+            curso_id INTEGER NOT NULL,
+            leccion_id INTEGER NOT NULL,
+            contenido TEXT NOT NULL,
+            fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
     `);
 
     await adapter.pgPool.query(`ALTER TABLE cursos ADD COLUMN IF NOT EXISTS imagen_url VARCHAR(255);`);
