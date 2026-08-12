@@ -3,7 +3,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=GFS+Didot&family=Tenor+Sans&display=swap" rel="stylesheet">
 
-<!-- Vincular CSS global para eliminar bordes blancos -->
+<!-- Vincular CSS global -->
 <link rel="stylesheet" href="/css/styles.css?v=1.2">
 
 <style>
@@ -17,23 +17,47 @@
   * {
     box-sizing: border-box;
   }
+
+  /* Ajustes para pantallas pequeñas (Celulares) */
+  @media (max-width: 768px) {
+    .main-nav {
+      flex-direction: column !important;
+      padding: 1rem !important;
+      gap: 1rem !important;
+    }
+    .nav-left, .nav-right {
+      flex-direction: column !important;
+      width: 100% !important;
+      justify-content: center !important;
+      gap: 0.8rem !important;
+    }
+    .nav-links-left, .nav-links-right {
+      flex-wrap: wrap !important;
+      justify-content: center !important;
+      gap: 1rem !important;
+      margin-left: 0 !important;
+    }
+    .nav-links-left a, .nav-links-right a {
+      font-size: 0.95rem !important;
+    }
+  }
 </style>
 
-<nav style="background: #0b2238; padding: 0.8rem 2.5rem; display: flex; justify-content: space-between; align-items: center; font-family: 'Tenor Sans', sans-serif; position: relative; z-index: 100; border-bottom: 2px solid #184168; margin: 0; width: 100%;">
-    <div style="display: flex; align-items: center; gap: 1.5rem;">
+<nav class="main-nav" style="background: #0b2238; padding: 0.8rem 2.5rem; display: flex; justify-content: space-between; align-items: center; font-family: 'Tenor Sans', sans-serif; position: relative; z-index: 100; border-bottom: 2px solid #184168; margin: 0; width: 100%;">
+    <div class="nav-left" style="display: flex; align-items: center; gap: 1.5rem;">
         <a href="/" style="display: flex; align-items: center; text-decoration: none;">
             <img src="/img/logo.jpg" alt="INGLÉS SUEZ" style="height: 68px; width: auto; object-fit: contain; border-radius: 6px;">
         </a>
         
-        <!-- Enlaces secundarios en GFS Didot (tamaño ajustado a 1.05rem) -->
-        <div style="display: flex; gap: 1.8rem; align-items: center; margin-left: 0.5rem;">
+        <!-- Enlaces secundarios -->
+        <div class="nav-links-left" style="display: flex; gap: 1.8rem; align-items: center; margin-left: 0.5rem;">
             <a href="/cursos-todos" style="color: white; text-decoration: none; font-size: 1.05rem; opacity: 0.45; font-family: 'GFS Didot', serif; transition: opacity 0.2s ease;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.45'">Cursos</a>
             <a href="/clases-particulares" style="color: white; text-decoration: none; font-size: 1.05rem; opacity: 0.45; font-family: 'GFS Didot', serif; transition: opacity 0.2s ease;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.45'">Clases Particulares</a>
             <a href="/about" style="color: white; text-decoration: none; font-size: 1.05rem; opacity: 0.45; font-family: 'GFS Didot', serif; transition: opacity 0.2s ease;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.45'">Acerca de</a>
         </div>
     </div>
     
-    <div style="display: flex; gap: 1.8rem; align-items: center;">
+    <div class="nav-links-right" style="display: flex; gap: 1.8rem; align-items: center;">
         <a href="/" style="color: white; text-decoration: none; font-size: 1rem; font-family: 'GFS Didot', serif;">Inicio</a>
         
         <% if (locals.user) { %>
