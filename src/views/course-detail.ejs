@@ -51,18 +51,25 @@
                 <p style="color: #4a5568; font-size: 1.05rem; line-height: 1.6;"><%= curso.descripcion %></p>
 
                 <div style="margin-top: 1.8rem;">
-                    <% if (locals.yaComprado) { %>
-                        <!-- Opción A: Usuario ya inscripto -->
-                        <a href="/classroom/<%= curso.id %>" class="btn-action btn-primary">
-                            Ir al Aula Virtual
-                        </a>
+                    <% if (locals.user) { %>
+                        <% if (locals.yaComprado) { %>
+                            <!-- Opción A: Usuario logueado e inscripto -->
+                            <a href="/classroom/<%= curso.id %>" class="btn-action btn-primary">
+                                Ir al Aula Virtual
+                            </a>
+                        <% } else { %>
+                            <!-- Opción B: Usuario logueado pero no inscripto -->
+                            <form action="/checkout/<%= curso.id %>" method="POST" style="display: inline;">
+                                <button type="submit" class="btn-action btn-success">
+                                    Inscribirme en curso
+                                </button>
+                            </form>
+                        <% } %>
                     <% } else { %>
-                        <!-- Opción B: Usuario no inscripto -->
-                        <form action="/checkout/<%= curso.id %>" method="POST" style="display: inline;">
-                            <button type="submit" class="btn-action btn-success">
-                                Inscribirme en curso
-                            </button>
-                        </form>
+                        <!-- Opción C: Usuario sin sesión iniciada -->
+                        <a href="/auth/login" class="btn-action btn-success">
+                            Iniciar sesión para inscribirme
+                        </a>
                     <% } %>
                 </div>
             </div>
