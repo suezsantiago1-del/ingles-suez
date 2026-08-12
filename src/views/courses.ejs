@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todos los Cursos - INGLÉS SUEZ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=GFS+Didot&family=Tenor+Sans&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        body, p, span, div, a, li { font-family: 'GFS Didot', serif; }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Tenor Sans', sans-serif !important; }
+        body { background-color: #e3edf5; margin: 0; padding: 0; }
+        .card-header-logo { background: #d3e4f2; padding: 2.2rem 1rem; text-align: center; border-bottom: 2px solid #b2cce0; }
+        .card-header-logo img { height: 110px; width: auto; object-fit: contain; }
+    </style>
+</head>
+<body>
+
+    <%- include('partials/header') %>
+
+    <main style="max-width: 1200px; margin: 3.5rem auto; padding: 0 1.5rem;">
+        <div style="text-align: center; margin-bottom: 3rem;">
+            <h1 style="color: #0b2238; font-size: 2.2rem; text-transform: uppercase;">
+                TODOS NUESTROS CURSOS DETALLADOS
+            </h1>
+            <p style="color: #4a5568; font-size: 1.05rem; max-width: 600px; margin: 0 auto;">
+                Explora el programa completo de cada programa y selecciona la formación ideal para llevar tu inglés al siguiente nivel.
+            </p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2.5rem;">
+            <% if (cursos && cursos.length > 0) { %>
+                <% cursos.forEach(curso => { %>
+                    <div style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 12px 30px rgba(11, 34, 56, 0.12), 0 4px 8px rgba(0, 0, 0, 0.04); border: 1px solid #c0d4e5; display: flex; flex-direction: column;">
+                        
+                        <div class="card-header-logo">
+                            <img src="/img/logo.jpg" alt="INGLÉS SUEZ">
+                        </div>
+
+                        <div style="padding: 2rem; display: flex; flex-direction: column; flex-grow: 1;">
+                            <h2 style="color: #0b2238; font-size: 1.4rem; margin-top: 0; margin-bottom: 0.8rem;"><%= curso.titulo %></h2>
+                            <p style="color: #4a5568; font-size: 1rem; line-height: 1.6; margin-bottom: 1.5rem; flex-grow: 1;"><%= curso.descripcion %></p>
+                            
+                            <div style="background: #f0f6fa; padding: 1rem; border-radius: 6px; margin-bottom: 1.5rem; font-size: 0.95rem; color: #184168;">
+                                <div>✔ Acceso de por vida</div>
+                                <div>✔ Clases en Video HD</div>
+                                <div>✔ Ejercicios prácticos incluidos</div>
+                            </div>
+
+                            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e2ebd5; padding-top: 1.2rem;">
+                                <div>
+                                    <span style="font-size: 0.75rem; color: #718096; text-transform: uppercase; display: block;">Precio Final</span>
+                                    <span style="color: #0b2238; font-size: 1.4rem; font-weight: bold; font-family: 'Tenor Sans', sans-serif;">$<%= curso.precio %> ARS</span>
+                                </div>
+                                <a href="/course/<%= curso.id %>" style="background: #0b2238; color: white; padding: 0.75rem 1.4rem; border-radius: 6px; text-decoration: none; font-size: 0.9rem; font-family: 'Tenor Sans', sans-serif;">
+                                    Ver Detalle →
+                                </a>
+                            </div>
+                        </div>
+
+                    </div>
+                <% }); %>
+            <% } else { %>
+                <p style="text-align: center; color: #718096; grid-column: 1 / -1;">No hay cursos disponibles por el momento.</p>
+            <% } %>
+        </div>
+    </main>
+
+    <%- include('partials/footer') %>
+
+</body>
+</html>

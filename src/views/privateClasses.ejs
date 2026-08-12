@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clases Particulares - INGLÉS SUEZ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=GFS+Didot&family=Tenor+Sans&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        body, p, span, div, a, li, label, input, textarea, select { font-family: 'GFS Didot', serif; }
+        h1, h2, h3, h4, h5, h6, button { font-family: 'Tenor Sans', sans-serif !important; }
+        body { background-color: #e3edf5; margin: 0; padding: 0; color: #1a202c; }
+    </style>
+</head>
+<body>
+
+    <%- include('partials/header') %>
+
+    <main style="max-width: 950px; margin: 4rem auto; padding: 0 1.5rem;">
+        <div style="background: white; border-radius: 12px; padding: 3rem; box-shadow: 0 15px 35px rgba(11, 34, 56, 0.15), 0 5px 15px rgba(0, 0, 0, 0.05); border: 1px solid #c0d4e5;">
+            
+            <span style="background: #184168; color: white; padding: 0.35rem 0.8rem; border-radius: 4px; font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase;">
+                ENSEÑANZA PERSONALIZADA
+            </span>
+
+            <h1 style="color: #0b2238; font-size: 2.3rem; margin: 1.5rem 0 1rem 0;">
+                CLASES PARTICULARES 1 A 1
+            </h1>
+
+            <p style="color: #4a5568; font-size: 1.15rem; line-height: 1.7; margin-bottom: 2rem;">
+                ¿Necesitas preparar un examen específico, mejorar tu conversación para un trabajo o aprender a tu propio ritmo? Las clases individuales adaptan el contenido al 100% a tus objetivos particulares.
+            </p>
+
+            <!-- Sección de Modalidades -->
+            <h2 style="color: #0b2238; font-size: 1.5rem; margin-bottom: 1rem;">Modalidades Disponibles</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
+                <div style="background: #f0f6fa; padding: 1.5rem; border-radius: 8px; border: 1px solid #c0d4e5;">
+                    <h3 style="color: #0b2238; margin-top: 0; font-size: 1.15rem;">Clases Online</h3>
+                    <p style="color: #4a5568; margin-bottom: 0; font-size: 0.95rem; line-height: 1.6;">En vivo mediante Google Meet o Zoom, con material digital interactivo y flexibilidad desde cualquier lugar.</p>
+                </div>
+
+                <div style="background: #f0f6fa; padding: 1.5rem; border-radius: 8px; border: 1px solid #c0d4e5;">
+                    <h3 style="color: #0b2238; margin-top: 0; font-size: 1.15rem;">Clases Presenciales</h3>
+                    <p style="color: #4a5568; margin-bottom: 0; font-size: 0.95rem; line-height: 1.6;">Encuentros individuales presenciales enfocados en práctica oral intensiva y seguimiento cercano.</p>
+                </div>
+
+                <div style="background: #f0f6fa; padding: 1.5rem; border-radius: 8px; border: 1px solid #c0d4e5;">
+                    <h3 style="color: #0b2238; margin-top: 0; font-size: 1.15rem;">Clases a Domicilio</h3>
+                    <p style="color: #4a5568; margin-bottom: 0; font-size: 0.95rem; line-height: 1.6;">Atención personalizada en la comodidad de tu hogar o lugar de trabajo con horarios coordinados a conveniencia.</p>
+                </div>
+            </div>
+
+            <!-- Formulario de Consulta directa -->
+            <div style="border-top: 2px solid #e3edf5; padding-top: 2rem;">
+                <h2 style="color: #0b2238; font-size: 1.6rem; margin-top: 0; margin-bottom: 0.5rem;">Solicitar Información o Agendar Clase</h2>
+                <p style="color: #718096; margin-bottom: 1.5rem;">Completa el formulario y te contactaremos a la brevedad para coordinar tu primera sesión.</p>
+
+                <form onsubmit="enviarWhatsApp(event)" style="display: flex; flex-direction: column; gap: 1.2rem;">
+                    <div>
+                        <label style="display: block; color: #0b2238; font-weight: bold; margin-bottom: 0.4rem;">Tu Nombre:</label>
+                        <input type="text" id="nombre" required placeholder="Ej. Carlos Pérez" style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 1rem; box-sizing: border-box;">
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
+                        <div>
+                            <label style="display: block; color: #0b2238; font-weight: bold; margin-bottom: 0.4rem;">Modalidad Preferida:</label>
+                            <select id="modalidad" style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 1rem; box-sizing: border-box;">
+                                <option value="Online">Online</option>
+                                <option value="Presencial">Presencial</option>
+                                <option value="A Domicilio">A Domicilio</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label style="display: block; color: #0b2238; font-weight: bold; margin-bottom: 0.4rem;">Objetivo Principal:</label>
+                            <select id="objetivo" style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 1rem; box-sizing: border-box;">
+                                <option value="Conversación y Fluidez">Conversación y Fluidez</option>
+                                <option value="Preparación de Examen">Preparación de Examen</option>
+                                <option value="Inglés desde Cero">Inglés desde Cero</option>
+                                <option value="Inglés Laboral / Entrevistas">Inglés Laboral / Entrevistas</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label style="display: block; color: #0b2238; font-weight: bold; margin-bottom: 0.4rem;">Mensaje o Consulta:</label>
+                        <textarea id="mensaje" rows="4" placeholder="Cuéntame sobre tu zona/barrio (en caso de clases presenciales o a domicilio), disponibilidad horaria o dudas generales..." style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 1rem; box-sizing: border-box;"></textarea>
+                    </div>
+
+                    <button type="submit" style="background: #0b2238; color: white; border: none; padding: 0.9rem 2rem; border-radius: 6px; font-size: 1rem; cursor: pointer; align-self: flex-start;">
+                        Enviar Consulta por WhatsApp
+                    </button>
+                </form>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        function enviarWhatsApp(e) {
+            e.preventDefault();
+            const nombre = document.getElementById('nombre').value;
+            const modalidad = document.getElementById('modalidad').value;
+            const objetivo = document.getElementById('objetivo').value;
+            const mensaje = document.getElementById('mensaje').value;
+
+            const telefono = "5493412161767";
+            const texto = `Hola INGLÉS SUEZ! Me llamo ${nombre}. Estoy interesado/a en clases particulares. Modalidad: ${modalidad}. Objetivo: ${objetivo}. Consulta: ${mensaje}`;
+            const url = `https://api.whatsapp.com/send?phone=${telefono}&text=${encodeURIComponent(texto)}`;
+            window.open(url, '_blank');
+        }
+    </script>
+
+    <%- include('partials/footer') %>
+
+</body>
+</html>

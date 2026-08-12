@@ -1,0 +1,32 @@
+<!-- Importación de Google Fonts: Tenor Sans y GFS Didot -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=GFS+Didot&family=Tenor+Sans&display=swap" rel="stylesheet">
+
+<nav style="background: #0b2238; padding: 0.8rem 2.5rem; display: flex; justify-content: space-between; align-items: center; font-family: 'Tenor Sans', sans-serif; position: relative; z-index: 100; border-bottom: 2px solid #184168;">
+    <div style="display: flex; align-items: center; gap: 1.5rem;">
+        <a href="/" style="display: flex; align-items: center; text-decoration: none;">
+            <img src="/img/logo.jpg" alt="INGLÉS SUEZ" style="height: 68px; width: auto; object-fit: contain; border-radius: 6px;">
+        </a>
+        
+        <!-- Enlaces secundarios en GFS Didot -->
+        <div style="display: flex; gap: 1.8rem; align-items: center; margin-left: 0.5rem;">
+            <a href="/cursos-todos" style="color: white; text-decoration: none; font-size: 1.25rem; opacity: 0.45; font-family: 'GFS Didot', serif; transition: opacity 0.2s ease;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.45'">Cursos</a>
+            <a href="/clases-particulares" style="color: white; text-decoration: none; font-size: 1.25rem; opacity: 0.45; font-family: 'GFS Didot', serif; transition: opacity 0.2s ease;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.45'">Clases Particulares</a>
+            <a href="/about" style="color: white; text-decoration: none; font-size: 1.25rem; opacity: 0.45; font-family: 'GFS Didot', serif; transition: opacity 0.2s ease;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.45'">Acerca de</a>
+        </div>
+    </div>
+    
+    <div style="display: flex; gap: 1.8rem; align-items: center;">
+        <a href="/" style="color: white; text-decoration: none; font-size: 1rem; font-family: 'GFS Didot', serif;">Inicio</a>
+        
+        <% if (locals.user) { %>
+            <a href="/mis-cursos" style="color: white; text-decoration: none; font-size: 1rem; font-family: 'GFS Didot', serif;">Mis Cursos</a>
+            <a href="/auth/profile" style="color: white; text-decoration: none; font-size: 1rem; font-family: 'GFS Didot', serif;">Mi Perfil</a>
+            <a href="/auth/logout" style="color: #feb2b2; text-decoration: none; font-weight: bold; font-size: 1rem; font-family: 'GFS Didot', serif;">Cerrar Sesión</a>
+        <% } else { %>
+            <a href="/auth/login" style="color: white; text-decoration: none; font-size: 1rem; font-family: 'GFS Didot', serif;">Iniciar Sesión</a>
+            <a href="/auth/register" style="background: white; color: #0b2238; padding: 0.6rem 1.3rem; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 0.95rem; font-family: 'Tenor Sans', sans-serif;">Registrarse</a>
+        <% } %>
+    </div>
+</nav>

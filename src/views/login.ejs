@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión - INGLÉS SUEZ</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body style="background: #f7fafc; font-family: sans-serif;">
+    <%- include('partials/header') %>
+
+    <main style="max-width: 420px; margin: 4rem auto; padding: 2rem; background: white; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.08);">
+        <h2 style="color: #0f2b48; text-align: center; margin-bottom: 1.5rem; text-transform: uppercase;">Iniciar Sesión</h2>
+
+        <% if (locals.error) { %>
+            <div style="background: #fff5f5; color: #c53030; padding: 0.75rem; border-radius: 6px; margin-bottom: 1rem; border: 1px solid #feb2b2; text-align: center; font-size: 0.9rem;">
+                <%= error %>
+            </div>
+        <% } %>
+
+        <form action="/auth/login" method="POST" style="display: flex; flex-direction: column; gap: 1rem;">
+            <div>
+                <label style="display: block; color: #4a5568; font-size: 0.85rem; font-weight: bold; margin-bottom: 0.3rem;">Correo Electrónico</label>
+                <input type="email" name="email" required style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e0; border-radius: 6px; box-sizing: border-box;">
+            </div>
+
+            <div>
+                <label style="display: block; color: #4a5568; font-size: 0.85rem; font-weight: bold; margin-bottom: 0.3rem;">Contraseña</label>
+                <input type="password" name="password" required style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e0; border-radius: 6px; box-sizing: border-box;">
+            </div>
+
+            <!-- Casilla Mantener Sesión Iniciada -->
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.25rem;">
+                <input type="checkbox" id="remember" name="remember" value="true" style="width: 16px; height: 16px; cursor: pointer;">
+                <label for="remember" style="color: #4a5568; font-size: 0.88rem; cursor: pointer; user-select: none;">
+                    Mantener la sesión iniciada
+                </label>
+            </div>
+
+            <button type="submit" style="background: #0f2b48; color: white; border: none; padding: 0.85rem; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 0.5rem;">
+                INGRESAR
+            </button>
+        </form>
+
+        <p style="text-align: center; color: #718096; font-size: 0.85rem; margin-top: 1.5rem;">
+            ¿No tienes cuenta? <a href="/auth/register" style="color: #3182ce; font-weight: bold; text-decoration: none;">Regístrate gratis</a>
+        </p>
+    </main>
+</body>
+</html>

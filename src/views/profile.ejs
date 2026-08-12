@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Perfil - INGLÉS SUEZ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=GFS+Didot&family=Tenor+Sans&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        body, p, span, div, a, li, label, input, button { font-family: 'GFS Didot', serif; }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Tenor Sans', sans-serif !important; }
+        body { background-color: #e3edf5; margin: 0; padding: 0; color: #1a202c; }
+    </style>
+</head>
+<body>
+
+    <%- include('partials/header') %>
+
+    <main style="max-width: 700px; margin: 4rem auto; padding: 0 1.5rem;">
+        <div style="background: white; border-radius: 12px; padding: 2.5rem; box-shadow: 0 12px 30px rgba(11, 34, 56, 0.12), 0 4px 8px rgba(0, 0, 0, 0.04); border: 1px solid #c0d4e5;">
+            
+            <h1 style="color: #0b2238; font-size: 2rem; margin-top: 0; margin-bottom: 0.5rem;">MI PERFIL</h1>
+            <p style="color: #718096; margin-bottom: 2rem; font-size: 1.05rem;">Gestiona la información de tu cuenta personal.</p>
+
+            <% if (locals.error) { %>
+                <div style="background: #fed7d7; color: #9b2c2c; padding: 0.8rem 1rem; border-radius: 6px; margin-bottom: 1.5rem; font-size: 0.95rem;">
+                    <%= error %>
+                </div>
+            <% } %>
+
+            <% if (locals.success) { %>
+                <div style="background: #c6f6d5; color: #22543d; padding: 0.8rem 1rem; border-radius: 6px; margin-bottom: 1.5rem; font-size: 0.95rem;">
+                    <%= success %>
+                </div>
+            <% } %>
+
+            <form action="/auth/profile" method="POST" style="display: flex; flex-direction: column; gap: 1.2rem;">
+                <div>
+                    <label style="display: block; color: #0b2238; font-weight: bold; margin-bottom: 0.4rem; font-size: 1rem;">Nombre Completo:</label>
+                    <input type="text" name="nombre" value="<%= user ? user.nombre : '' %>" required style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 1rem; box-sizing: border-box;">
+                </div>
+
+                <div>
+                    <label style="display: block; color: #0b2238; font-weight: bold; margin-bottom: 0.4rem; font-size: 1rem;">Correo Electrónico:</label>
+                    <input type="email" value="<%= user ? user.email : '' %>" disabled style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; background: #edf2f7; color: #a0aec0; border-radius: 6px; font-size: 1rem; box-sizing: border-box;">
+                </div>
+
+                <div>
+                    <label style="display: block; color: #0b2238; font-weight: bold; margin-bottom: 0.4rem; font-size: 1rem;">Nueva Contraseña (Opcional):</label>
+                    <input type="password" name="password" placeholder="Dejar en blanco para conservar la actual" style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 1rem; box-sizing: border-box;">
+                </div>
+
+                <div style="margin-top: 1rem; display: flex; gap: 1rem;">
+                    <button type="submit" style="background: #0b2238; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 6px; font-size: 0.95rem; cursor: pointer; font-family: 'Tenor Sans', sans-serif;">
+                        Guardar Cambios
+                    </button>
+                    <a href="/mis-cursos" style="background: #edf2f7; color: #2d3748; text-decoration: none; padding: 0.8rem 1.5rem; border-radius: 6px; font-size: 0.95rem; font-family: 'Tenor Sans', sans-serif; text-align: center;">
+                        Ver Mis Cursos
+                    </a>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <%- include('partials/footer') %>
+
+</body>
+</html>

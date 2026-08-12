@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acerca de - INGLÉS SUEZ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=GFS+Didot&family=Tenor+Sans&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        body, p, span, div, a, li { font-family: 'GFS Didot', serif; }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Tenor Sans', sans-serif !important; }
+        body { background-color: #e3edf5; margin: 0; padding: 0; color: #1a202c; }
+    </style>
+</head>
+<body>
+
+    <%- include('partials/header') %>
+
+    <main style="max-width: 900px; margin: 4rem auto; padding: 0 1.5rem;">
+        <div style="background: white; border-radius: 12px; padding: 3rem; box-shadow: 0 15px 35px rgba(11, 34, 56, 0.15), 0 5px 15px rgba(0, 0, 0, 0.05); border: 1px solid #c0d4e5;">
+            
+            <span style="background: #184168; color: white; padding: 0.35rem 0.8rem; border-radius: 4px; font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase;">
+                SOBRE EL PROYECTO
+            </span>
+
+            <h1 style="color: #0b2238; font-size: 2.2rem; margin: 1.5rem 0 1.5rem 0;">
+                La Historia Detrás de INGLÉS SUEZ
+            </h1>
+
+            <p style="color: #4a5568; font-size: 1.1rem; line-height: 1.8; margin-bottom: 1.5rem;">
+                ¡Hola! Soy Santiago Suez y armé esta página web por mi cuenta para ayudarte a perderle el miedo al inglés de una vez por todas. Durante mucho tiempo yo también odié el idioma porque me parecía algo lejano, aburrido y lleno de reglas rígidas. Todo cambió cuando me di cuenta de que el inglés real no está en los libros de texto, sino en la música, las series, las películas y las conversaciones de todos los días. Al consumirlo de forma natural no solo logré entenderlo, sino que me terminó gustando mucho, y hoy quiero transmitir esa misma experiencia a través de este proyecto.
+            </p>
+
+            <p style="color: #4a5568; font-size: 1.1rem; line-height: 1.8; margin-bottom: 1.5rem;">
+                Diseñé mis cursos con un enfoque cien por ciento práctico para dejar de lado las frases acartonadas que nadie usa y enfocarnos en el inglés que de verdad se habla. Mis programas están pensados para personas de todas las edades y niveles, buscando generar un ambiente cómodo donde equivocarse sea parte natural de aprender, siempre con mucha paciencia, respeto y a tu propio ritmo.
+            </p>
+
+            <p style="color: #4a5568; font-size: 1.1rem; line-height: 1.8; margin-bottom: 2rem;">
+                Además de los cursos disponibles en la web, podés agendar clases particulares conmigo. Mi idea es adaptarme a lo que mejor te quede, ya sea en modalidad online, presencial o a domicilio para acompañarte de cerca en tu aprendizaje.
+            </p>
+
+            <div style="margin-top: 2.5rem; padding-top: 1.5rem; border-top: 2px solid #e3edf5; text-align: center; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                <a href="/cursos-todos" style="background: #0b2238; color: white; padding: 0.85rem 1.8rem; border-radius: 6px; text-decoration: none; font-size: 0.95rem; font-family: 'Tenor Sans', sans-serif;">
+                    Conocer Cursos
+                </a>
+                <a href="/clases-particulares" style="background: #184168; color: white; padding: 0.85rem 1.8rem; border-radius: 6px; text-decoration: none; font-size: 0.95rem; font-family: 'Tenor Sans', sans-serif;">
+                    Agendar Clase Particular
+                </a>
+            </div>
+
+        </div>
+    </main>
+
+    <%- include('partials/footer') %>
+
+</body>
+</html>
