@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= leccionActiva ? leccionActiva.titulo : 'Aula Virtual' %> - INGLÉS SUEZ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=GFS+Didot&family=Tenor+Sans&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        body { background-color: #f4f7f6; margin: 0; font-family: 'GFS Didot', serif; }
+        .classroom-container { display: flex; min-height: calc(100vh - 80px); }
+        
+        /* Sidebar de Lecciones */
+        .sidebar-lessons { width: 320px; background: #0b2238; color: white; padding: 1.5rem; flex-shrink: 0; }
+        .sidebar-lessons h3 { font-family: 'Tenor Sans', sans-serif; font-size: 1.1rem; color: #a4c4de; border-bottom: 1px solid #184168; padding-bottom: 0.8rem; }
+        .lesson-item { display: block; padding: 0.8rem 1rem; color: #cbd5e0; text-decoration: none; border-radius: 6px; margin-bottom: 0.5rem; transition: background 0.2s; }
+        .lesson-item:hover, .lesson-item.active { background: #184168; color: white; font-weight: bold; }
+        
+        /* Contenido Principal */
+        .main-content { flex-grow: 1; padding: 2rem 3rem; max-width: 900px; }
+        .video-container { background: #000; width: 100%; aspect-ratio: 16/9; border-radius: 10px; overflow: hidden; display: flex; align-items: center; justify-content: center; margin-bottom: 2rem; color: white; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
+        .video-placeholder { text-align: center; color: #a4c4de; }
+        
+        /* Estilos del Contenido de la Lección */
+        .clase-contenido h2 { font-family: 'Tenor Sans', sans-serif; color: #0b2238; border-bottom: 2px solid #184168; padding-bottom: 0.5rem; margin-top: 2rem; }
+        .clase-contenido h3 { font-family: 'Tenor Sans', sans-serif; color: #184168; margin-top: 1.5rem; }
+        .tabla-gramatica { width: 100%; border-collapse: collapse; margin: 1rem 0; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .tabla-gramatica th { background: #0b2238; color: white; padding: 0.8rem; text-align: left; font-family: 'Tenor Sans', sans-serif; }
+        .tabla-gramatica td { padding: 0.8rem; border-bottom: 1px solid #e2ebd5; }
+        .ejercicio-card { background: white; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; border-left: 4px solid #184168; box-shadow: 0 4px 6px rgba(0,0,0,0.03); }
+        details { margin-top: 1rem; background: #e3edf5; padding: 0.8rem; border-radius: 6px; cursor: pointer; }
+        summary { font-weight: bold; color: #0b2238; }
+        .quote-reto { background: #0b2238; color: white; padding: 1.5rem; border-radius: 8px; font-size: 1.1rem; line-height: 1.6; margin: 1rem 0; font-style: italic; }
+
+        @media (max-width: 768px) {
+            .classroom-container { flex-direction: column; }
+            .sidebar-lessons { width: 100%; }
+            .main-content { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <%- include('partials/header') %>
+
+    <div class="classroom-container">
+        <!-- Sidebar -->
+        <aside class="sidebar-lessons">
+            <h3><%= curso.titulo %></h3>
+            <p style="font-size: 0.85rem; color: #85abc9;"><%= leccionActiva ? leccionActiva.modulo : '' %></p>
+            
+            <div style="margin-top: 1.5rem;">
+                <% lecciones.forEach(l => { %>
+                    <a href="/classroom/<%= curso.id %>?leccion=<%= l.id %>" class="lesson-item <%= (leccionActiva && leccionActiva.id == l.id) ? 'active' : '' %>">
+                        📖 <%= l.titulo %>
+                    </a>
+                <% }); %>
+            </div>
+        </aside>
+
+        <!-- Área Principal de Aprendizaje -->
+        <main class="main-content">
+            <h1 style="font-family: 'Tenor Sans', sans-serif; color: #0b2238;"><%= leccionActiva.titulo %></h1>
+
+            <!-- Reproductor / Reservado para Video -->
+            <div class="video-container">
+                <% if (leccionActiva.video_url) { %>
+                    <iframe width="100%" height="100%" src="<%= leccionActiva.video_url %>" frameborder="0" allowfullscreen></iframe>
+                <% } else { %>
+                    <div class="video-placeholder">
+                        <div style="font-size: 3rem; margin-bottom: 0.5rem;">🎬</div>
+                        <h3>Video Explicativo de la Clase</h3>
+                        <p style="font-size: 0.9rem;">(Próximamente disponible en esta lección)</p>
+                    </div>
+                <% } %>
+            </div>
+
+            <!-- Contenido Escrito (Teoría, Ejercicios y Reto) -->
+            <div class="leccion-body">
+                <%- leccionActiva.contenido_html %>
+            </div>
+        </main>
+    </div>
+
+    <%- include('partials/footer') %>
+
+</body>
+</html>
