@@ -36,7 +36,7 @@
                     <div style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 12px 30px rgba(11, 34, 56, 0.12), 0 4px 8px rgba(0, 0, 0, 0.04); border: 1px solid #c0d4e5; display: flex; flex-direction: column;">
                         
                         <div class="card-header-logo">
-                            <img src="<%= curso.imagen_url || (curso.titulo.includes('Intensivo') ? '/img/logo_2.png' : curso.titulo.includes('Conversación') ? '/img/logo_3.png' : '/img/logo.jpg') %>" alt="<%= curso.titulo %>">
+                            <img src="<%= (curso.id == 1 || curso.titulo.toLowerCase().includes('intensivo')) ? '/img/logo_2.png?v=1' : '/img/logo_3.png?v=1' %>" alt="<%= curso.titulo %>">
                         </div>
 
                         <div style="padding: 2rem; display: flex; flex-direction: column; flex-grow: 1;">

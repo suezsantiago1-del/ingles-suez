@@ -199,7 +199,7 @@
                 <% cursos.forEach(curso => { %>
                     <div class="curso-card-3d">
                         <div class="card-header-logo">
-                            <img src="/img/logo.jpg" alt="INGLÉS SUEZ">
+                            <img src="<%= (curso.id == 1 || curso.titulo.toLowerCase().includes('intensivo')) ? '/img/logo_2.png?v=1' : '/img/logo_3.png?v=1' %>" alt="<%= curso.titulo %>">
                         </div>
 
                         <div style="padding: 1.5rem; display: flex; flex-direction: column; flex-grow: 1;">
