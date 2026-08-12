@@ -491,3 +491,36 @@ body {
 input, button, select, textarea {
     font-family: inherit;
 }
+html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100%;
+    overflow-x: hidden;
+}
+
+* {
+    box-sizing: border-box;
+}
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100%;
+    min-height: 100vh;
+    background-color: #f8f9fa; /* o el color de fondo preferido */
+}
+
+/* Para que el footer se quede abajo y no queden huecos blancos */
+body {
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+}
