@@ -36,31 +36,48 @@
                 </div>
             <% } %>
 
-            <form action="/auth/profile" method="POST" style="display: flex; flex-direction: column; gap: 1.2rem;">
+            <!-- FORMULARIO 1: DATO PERSONALES -->
+            <form action="/auth/profile/update" method="POST" style="display: flex; flex-direction: column; gap: 1.2rem; margin-bottom: 2.5rem; border-bottom: 1px solid #edf2f7; padding-bottom: 2rem;">
                 <div>
                     <label style="display: block; color: #0b2238; font-weight: bold; margin-bottom: 0.4rem; font-size: 1rem;">Nombre Completo:</label>
-                    <input type="text" name="nombre" value="<%= user ? user.nombre : '' %>" required style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 1rem; box-sizing: border-box;">
+                    <input type="text" name="nombre" value="<%= (locals.usuario && usuario.nombre) ? usuario.nombre : (locals.user ? user.nombre : '') %>" required style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 1rem; box-sizing: border-box;">
                 </div>
 
                 <div>
                     <label style="display: block; color: #0b2238; font-weight: bold; margin-bottom: 0.4rem; font-size: 1rem;">Correo Electrónico:</label>
-                    <input type="email" value="<%= user ? user.email : '' %>" disabled style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; background: #edf2f7; color: #a0aec0; border-radius: 6px; font-size: 1rem; box-sizing: border-box;">
+                    <input type="email" name="email" value="<%= (locals.usuario && usuario.email) ? usuario.email : (locals.user ? user.email : '') %>" required style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 1rem; box-sizing: border-box;">
                 </div>
 
-                <div>
-                    <label style="display: block; color: #0b2238; font-weight: bold; margin-bottom: 0.4rem; font-size: 1rem;">Nueva Contraseña (Opcional):</label>
-                    <input type="password" name="password" placeholder="Dejar en blanco para conservar la actual" style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 1rem; box-sizing: border-box;">
-                </div>
-
-                <div style="margin-top: 1rem; display: flex; gap: 1rem;">
+                <div style="display: flex; gap: 1rem;">
                     <button type="submit" style="background: #0b2238; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 6px; font-size: 0.95rem; cursor: pointer; font-family: 'Tenor Sans', sans-serif;">
-                        Guardar Cambios
+                        Guardar Información
                     </button>
                     <a href="/mis-cursos" style="background: #edf2f7; color: #2d3748; text-decoration: none; padding: 0.8rem 1.5rem; border-radius: 6px; font-size: 0.95rem; font-family: 'Tenor Sans', sans-serif; text-align: center;">
                         Ver Mis Cursos
                     </a>
                 </div>
             </form>
+
+            <!-- FORMULARIO 2: CAMBIAR CONTRASEÑA -->
+            <h2 style="color: #0b2238; font-size: 1.3rem; margin-top: 0; margin-bottom: 1rem;">CAMBIAR CONTRASEÑA</h2>
+            <form action="/auth/profile/password" method="POST" style="display: flex; flex-direction: column; gap: 1.2rem;">
+                <div>
+                    <label style="display: block; color: #0b2238; font-weight: bold; margin-bottom: 0.4rem; font-size: 1rem;">Contraseña Actual:</label>
+                    <input type="password" name="currentPassword" required placeholder="Tu contraseña actual" style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 1rem; box-sizing: border-box;">
+                </div>
+
+                <div>
+                    <label style="display: block; color: #0b2238; font-weight: bold; margin-bottom: 0.4rem; font-size: 1rem;">Nueva Contraseña:</label>
+                    <input type="password" name="newPassword" required minlength="6" placeholder="Mínimo 6 caracteres" style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 1rem; box-sizing: border-box;">
+                </div>
+
+                <div>
+                    <button type="submit" style="background: #184168; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 6px; font-size: 0.95rem; cursor: pointer; font-family: 'Tenor Sans', sans-serif;">
+                        Actualizar Contraseña
+                    </button>
+                </div>
+            </form>
+
         </div>
     </main>
 
