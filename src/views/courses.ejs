@@ -12,8 +12,21 @@
         body, p, span, div, a, li { font-family: 'GFS Didot', serif; }
         h1, h2, h3, h4, h5, h6 { font-family: 'Tenor Sans', sans-serif !important; }
         body { background-color: #e3edf5; margin: 0; padding: 0; }
-        .card-header-logo { background: #d3e4f2; padding: 2.2rem 1rem; text-align: center; border-bottom: 2px solid #b2cce0; }
-        .card-header-logo img { height: 110px; width: auto; object-fit: contain; }
+        .card-header-logo { 
+            background: #d3e4f2; 
+            padding: 0; 
+            width: 100%;
+            height: 200px;
+            border-bottom: 2px solid #b2cce0; 
+            position: relative;
+            overflow: hidden;
+        }
+        .card-header-logo img { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -36,7 +49,7 @@
                     <div style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 12px 30px rgba(11, 34, 56, 0.12), 0 4px 8px rgba(0, 0, 0, 0.04); border: 1px solid #c0d4e5; display: flex; flex-direction: column;">
                         
                         <div class="card-header-logo">
-                            <img src="<%= (curso.id == 1 || curso.titulo.toLowerCase().includes('intensivo')) ? '/img/logo_2.png?v=1' : '/img/logo_3.png?v=1' %>" alt="<%= curso.titulo %>">
+                            <img src="<%= (curso.id == 1 || curso.titulo.toLowerCase().includes('intensivo')) ? '/img/logo_2.png?v=2' : '/img/logo_3.png?v=2' %>" alt="<%= curso.titulo %>">
                         </div>
 
                         <div style="padding: 2rem; display: flex; flex-direction: column; flex-grow: 1;">
