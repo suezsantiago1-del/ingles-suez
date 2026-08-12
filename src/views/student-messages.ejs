@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bandeja de Mensajes - INGLÉS SUEZ</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        .container-mensajes { max-width: 850px; margin: 3rem auto; padding: 0 1.5rem; }
+        .mensaje-card { background: #ffffff; border: 1px solid #cbd5e0; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .badge { background: #e2ebd5; color: #184168; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <%- include('partials/header') %>
+
+    <main class="container-mensajes">
+        <h1 style="color: #0b2238;">Mis Mensajes y Devoluciones</h1>
+        <p style="color: #4a5568;">Aquí encontrarás las correcciones y observaciones enviadas por el profesor sobre tus tareas:</p>
+
+        <% if (mensajes && mensajes.length > 0) { %>
+            <% mensajes.forEach(m => { %>
+                <div class="mensaje-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
+                        <span class="badge"><%= m.curso_titulo %></span>
+                        <span style="color: #718096; font-size: 0.85rem;"><%= new Date(m.fecha).toLocaleString('es-AR') %></span>
+                    </div>
+
+                    <h3 style="color: #0b2238; margin: 0.5rem 0;"><%= m.leccion_titulo %></h3>
+
+                    <div style="background: #f7fafc; padding: 0.8rem 1rem; border-radius: 6px; font-size: 0.9rem; color: #4a5568; margin-bottom: 1rem;">
+                        <strong>Tu entrega enviada:</strong><br><%= m.entrega_alumno %>
+                    </div>
+
+                    <div style="background: #ebf8ff; border-left: 4px solid #3182ce; padding: 1rem; border-radius: 4px; color: #2d3748; white-space: pre-wrap;">
+                        <strong style="color: #2b6cb0;">📩 Devolución del Profesor:</strong><br><%= m.mensaje %>
+                    </div>
+                </div>
+            <% }); %>
+        <% } else { %>
+            <p style="color: #718096; background: white; padding: 2rem; border-radius: 8px; text-align: center; border: 1px solid #e2e8f0;">
+                Aún no tienes mensajes o devoluciones del profesor.
+            </p>
+        <% } %>
+    </main>
+
+    <%- include('partials/footer') %>
+
+</body>
+</html>

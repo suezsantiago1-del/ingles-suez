@@ -47,9 +47,6 @@ export const processCheckout = async (req, res) => {
             return res.status(404).send('Curso no encontrado');
         }
 
-        // =========================================================================
-        // MODO PRUEBA / GRATUITO TEMPORAL (Inscripción directa sin duplicados)
-        // =========================================================================
         const compraExistente = await db.get(
             'SELECT id FROM compras WHERE usuario_id = ? AND curso_id = ?',
             [usuarioId, curso.id]
@@ -63,63 +60,6 @@ export const processCheckout = async (req, res) => {
         }
 
         return res.redirect(`/classroom/${curso.id}`);
-
-        /* 
-        // =========================================================================
-        // MODO PRODUCCIÓN (MERCADO PAGO) - Descomentar cuando quieras volver a cobrar:
-        // =========================================================================
-
-        if (!process.env.MP_ACCESS_TOKEN || process.env.MP_ACCESS_TOKEN.trim().length < 10) {
-            return res.send(`
-                <div style="font-family: sans-serif; padding: 2rem; max-width: 600px; margin: 4rem auto; background: #fff5f5; border: 1px solid #feb2b2; border-radius: 8px;">
-                    <h2 style="color: #c53030;">Error: Falta el Token de Mercado Pago</h2>
-                    <p>El archivo <code>.env</code> no contiene un <code>MP_ACCESS_TOKEN</code> válido.</p>
-                    <a href="/course/${id}">Volver al curso</a>
-                </div>
-            `);
-        }
-
-        const preference = new Preference(client);
-
-        const response = await preference.create({
-            body: {
-                items: [
-                    {
-                        id: String(curso.id),
-                        title: String(curso.titulo),
-                        unit_price: Number(curso.precio),
-                        quantity: 1,
-                        currency_id: 'ARS'
-                    }
-                ],
-                payer: {
-                    name: String(req.session.user.nombre),
-                    email: String(req.session.user.email)
-                },
-                back_urls: {
-                    success: `http://localhost:3000/payment/success?cursoId=${curso.id}`,
-                    failure: `http://localhost:3000/payment/failure?cursoId=${curso.id}`,
-                    pending: `http://localhost:3000/payment/pending?cursoId=${curso.id}`
-                },
-                external_reference: `USER_${usuarioId}_COURSE_${curso.id}`
-            }
-        });
-
-        const redirectUrl = response.init_point || response.sandbox_init_point;
-
-        if (redirectUrl) {
-            return res.redirect(redirectUrl);
-        } else {
-            return res.send(`
-                <div style="font-family: sans-serif; padding: 2rem; max-width: 600px; margin: 4rem auto; background: #fffaf0; border: 1px solid #fbd38d; border-radius: 8px;">
-                    <h2 style="color: #c05621;">Respuesta inesperada de Mercado Pago</h2>
-                    <pre style="background: #edf2f7; padding: 1rem; border-radius: 4px;">${JSON.stringify(response, null, 2)}</pre>
-                    <a href="/course/${id}">Volver al curso</a>
-                </div>
-            `);
-        }
-        */
-
     } catch (error) {
         console.error('Error al procesar la inscripción:', error);
         return res.redirect(`/course/${id}`);
@@ -201,7 +141,6 @@ export const renderClassroom = async (req, res) => {
     try {
         const db = await dbPromise;
 
-        // Verificar inscripción
         const compra = await db.get(
             'SELECT id FROM compras WHERE usuario_id = ? AND curso_id = ?',
             [usuarioId, cursoId]
@@ -277,22 +216,106 @@ export const renderPanelProfesor = async (req, res) => {
         const entregas = await db.all(`
             SELECT 
                 e.id,
+                e.usuario_id,
                 e.contenido,
                 e.fecha,
                 u.nombre AS usuario_nombre,
                 u.email AS usuario_email,
                 c.titulo AS curso_titulo,
-                l.titulo AS leccion_titulo
+                l.titulo AS leccion_titulo,
+                d.mensaje AS devolucion_mensaje,
+                d.fecha AS devolucion_fecha
             FROM entregas e
             JOIN usuarios u ON e.usuario_id = u.id
             JOIN cursos c ON e.curso_id = c.id
             JOIN lecciones l ON e.leccion_id = l.id
+            LEFT JOIN devoluciones d ON d.entrega_id = e.id
             ORDER BY e.fecha DESC
         `);
 
         return res.render('teacher-panel', { entregas });
     } catch (error) {
         console.error('Error al obtener las entregas:', error);
+        return res.redirect('/');
+    }
+};
+
+// Guardar devolución/corrección enviada por el profesor
+export const guardarDevolucion = async (req, res) => {
+    if (!req.session.user) {
+        return res.status(401).json({ success: false, message: 'No autenticado' });
+    }
+
+    const EMAIL_PROFESOR = 'suezsantiago1@gmail.com';
+    if (req.session.user.email !== EMAIL_PROFESOR) {
+        return res.status(403).json({ success: false, message: 'Acceso no autorizado' });
+    }
+
+    const { entregaId, usuarioId, mensaje } = req.body;
+
+    if (!entregaId || !usuarioId || !mensaje || mensaje.trim() === '') {
+        return res.status(400).json({ success: false, message: 'Faltan campos requeridos' });
+    }
+
+    try {
+        const db = await dbPromise;
+
+        const devExistente = await db.get('SELECT id FROM devoluciones WHERE entrega_id = ?', [entregaId]);
+
+        if (devExistente) {
+            await db.run(`
+                UPDATE devoluciones 
+                SET mensaje = ?, fecha = CURRENT_TIMESTAMP, leida = FALSE
+                WHERE entrega_id = ?
+            `, [mensaje.trim(), entregaId]);
+        } else {
+            await db.run(`
+                INSERT INTO devoluciones (entrega_id, usuario_id, mensaje)
+                VALUES (?, ?, ?)
+            `, [entregaId, usuarioId, mensaje.trim()]);
+        }
+
+        return res.json({ success: true, message: 'Devolución guardada correctamente' });
+    } catch (error) {
+        console.error('Error al guardar devolución:', error);
+        return res.status(500).json({ success: false, message: 'Error en el servidor al guardar la devolución' });
+    }
+};
+
+// Bandeja de Entrada de Mensajes/Devoluciones para Alumnos
+export const renderMensajesAlumno = async (req, res) => {
+    if (!req.session.user) {
+        return res.redirect('/auth/login');
+    }
+
+    const usuarioId = req.session.user.id;
+
+    try {
+        const db = await dbPromise;
+
+        const mensajes = await db.all(`
+            SELECT 
+                d.id,
+                d.mensaje,
+                d.fecha,
+                d.leida,
+                l.titulo AS leccion_titulo,
+                c.titulo AS curso_titulo,
+                e.contenido AS entrega_alumno
+            FROM devoluciones d
+            JOIN entregas e ON d.entrega_id = e.id
+            JOIN lecciones l ON e.leccion_id = l.id
+            JOIN cursos c ON e.curso_id = c.id
+            WHERE d.usuario_id = ?
+            ORDER BY d.fecha DESC
+        `, [usuarioId]);
+
+        // Marcar mensajes como leídos al entrar a la bandeja
+        await db.run('UPDATE devoluciones SET leida = TRUE WHERE usuario_id = ?', [usuarioId]);
+
+        return res.render('student-messages', { mensajes });
+    } catch (error) {
+        console.error('Error al obtener mensajes del alumno:', error);
         return res.redirect('/');
     }
 };

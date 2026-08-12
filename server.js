@@ -13,7 +13,9 @@ import {
     renderMyCourses,
     renderClassroom,
     guardarEntrega,
-    renderPanelProfesor
+    renderPanelProfesor,
+    guardarDevolucion,
+    renderMensajesAlumno
 } from './src/controllers/courseController.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -42,6 +44,7 @@ app.use(session({
 app.use(async (req, res, next) => {
     res.locals.user = req.session.user || null;
     res.locals.comprasIds = [];
+    res.locals.mensajesNoLeidos = 0;
 
     if (req.session.user) {
         try {
@@ -51,8 +54,15 @@ app.use(async (req, res, next) => {
                 [req.session.user.id]
             );
             res.locals.comprasIds = compras.map(c => c.curso_id);
+
+            // Contar devoluciones no leídas para la badge de notificación
+            const noLeidos = await db.get(
+                'SELECT COUNT(*) as count FROM devoluciones WHERE usuario_id = ? AND leida = FALSE',
+                [req.session.user.id]
+            );
+            res.locals.mensajesNoLeidos = noLeidos ? parseInt(noLeidos.count) : 0;
         } catch (error) {
-            console.error('Error al cargar cursos comprados en middleware:', error);
+            console.error('Error al cargar datos en middleware:', error);
         }
     }
     next();
@@ -108,11 +118,13 @@ app.get('/payment/failure', paymentFailure);
 app.get('/mis-cursos', renderMyCourses);
 app.get('/classroom/:cursoId', renderClassroom);
 
-// Ruta para guardar entregas de tareas del alumno
+// Entregas de alumnos y panel del profesor
 app.post('/entregas', guardarEntrega);
-
-// Panel del profesor para revisar respuestas recibidas
 app.get('/profesor/entregas', renderPanelProfesor);
+app.post('/profesor/devolucion', guardarDevolucion);
+
+// Bandeja de entrada de devoluciones para los alumnos
+app.get('/mis-mensajes', renderMensajesAlumno);
 
 // Manejo de error 404
 app.use((req, res) => {

@@ -75,6 +75,15 @@ const dbPromise = (async () => {
             contenido TEXT NOT NULL,
             fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
+
+        CREATE TABLE IF NOT EXISTS devoluciones (
+            id SERIAL PRIMARY KEY,
+            entrega_id INTEGER UNIQUE NOT NULL,
+            usuario_id INTEGER NOT NULL,
+            mensaje TEXT NOT NULL,
+            leida BOOLEAN DEFAULT FALSE,
+            fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
     `);
 
     await adapter.pgPool.query(`ALTER TABLE cursos ADD COLUMN IF NOT EXISTS imagen_url VARCHAR(255);`);
@@ -262,7 +271,7 @@ const dbPromise = (async () => {
                         <button class="option-btn" onclick="checkAnswer(this, true, 'c3_3', 'Under es debajo y isn\'t anything evita la doble negación.')">( A ) There isn't anything under the table.</button>
                         <button class="option-btn" onclick="checkAnswer(this, false, 'c3_3', 'Anything va con estructura singular en este contexto.')">( B ) There aren't anything on the table.</button>
                         <button class="option-btn" onclick="checkAnswer(this, false, 'c3_3', 'Not nothing es una doble negación incorrecta en inglés.')">( C ) There is not nothing under the table.</button>
-                        <div id="c3_3" style="display:none; padding: 0.8rem; border-radius: 6px; margin-top: 0.5rem; font-size: 0.9rem;"></div>
+                        <div id="f3_3" style="display:none; padding: 0.8rem; border-radius: 6px; margin-top: 0.5rem; font-size: 0.9rem;"></div>
                     </div>
                 </div>
             </section>

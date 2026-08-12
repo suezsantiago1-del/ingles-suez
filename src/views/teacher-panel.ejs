@@ -3,12 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel del Profesor - Entregas de Alumnos</title>
+    <title>Panel del Profesor - INGLÉS SUEZ</title>
     <link rel="stylesheet" href="/css/styles.css">
     <style>
         .container-panel { max-width: 1000px; margin: 3rem auto; padding: 0 1.5rem; }
-        .entrega-card { background: #ffffff; border: 1px solid #cbd5e0; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .entrega-card { background: #ffffff; border: 1px solid #cbd5e0; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.8rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .badge { background: #e2ebd5; color: #184168; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
+        .devolucion-box { margin-top: 1.2rem; background: #f7fafc; padding: 1.2rem; border-radius: 6px; border: 1px solid #e2e8f0; }
+        .devolucion-existente { background: #ebf8ff; border-left: 4px solid #3182ce; padding: 1rem; border-radius: 4px; margin-top: 1rem; }
     </style>
 </head>
 <body>
@@ -16,8 +18,8 @@
     <%- include('partials/header') %>
 
     <main class="container-panel">
-        <h1 style="color: #0b2238;">Entregas de Alumnos</h1>
-        <p style="color: #4a5568;">Revisa las respuestas de los trabajos prácticos de tus estudiantes:</p>
+        <h1 style="color: #0b2238;">Panel del Profesor — Respuestas Recibidas</h1>
+        <p style="color: #4a5568;">Revisa las entregas enviadas por tus alumnos y responde con una devolución personalizada:</p>
 
         <% if (entregas && entregas.length > 0) { %>
             <% entregas.forEach(e => { %>
@@ -35,8 +37,23 @@
                         <span style="color: #4a5568; font-size: 0.9rem; margin-left: 0.5rem;"><strong>Clase:</strong> <%= e.leccion_titulo %></span>
                     </div>
 
-                    <div style="background: #f7fafc; padding: 1rem; border-left: 4px solid #184168; border-radius: 4px; color: #2d3748; white-space: pre-wrap;">
-                        <%= e.contenido %>
+                    <div style="background: #ffffff; padding: 1rem; border-left: 4px solid #184168; border-radius: 4px; color: #2d3748; white-space: pre-wrap; border-top: 1px solid #edf2f7; border-right: 1px solid #edf2f7; border-bottom: 1px solid #edf2f7;">
+                        <strong>Respuesta del Alumno:</strong><br><%= e.contenido %>
+                    </div>
+
+                    <% if (e.devolucion_mensaje) { %>
+                        <div class="devolucion-existente">
+                            <strong style="color: #2b6cb0;">✍️ Tu Devolución Enviada (<%= new Date(e.devolucion_fecha).toLocaleString('es-AR') %>):</strong>
+                            <p style="margin: 0.5rem 0 0 0; color: #2d3748; white-space: pre-wrap;"><%= e.devolucion_mensaje %></p>
+                        </div>
+                    <% } %>
+
+                    <div class="devolucion-box">
+                        <h4 style="margin-top: 0; color: #0b2238;"><%= e.devolucion_mensaje ? 'Editar Devolución' : 'Enviar Devolución al Alumno' %></h4>
+                        <textarea id="dev-text-<%= e.id %>" placeholder="Escribe aquí tus correcciones o comentarios para el alumno..." style="width: 100%; height: 90px; padding: 0.7rem; border: 1px solid #cbd5e0; border-radius: 6px; font-family: inherit; font-size: 0.95rem; margin-bottom: 0.8rem;"><%= e.devolucion_mensaje || '' %></textarea>
+                        <button type="button" onclick="enviarDevolucion(<%= e.id %>, <%= e.usuario_id %>, this)" style="background: #184168; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 6px; font-weight: bold; cursor: pointer;">
+                            <%= e.devolucion_mensaje ? 'Actualizar Devolución' : 'Enviar Devolución' %>
+                        </button>
                     </div>
                 </div>
             <% }); %>
@@ -46,6 +63,46 @@
     </main>
 
     <%- include('partials/footer') %>
+
+    <script>
+        async function enviarDevolucion(entregaId, usuarioId, btn) {
+            const textarea = document.getElementById(`dev-text-${entregaId}`);
+            const mensaje = textarea.value.trim();
+
+            if (!mensaje) {
+                alert('Escribe una devolución antes de enviar.');
+                return;
+            }
+
+            const textoOriginal = btn.innerText;
+            btn.innerText = 'Guardando...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/profesor/devolucion', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ entregaId, usuarioId, mensaje })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('¡Devolución enviada correctamente al alumno!');
+                    window.location.reload();
+                } else {
+                    alert(data.message || 'Error al guardar la devolución.');
+                    btn.innerText = textoOriginal;
+                    btn.disabled = false;
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Error de conexión al enviar la devolución.');
+                btn.innerText = textoOriginal;
+                btn.disabled = false;
+            }
+        }
+    </script>
 
 </body>
 </html>
