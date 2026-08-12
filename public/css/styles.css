@@ -473,3 +473,21 @@ body::after {
 .footer p {
   color: var(--blue-light);
 }
+/* Eliminar bordes blancos de toda la página */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-border;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    overflow-x: hidden;
+}
+
+/* Forzar que las fuentes del sitio se apliquen a los inputs y botones */
+input, button, select, textarea {
+    font-family: inherit;
+}

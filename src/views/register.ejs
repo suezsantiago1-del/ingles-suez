@@ -1,37 +1,37 @@
 <%- include('partials/header') %>
 
-<main style="max-width: 460px; margin: 60px auto; padding: 32px; background: #ffffff; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); font-family: system-ui, -apple-system, sans-serif;">
-    <h2 style="margin-bottom: 8px; color: #0f2537; text-align: center; font-size: 1.6rem; font-weight: 700;">Crear Cuenta en ingles.suez</h2>
-    <p style="margin-bottom: 24px; color: #666; text-align: center; font-size: 0.95rem;">Regístrate para acceder a todos los cursos.</p>
+<main style="max-width: 460px; margin: 60px auto; padding: 32px; background: #ffffff; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); font-family: 'GFS Didot', serif;">
+    <h2 style="margin-bottom: 8px; color: #0f2537; text-align: center; font-size: 1.8rem; font-weight: 400; font-family: 'Tenor Sans', sans-serif; letter-spacing: 0.5px;">Crear Cuenta en ingles.suez</h2>
+    <p style="margin-bottom: 24px; color: #666; text-align: center; font-size: 1rem; font-family: 'GFS Didot', serif;">Regístrate para acceder a todos los cursos.</p>
 
     <form action="/auth/register" method="POST" style="display: flex; flex-direction: column; gap: 18px;">
         <div style="display: flex; flex-direction: column; gap: 6px;">
-            <label style="font-weight: 600; font-size: 0.9rem; color: #333;">Nombre Completo</label>
-            <input type="text" name="nombre" placeholder="Ej. Suez" required style="padding: 11px 14px; border: 1px solid #ccc; border-radius: 8px; font-size: 0.95rem; outline: none;">
+            <label style="font-size: 0.95rem; color: #333; font-family: 'GFS Didot', serif;">Nombre Completo</label>
+            <input type="text" name="nombre" placeholder="Ej. Suez" required style="padding: 11px 14px; border: 1px solid #ccc; border-radius: 8px; font-size: 0.95rem; outline: none; font-family: 'GFS Didot', serif;">
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 6px;">
-            <label style="font-weight: 600; font-size: 0.9rem; color: #333;">Correo Electrónico</label>
-            <input type="email" name="email" placeholder="tu@email.com" required style="padding: 11px 14px; border: 1px solid #ccc; border-radius: 8px; font-size: 0.95rem; outline: none;">
+            <label style="font-size: 0.95rem; color: #333; font-family: 'GFS Didot', serif;">Correo Electrónico</label>
+            <input type="email" name="email" placeholder="tu@email.com" required style="padding: 11px 14px; border: 1px solid #ccc; border-radius: 8px; font-size: 0.95rem; outline: none; font-family: 'GFS Didot', serif;">
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 6px;">
-            <label style="font-weight: 600; font-size: 0.9rem; color: #333;">Contraseña</label>
-            <input type="password" name="password" placeholder="Mínimo 6 caracteres" required style="padding: 11px 14px; border: 1px solid #ccc; border-radius: 8px; font-size: 0.95rem; outline: none;">
+            <label style="font-size: 0.95rem; color: #333; font-family: 'GFS Didot', serif;">Contraseña</label>
+            <input type="password" name="password" placeholder="Mínimo 6 caracteres" required style="padding: 11px 14px; border: 1px solid #ccc; border-radius: 8px; font-size: 0.95rem; outline: none; font-family: 'GFS Didot', serif;">
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 6px;">
-            <label style="font-weight: 600; font-size: 0.9rem; color: #333;">Confirmar Contraseña</label>
-            <input type="password" name="confirmPassword" placeholder="Repite tu contraseña" required style="padding: 11px 14px; border: 1px solid #ccc; border-radius: 8px; font-size: 0.95rem; outline: none;">
+            <label style="font-size: 0.95rem; color: #333; font-family: 'GFS Didot', serif;">Confirmar Contraseña</label>
+            <input type="password" name="confirmPassword" placeholder="Repite tu contraseña" required style="padding: 11px 14px; border: 1px solid #ccc; border-radius: 8px; font-size: 0.95rem; outline: none; font-family: 'GFS Didot', serif;">
         </div>
 
-        <button type="submit" style="margin-top: 8px; padding: 12px; background: #0f2537; color: #ffffff; border: none; border-radius: 8px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: background 0.2s;">
+        <button type="submit" style="margin-top: 8px; padding: 12px; background: #0f2537; color: #ffffff; border: none; border-radius: 8px; font-size: 1.05rem; cursor: pointer; transition: background 0.2s; font-family: 'Tenor Sans', sans-serif; letter-spacing: 0.5px;">
             Registrarme
         </button>
     </form>
 
-    <p style="margin-top: 24px; text-align: center; font-size: 0.9rem; color: #666;">
-        ¿Ya tienes cuenta? <a href="/login" style="color: #0f2537; font-weight: 700; text-decoration: underline;">Inicia sesión aquí</a>
+    <p style="margin-top: 24px; text-align: center; font-size: 0.95rem; color: #666; font-family: 'GFS Didot', serif;">
+        ¿Ya tienes cuenta? <a href="/login" style="color: #0f2537; font-weight: bold; text-decoration: underline; font-family: 'Tenor Sans', sans-serif;">Inicia sesión aquí</a>
     </p>
 </main>
 
