@@ -14,7 +14,9 @@ export const processLogin = async (req, res) => {
 
     try {
         const db = await dbPromise;
-        const usuario = await db.get('SELECT * FROM usuarios WHERE LOWER(email) = ?', [cleanEmail]);
+
+        // Buscamos al usuario de forma segura
+        const usuario = await db.get('SELECT * FROM usuarios WHERE LOWER(email) = LOWER(?)', [cleanEmail]);
 
         if (!usuario) {
             return res.render('login', { error: 'Correo electrónico o contraseña incorrectos.' });
@@ -25,10 +27,11 @@ export const processLogin = async (req, res) => {
             return res.render('login', { error: 'Correo electrónico o contraseña incorrectos.' });
         }
 
+        // CORRECCIÓN DE COOKIE: Evita asignar "expires = false" para no romper express-session
         if (remember) {
             req.session.cookie.maxAge = 1000 * 60 * 60 * 24 * 30; // 30 días
         } else {
-            req.session.cookie.expires = false;
+            req.session.cookie.maxAge = 1000 * 60 * 60 * 24; // 1 día por defecto
         }
 
         req.session.user = {
@@ -37,18 +40,18 @@ export const processLogin = async (req, res) => {
             email: usuario.email
         };
 
-        // Forzar el guardado explícito de la sesión antes de redirigir
-        req.session.save((err) => {
+        // Forzar guardado explícito
+        return req.session.save((err) => {
             if (err) {
                 console.error('Error al guardar la sesión:', err);
-                return res.render('login', { error: 'Error al iniciar sesión. Intente nuevamente.' });
+                return res.render('login', { error: 'Error al guardar la sesión. Intente nuevamente.' });
             }
             return res.redirect('/');
         });
 
     } catch (error) {
-        console.error('Error en el login:', error);
-        return res.render('login', { error: 'Ocurrió un error inesperado.' });
+        console.error('Error detallado en el login:', error);
+        return res.render('login', { error: 'Ocurrió un error inesperado al iniciar sesión.' });
     }
 };
 
@@ -65,7 +68,7 @@ export const processRegister = async (req, res) => {
 
     try {
         const db = await dbPromise;
-        const usuarioExistente = await db.get('SELECT id FROM usuarios WHERE LOWER(email) = ?', [cleanEmail]);
+        const usuarioExistente = await db.get('SELECT id FROM usuarios WHERE LOWER(email) = LOWER(?)', [cleanEmail]);
 
         if (usuarioExistente) {
             return res.render('register', { error: 'El correo electrónico ya está registrado.' });
@@ -73,7 +76,6 @@ export const processRegister = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Agregado RETURNING id para compatibilidad con PostgreSQL
         const result = await db.run(
             'INSERT INTO usuarios (nombre, email, password) VALUES (?, ?, ?) RETURNING id',
             [nombre.trim(), cleanEmail, hashedPassword]
@@ -85,7 +87,7 @@ export const processRegister = async (req, res) => {
             email: cleanEmail
         };
 
-        req.session.save((err) => {
+        return req.session.save((err) => {
             if (err) {
                 console.error('Error al guardar sesión tras registro:', err);
                 return res.render('register', { error: 'Ocurrió un error al iniciar sesión automática.' });
@@ -94,7 +96,7 @@ export const processRegister = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error en el registro:', error);
+        console.error('Error detallado en el registro:', error);
         return res.render('register', { error: 'Ocurrió un error al crear la cuenta.' });
     }
 };
@@ -104,7 +106,7 @@ export const logout = (req, res) => {
         if (err) {
             console.error('Error cerrando sesión:', err);
         }
-        res.clearCookie('connect.sid'); // Limpia la cookie del navegador
+        res.clearCookie('connect.sid');
         return res.redirect('/');
     });
 };
