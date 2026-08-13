@@ -461,7 +461,6 @@ export const descargarCertificado = async (req, res) => {
             return res.status(403).send('<h1>Aún no has aprobado el examen final (Clase 10) para descargar este certificado.</h1>');
         }
 
-        // Obtener el usuario activo
         const usuario = await db.get('SELECT nombre FROM usuarios WHERE id = ?', [usuarioId]);
 
         const pdfPath = path.join(__dirname, '../../public/certificados/plantilla.pdf');
@@ -478,47 +477,44 @@ export const descargarCertificado = async (req, res) => {
 
         const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
-        // --- 1. TAPAR " [NOMBRE Y APELLIDO DEL ALUMNO] " ---
-        // Dibujamos parche en el color de fondo gris (#f4f7f6 / rgb 0.95, 0.96, 0.96)
+        // --- 1. TAPAR "[NOMBRE Y APELLIDO DEL ALUMNO]" CON RECTÁNGULO BLANCO PURO ---
         firstPage.drawRectangle({
-            x: 180,
-            y: 350,
-            width: 480,
-            height: 32,
-            color: rgb(0.95, 0.96, 0.96)
+            x: 200,
+            y: 285,
+            width: 440,
+            height: 28,
+            color: rgb(1, 1, 1) // Blanco #ffffff
         });
 
-        // --- 2. ESCRIBIR EL NOMBRE REAL DEL ALUMNO CENTRADO ---
+        // --- 2. ESCRIBIR EL NOMBRE REAL DEL ALUMNO EN EL LUGAR EXACTO ---
         const nombreTexto = usuario.nombre.toUpperCase();
-        const sizeNombre = 22;
+        const sizeNombre = 20;
         const widthNombre = fontBold.widthOfTextAtSize(nombreTexto, sizeNombre);
 
         firstPage.drawText(nombreTexto, {
             x: (firstPage.getWidth() - widthNombre) / 2,
-            y: 358,
+            y: 292,
             size: sizeNombre,
             font: fontBold,
             color: rgb(0.04, 0.13, 0.22) // Azul #0b2238
         });
 
-        // --- 3. RELLENAR DÍA Y MES EN LA FECHA ---
+        // --- 3. RELLENAR DÍA Y MES SOBRE LAS LÍNEAS DE LA FECHA ---
         const fechaObj = new Date(devolucionExamen.fecha);
         const dia = fechaObj.getDate().toString();
         const mes = fechaObj.toLocaleDateString('es-AR', { month: 'long' }).toUpperCase();
 
-        // Rellenar día en las rayitas del día
         firstPage.drawText(dia, {
-            x: 278,
-            y: 222,
+            x: 382,
+            y: 180,
             size: 11,
             font: fontBold,
             color: rgb(0.04, 0.13, 0.22)
         });
 
-        // Rellenar mes en las rayitas del mes
         firstPage.drawText(mes, {
-            x: 410,
-            y: 222,
+            x: 485,
+            y: 180,
             size: 11,
             font: fontBold,
             color: rgb(0.04, 0.13, 0.22)
