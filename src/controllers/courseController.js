@@ -165,24 +165,27 @@ export const renderClassroom = async (req, res) => {
             return res.send('<h1>Este curso aún no tiene lecciones cargadas.</h1>');
         }
 
-        // 2. Obtener entregas más recientes del alumno con sus devoluciones y notas
+        // 2. Consulta con subconsulta para traer ÚNICAMENTE la entrega MÁS RECIENTE de cada lección
         const entregasAlumno = await db.all(`
-            SELECT e.leccion_id, d.nota 
+            SELECT e.leccion_id, d.nota, e.id as entrega_id
             FROM entregas e
             LEFT JOIN devoluciones d ON d.entrega_id = e.id
             WHERE e.usuario_id = ? AND e.curso_id = ?
-            ORDER BY e.fecha DESC
-        `, [usuarioId, cursoId]);
+              AND e.id IN (
+                  SELECT MAX(id) 
+                  FROM entregas 
+                  WHERE usuario_id = ? AND curso_id = ? 
+                  GROUP BY leccion_id
+              )
+        `, [usuarioId, cursoId, usuarioId, cursoId]);
 
-        // Mapa auxiliar para asociar la última lección entregada -> nota obtenida
+        // Mapa para asociar leccion_id -> nota de la última entrega
         const mapaEntregas = new Map();
         entregasAlumno.forEach(e => {
-            if (!mapaEntregas.has(e.leccion_id)) {
-                mapaEntregas.set(e.leccion_id, e.nota);
-            }
+            mapaEntregas.set(e.leccion_id, e.nota);
         });
 
-        // 3. Verificar si TODAS las lecciones previas a la Clase 10 están APROBADAS (nota >= 6)
+        // 3. Verificar si TODAS las lecciones previas a la Clase 10 están APROBADAS (nota >= 6) en su última entrega
         const leccionesPreviasExamen = lecciones.filter(l => l.orden < 10);
         const todasPreviasAprobadas = leccionesPreviasExamen.length > 0 && leccionesPreviasExamen.every(l => {
             if (!mapaEntregas.has(l.id)) return false; 
@@ -190,8 +193,8 @@ export const renderClassroom = async (req, res) => {
             return nota !== null && nota !== undefined && parseInt(nota, 10) >= 6;
         });
 
-        // 4. Determinar el estado de desbloqueo cronológico
-        let leccionAnteriorAprobadaOEntregada = true;
+        // 4. Determinar el estado de desbloqueo
+        let leccionAnteriorEntregada = true;
         const leccionesConEstado = lecciones.map((leccion, index) => {
             const entregada = mapaEntregas.has(leccion.id);
             const nota = mapaEntregas.get(leccion.id);
@@ -202,10 +205,10 @@ export const renderClassroom = async (req, res) => {
             } else if (index === 0) {
                 desbloqueada = true;
             } else {
-                desbloqueada = leccionAnteriorAprobadaOEntregada;
+                desbloqueada = leccionAnteriorEntregada;
             }
 
-            leccionAnteriorAprobadaOEntregada = entregada;
+            leccionAnteriorEntregada = entregada;
 
             return {
                 ...leccion,
@@ -256,22 +259,23 @@ export const guardarEntrega = async (req, res) => {
     try {
         const db = await dbPromise;
 
-        // Verificar si la lección ya fue APROBADA previamente
-        const entregaAprobada = await db.get(`
+        // Verificar si la ÚLTIMA entrega de esta lección ya fue APROBADA
+        const ultimaEntrega = await db.get(`
             SELECT d.nota 
             FROM entregas e
-            JOIN devoluciones d ON d.entrega_id = e.id
-            WHERE e.usuario_id = ? AND e.leccion_id = ? AND d.nota >= 6
+            LEFT JOIN devoluciones d ON d.entrega_id = e.id
+            WHERE e.usuario_id = ? AND e.leccion_id = ?
+            ORDER BY e.id DESC 
+            LIMIT 1
         `, [usuarioId, leccionId]);
 
-        if (entregaAprobada) {
+        if (ultimaEntrega && ultimaEntrega.nota !== null && parseInt(ultimaEntrega.nota, 10) >= 6) {
             return res.status(400).json({ 
                 success: false, 
                 message: 'Esta clase ya se encuentra aprobada y no requiere nuevos envíos.' 
             });
         }
 
-        // Insertar la nueva entrega (sirve tanto para primer envío como para rehacer)
         await db.run(`
             INSERT INTO entregas (usuario_id, curso_id, leccion_id, contenido)
             VALUES (?, ?, ?, ?)
@@ -299,7 +303,6 @@ export const renderPanelProfesor = async (req, res) => {
     try {
         const db = await dbPromise;
 
-        // Filtra para traer únicamente entregas que no tienen devolución o no tienen nota asignada
         const entregas = await db.all(`
             SELECT 
                 e.id,
@@ -434,6 +437,8 @@ export const descargarCertificado = async (req, res) => {
             FROM entregas e
             JOIN devoluciones d ON d.entrega_id = e.id
             WHERE e.usuario_id = ? AND e.leccion_id = ? AND d.nota >= 6
+            ORDER BY e.id DESC
+            LIMIT 1
         `, [usuarioId, leccion10.id]);
 
         if (!devolucionExamen) {
