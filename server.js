@@ -24,6 +24,10 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// OBLIGATORIO para plataformas en la nube (Render, Railway, Heroku, Vercel)
+// Permite que Express confíe en las cookies enviadas a través del Proxy HTTPS
+app.set('trust proxy', 1);
+
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'src/views'));
 
@@ -37,7 +41,11 @@ app.use(session({
     secret: process.env.SESSION_SECRET || 'clave_secreta_suez',
     resave: false,
     saveUninitialized: false,
-    cookie: { maxAge: 1000 * 60 * 60 * 24 }
+    cookie: { 
+        maxAge: 1000 * 60 * 60 * 24, // 1 día
+        secure: process.env.NODE_ENV === 'production', // Seguro en producción
+        sameSite: 'lax'
+    }
 }));
 
 // Middleware de variables locales globales
