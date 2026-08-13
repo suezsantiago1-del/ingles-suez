@@ -165,45 +165,47 @@ export const renderClassroom = async (req, res) => {
             return res.send('<h1>Este curso aún no tiene lecciones cargadas.</h1>');
         }
 
-        // 2. Obtener entregas del alumno en este curso junto con sus devoluciones y notas
+        // 2. Obtener entregas más recientes del alumno con sus devoluciones y notas
         const entregasAlumno = await db.all(`
             SELECT e.leccion_id, d.nota 
             FROM entregas e
             LEFT JOIN devoluciones d ON d.entrega_id = e.id
             WHERE e.usuario_id = ? AND e.curso_id = ?
+            ORDER BY e.fecha DESC
         `, [usuarioId, cursoId]);
 
-        // Mapa auxiliar para asociar lección ID -> nota
+        // Mapa auxiliar para asociar la última lección entregada -> nota obtenida
         const mapaEntregas = new Map();
         entregasAlumno.forEach(e => {
-            mapaEntregas.set(e.leccion_id, e.nota);
+            if (!mapaEntregas.has(e.leccion_id)) {
+                mapaEntregas.set(e.leccion_id, e.nota);
+            }
         });
 
-        // 3. Verificar si TODAS las lecciones previas a la Clase 10 están entregadas y APROBADAS (nota >= 6)
+        // 3. Verificar si TODAS las lecciones previas a la Clase 10 están APROBADAS (nota >= 6)
         const leccionesPreviasExamen = lecciones.filter(l => l.orden < 10);
         const todasPreviasAprobadas = leccionesPreviasExamen.length > 0 && leccionesPreviasExamen.every(l => {
-            if (!mapaEntregas.has(l.id)) return false; // Falta entregar la tarea
+            if (!mapaEntregas.has(l.id)) return false; 
             const nota = mapaEntregas.get(l.id);
-            return nota !== null && nota !== undefined && parseInt(nota, 10) >= 6; // Corregida y aprobada
+            return nota !== null && nota !== undefined && parseInt(nota, 10) >= 6;
         });
 
         // 4. Determinar el estado de desbloqueo cronológico
-        let leccionAnteriorEntregada = true;
+        let leccionAnteriorAprobadaOEntregada = true;
         const leccionesConEstado = lecciones.map((leccion, index) => {
             const entregada = mapaEntregas.has(leccion.id);
             const nota = mapaEntregas.get(leccion.id);
             let desbloqueada = false;
 
             if (leccion.orden === 10) {
-                // LA CLASE 10 SOLO SE DESBLOQUEA SI TODAS LAS ANTERIORES ESTÁN APROBADAS POR EL PROFESOR
                 desbloqueada = todasPreviasAprobadas;
             } else if (index === 0) {
-                desbloqueada = true; // La Clase 1 siempre está disponible
+                desbloqueada = true;
             } else {
-                desbloqueada = leccionAnteriorEntregada; // Clase 2 a 9 requieren haber enviado la entrega de la lección anterior
+                desbloqueada = leccionAnteriorAprobadaOEntregada;
             }
 
-            leccionAnteriorEntregada = entregada;
+            leccionAnteriorAprobadaOEntregada = entregada;
 
             return {
                 ...leccion,
@@ -213,7 +215,7 @@ export const renderClassroom = async (req, res) => {
             };
         });
 
-        // 5. Determinar la lección activa de forma segura (previene accesos forzados por URL)
+        // 5. Determinar la lección activa
         let leccionActiva = leccionesConEstado[0];
 
         if (leccionId) {
@@ -221,7 +223,6 @@ export const renderClassroom = async (req, res) => {
             if (encontrada && encontrada.desbloqueada) {
                 leccionActiva = encontrada;
             } else {
-                // Si intenta ingresar a una lección bloqueada (incluida la Clase 10), redirige a la última permitida
                 const ultimasDesbloqueadas = leccionesConEstado.filter(l => l.desbloqueada);
                 leccionActiva = ultimasDesbloqueadas[ultimasDesbloqueadas.length - 1];
             }
@@ -255,6 +256,22 @@ export const guardarEntrega = async (req, res) => {
     try {
         const db = await dbPromise;
 
+        // Verificar si la lección ya fue APROBADA previamente
+        const entregaAprobada = await db.get(`
+            SELECT d.nota 
+            FROM entregas e
+            JOIN devoluciones d ON d.entrega_id = e.id
+            WHERE e.usuario_id = ? AND e.leccion_id = ? AND d.nota >= 6
+        `, [usuarioId, leccionId]);
+
+        if (entregaAprobada) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Esta clase ya se encuentra aprobada y no requiere nuevos envíos.' 
+            });
+        }
+
+        // Insertar la nueva entrega (sirve tanto para primer envío como para rehacer)
         await db.run(`
             INSERT INTO entregas (usuario_id, curso_id, leccion_id, contenido)
             VALUES (?, ?, ?, ?)
@@ -267,7 +284,7 @@ export const guardarEntrega = async (req, res) => {
     }
 };
 
-// Obtener el listado de entregas realizadas por los alumnos (EXCLUSIVO PROFESOR)
+// Obtener SOLO entregas PENDIENTES de corrección (EXCLUSIVO PROFESOR)
 export const renderPanelProfesor = async (req, res) => {
     if (!req.session.user) {
         return res.redirect('/auth/login');
@@ -282,6 +299,7 @@ export const renderPanelProfesor = async (req, res) => {
     try {
         const db = await dbPromise;
 
+        // Filtra para traer únicamente entregas que no tienen devolución o no tienen nota asignada
         const entregas = await db.all(`
             SELECT 
                 e.id,
@@ -300,7 +318,8 @@ export const renderPanelProfesor = async (req, res) => {
             JOIN cursos c ON e.curso_id = c.id
             JOIN lecciones l ON e.leccion_id = l.id
             LEFT JOIN devoluciones d ON d.entrega_id = e.id
-            ORDER BY e.fecha DESC
+            WHERE d.id IS NULL OR d.nota IS NULL
+            ORDER BY e.fecha ASC
         `);
 
         return res.render('teacher-panel', { entregas });
@@ -404,14 +423,12 @@ export const descargarCertificado = async (req, res) => {
     try {
         const db = await dbPromise;
 
-        // 1. Obtener la lección 10 del curso
         const leccion10 = await db.get('SELECT id FROM lecciones WHERE curso_id = ? AND orden = 10', [cursoId]);
         
         if (!leccion10) {
             return res.status(404).send('No se encontró la evaluación final.');
         }
 
-        // 2. Verificar que el alumno tenga entrega y devolución con nota >= 6 en la lección 10
         const devolucionExamen = await db.get(`
             SELECT d.nota, d.fecha 
             FROM entregas e
@@ -423,11 +440,9 @@ export const descargarCertificado = async (req, res) => {
             return res.status(403).send('<h1>Aún no has aprobado el examen final (Clase 10) para descargar este certificado.</h1>');
         }
 
-        // 3. Obtener datos del alumno y del curso
         const usuario = await db.get('SELECT nombre FROM usuarios WHERE id = ?', [usuarioId]);
         const curso = await db.get('SELECT titulo FROM cursos WHERE id = ?', [cursoId]);
 
-        // 4. Cargar el PDF Plantilla desde la carpeta public
         const pdfPath = path.join(__dirname, '../../public/certificados/plantilla.pdf');
         
         if (!fs.existsSync(pdfPath)) {
@@ -437,22 +452,19 @@ export const descargarCertificado = async (req, res) => {
         const existingPdfBytes = fs.readFileSync(pdfPath);
         const pdfDoc = await PDFDocument.load(existingPdfBytes);
 
-        // 5. Modificar el PDF (Escribir datos)
         const pages = pdfDoc.getPages();
         const firstPage = pages[0];
         const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
         const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
-        // Nombre del Alumno
         firstPage.drawText(usuario.nombre.toUpperCase(), {
             x: 200,
             y: 320,
             size: 28,
             font: fontBold,
-            color: rgb(0.04, 0.13, 0.22) // Azul #0b2238
+            color: rgb(0.04, 0.13, 0.22)
         });
 
-        // Nombre del Curso
         firstPage.drawText(curso.titulo, {
             x: 200,
             y: 250,
@@ -461,7 +473,6 @@ export const descargarCertificado = async (req, res) => {
             color: rgb(0.1, 0.1, 0.1)
         });
 
-        // Fecha de Emisión
         const fechaAprobacion = new Date(devolucionExamen.fecha).toLocaleDateString('es-AR', {
             day: '2-digit',
             month: 'long',
@@ -476,7 +487,6 @@ export const descargarCertificado = async (req, res) => {
             color: rgb(0.4, 0.4, 0.4)
         });
 
-        // 6. Generar el buffer y enviar para descarga
         const pdfBytes = await pdfDoc.save();
 
         res.setHeader('Content-Type', 'application/pdf');

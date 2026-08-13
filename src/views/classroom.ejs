@@ -122,7 +122,7 @@
         <span style="font-size: 1.2rem;">✅</span>
         <div>
             <strong style="display: block; font-size: 0.95rem;">¡Entregable Registrado!</strong>
-            <span style="font-size: 0.85rem; color: #a4c4de;">Desbloqueando siguiente clase...</span>
+            <span style="font-size: 0.85rem; color: #a4c4de;">Procesando información...</span>
         </div>
     </div>
 
@@ -172,6 +172,36 @@
                 </div>
             <% } %>
 
+            <!-- Estado del Entregable de la Clase Activa -->
+            <% if (leccionActiva) { %>
+                <div style="margin-bottom: 2rem;">
+                    <% if (leccionActiva.nota !== null && leccionActiva.nota !== undefined) { %>
+                        <% if (leccionActiva.nota >= 6) { %>
+                            <!-- CASO 1: APROBADO -->
+                            <div style="background: #f0fff4; border: 1px solid #c6f6d5; padding: 1.2rem; border-radius: 8px; text-align: center;">
+                                <span style="font-size: 1.8rem;">🎉</span>
+                                <h3 style="color: #22543d; margin: 0.3rem 0;">¡Entregable Aprobado!</h3>
+                                <p style="color: #2f855a; margin: 0;">Tu calificación en esta clase es <strong><%= leccionActiva.nota %>/10</strong>. Ya has completado los requerimientos de esta lección.</p>
+                            </div>
+                        <% } else { %>
+                            <!-- CASO 2: REPROBADO / REHACER -->
+                            <div style="background: #fff5f5; border: 1px solid #feb2b2; padding: 1.2rem; border-radius: 8px; margin-bottom: 1rem;">
+                                <span style="font-size: 1.5rem;">⚠️</span>
+                                <h3 style="color: #9b2c2c; margin: 0.3rem 0;">Debes Rehacer el Entregable</h3>
+                                <p style="color: #c53030; margin-bottom: 0.5rem;">Tu nota actual es <strong><%= leccionActiva.nota %>/10</strong>. Revisa las observaciones del profesor en tu sección de <strong><a href="/mis-mensajes" style="color: #2b6cb0; font-weight: bold;">Mis Mensajes</a></strong> y vuelve a enviar tu respuesta abajo.</p>
+                            </div>
+                        <% } %>
+                    <% } else if (leccionActiva.completada) { %>
+                        <!-- CASO 3: ENVIADO Y EN ESPERA DE CORRECCIÓN -->
+                        <div style="background: #feefc3; border: 1px solid #f6e05e; padding: 1rem; border-radius: 8px; text-align: center;">
+                            <span style="font-size: 1.5rem;">⏳</span>
+                            <h4 style="color: #744210; margin: 0.2rem 0;">Entregable Enviado — En Revisión</h4>
+                            <p style="color: #975a16; margin: 0; font-size: 0.9rem;">Tu respuesta fue recibida y está siendo revisada por el profesor.</p>
+                        </div>
+                    <% } %>
+                </div>
+            <% } %>
+
             <!-- Reproductor de Video -->
             <div class="video-container">
                 <% if (leccionActiva.video_url) { %>
@@ -201,7 +231,6 @@
             const buttons = container.querySelectorAll('.option-btn');
             const feedbackBox = document.getElementById(feedbackId);
 
-            // Deshabilitar todos los botones de la pregunta
             buttons.forEach(btn => btn.disabled = true);
 
             if (isCorrect) {
@@ -235,7 +264,6 @@
             const leccionId = "<%= leccionActiva ? leccionActiva.id : '' %>";
             const contenido = textarea ? textarea.value.trim() : '';
 
-            // Estado visual temporal durante el envío
             const originalText = btn.innerText;
             btn.innerText = 'Enviando...';
             btn.disabled = true;
@@ -250,22 +278,18 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    // Cambiar estado permanente del botón
                     btn.innerText = 'Enviado';
                     btn.style.background = '#718096';
                     btn.style.cursor = 'not-allowed';
 
-                    // Deshabilitar la caja de texto
                     if (textarea) {
                         textarea.disabled = true;
                         textarea.style.backgroundColor = '#edf2f7';
                     }
 
-                    // Lanzar notificación push (toast)
                     const toast = document.getElementById('toast-notification');
                     toast.classList.add('show');
                     
-                    // Recargar la página automáticamente para actualizar desbloqueos / certificados
                     setTimeout(() => {
                         window.location.reload();
                     }, 1500);
@@ -282,15 +306,52 @@
             }
         }
 
-        // Vincular la función automáticamente a los botones de revisión al cargar la página
+        // Vincular funciones y bloqueos según el estado de la entrega
         document.addEventListener('DOMContentLoaded', () => {
             const buttons = document.querySelectorAll('button');
             buttons.forEach(btn => {
                 const text = btn.innerText.toUpperCase();
-                if (text.includes('ENVIAR A REVISIÓN') || text.includes('ENVIAR A REVISIÓN MANUAL')) {
+                if (text.includes('ENVIAR A REVISIÓN') || text.includes('ENVIAR A REVISIÓN MANUAL') || text.includes('REHACER')) {
                     btn.setAttribute('onclick', 'submitRevision(this)');
                 }
             });
+
+            // Lógica de deshabilitado dinámico
+            const notaRaw = "<%= (leccionActiva && leccionActiva.nota !== null && leccionActiva.nota !== undefined) ? leccionActiva.nota : '' %>";
+            const nota = notaRaw !== "" ? parseInt(notaRaw, 10) : -1;
+            const estaEnviadaSinNota = <%= (leccionActiva && leccionActiva.completada && (leccionActiva.nota === null || leccionActiva.nota === undefined)) ? 'true' : 'false' %>;
+
+            // Bloquear formulario si APROBÓ (nota >= 6) o si está EN REVISIÓN
+            if (nota >= 6 || estaEnviadaSinNota) {
+                const textareas = document.querySelectorAll('.leccion-body textarea');
+                const btnEnviars = document.querySelectorAll('.leccion-body button');
+
+                textareas.forEach(t => {
+                    t.disabled = true;
+                    t.placeholder = nota >= 6 ? "Entregable Aprobado." : "Entrega enviada en proceso de revisión...";
+                    t.style.backgroundColor = "#edf2f7";
+                });
+
+                btnEnviars.forEach(btn => {
+                    const text = btn.innerText.toUpperCase();
+                    if (text.includes('ENVIAR')) {
+                        btn.disabled = true;
+                        btn.innerText = nota >= 6 ? '✔ APROBADO' : '⏳ EN REVISIÓN';
+                        btn.style.background = nota >= 6 ? '#38a169' : '#718096';
+                        btn.style.cursor = 'not-allowed';
+                    }
+                });
+            } else if (nota !== -1 && nota < 6) {
+                // Si REPROBÓ (< 6), habilitar botón como "REHACER ENTREGABLE"
+                const btnEnviars = document.querySelectorAll('.leccion-body button');
+                btnEnviars.forEach(btn => {
+                    const text = btn.innerText.toUpperCase();
+                    if (text.includes('ENVIAR')) {
+                        btn.innerText = '🔄 REHACER Y ENVIAR ENTREGABLE';
+                        btn.style.background = '#e53e3e';
+                    }
+                });
+            }
         });
     </script>
 </body>
