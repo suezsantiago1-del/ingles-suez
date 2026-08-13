@@ -6,78 +6,197 @@
     <title>Panel del Profesor - INGLÉS SUEZ</title>
     <link rel="stylesheet" href="/css/styles.css">
     <style>
-        .container-panel { max-width: 1000px; margin: 3rem auto; padding: 0 1.5rem; }
-        .entrega-card { background: #ffffff; border: 1px solid #cbd5e0; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.8rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        body { background-color: #f4f7f6; margin: 0; font-family: system-ui, -apple-system, sans-serif; }
+        .teacher-layout { display: flex; height: calc(100vh - 80px); max-width: 1400px; margin: 0 auto; background: #ffffff; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        
+        /* Panel Lateral (Sidebar de Alumnos) */
+        .sidebar-alumnos { width: 340px; background: #ffffff; border-right: 1px solid #cbd5e0; flex-shrink: 0; display: flex; flex-direction: column; }
+        .sidebar-header { padding: 1.2rem 1.5rem; background: #0b2238; color: #ffffff; }
+        .sidebar-header h2 { margin: 0; font-size: 1.1rem; }
+        .lista-alumnos { overflow-y: auto; flex-grow: 1; }
+        
+        .alumno-item { padding: 1rem 1.2rem; border-bottom: 1px solid #edf2f7; cursor: pointer; transition: background 0.2s; display: flex; justify-content: space-between; align-items: center; }
+        .alumno-item:hover { background: #f8fafc; }
+        .alumno-item.active { background: #ebf8ff; border-left: 4px solid #3182ce; }
+        .alumno-nombre { font-weight: bold; color: #0b2238; display: block; font-size: 0.95rem; }
+        .alumno-email { font-size: 0.8rem; color: #718096; }
+        .badge-pendiente { background: #e53e3e; color: #ffffff; border-radius: 12px; padding: 0.15rem 0.5rem; font-size: 0.75rem; font-weight: bold; }
+
+        /* Área Central del Chat / Historial */
+        .chat-container { flex-grow: 1; display: flex; flex-direction: column; background: #f8fafc; }
+        .chat-header { padding: 1.2rem 2rem; background: #ffffff; border-bottom: 1px solid #cbd5e0; }
+        .chat-body { flex-grow: 1; padding: 2rem; overflow-y: auto; }
+        .chat-placeholder { text-align: center; color: #a0aec0; margin-top: 6rem; }
+
+        /* Tarjetas de Entregas */
+        .entrega-card { background: #ffffff; border: 1px solid #cbd5e0; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.8rem; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
         .badge { background: #e2ebd5; color: #184168; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
         .devolucion-box { margin-top: 1.2rem; background: #f7fafc; padding: 1.2rem; border-radius: 6px; border: 1px solid #e2e8f0; }
         .devolucion-existente { background: #ebf8ff; border-left: 4px solid #3182ce; padding: 1rem; border-radius: 4px; margin-top: 1rem; }
         .nota-badge { background: #2b6cb0; color: #ffffff; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.85rem; font-weight: bold; margin-left: 0.5rem; }
+
+        @media (max-width: 850px) {
+            .teacher-layout { flex-direction: column; height: auto; }
+            .sidebar-alumnos { width: 100%; height: 250px; }
+        }
     </style>
 </head>
 <body>
 
     <%- include('partials/header') %>
 
-    <main class="container-panel">
-        <h1 style="color: #0b2238;">Panel del Profesor — Respuestas Recibidas</h1>
-        <p style="color: #4a5568;">Revisa las entregas enviadas por tus alumnos y responde con una devolución personalizada y su calificación:</p>
+    <div class="teacher-layout">
+        <!-- Sidebar: Lista Agrupada por Alumno -->
+        <aside class="sidebar-alumnos">
+            <div class="sidebar-header">
+                <h2>💬 Chats por Alumno</h2>
+            </div>
+            <div class="lista-alumnos" id="lista-alumnos">
+                <!-- Se poblará dinámicamente -->
+            </div>
+        </aside>
 
-        <% if (entregas && entregas.length > 0) { %>
-            <% entregas.forEach(e => { %>
-                <div class="entrega-card">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
-                        <div>
-                            <strong style="color: #0b2238; font-size: 1.1rem;"><%= e.usuario_nombre %></strong> 
-                            <span style="color: #718096; font-size: 0.85rem;">(<%= e.usuario_email %>)</span>
-                        </div>
-                        <span style="color: #718096; font-size: 0.85rem;"><%= new Date(e.fecha).toLocaleString('es-AR') %></span>
-                    </div>
+        <!-- Área Principal de Conversación -->
+        <main class="chat-container">
+            <div class="chat-header" id="chat-header" style="display: none;">
+                <h3 id="chat-alumno-nombre" style="margin: 0; color: #0b2238;"></h3>
+                <span id="chat-alumno-email" style="color: #718096; font-size: 0.85rem;"></span>
+            </div>
 
-                    <div style="margin-bottom: 0.8rem;">
-                        <span class="badge"><%= e.curso_titulo %></span>
-                        <span style="color: #4a5568; font-size: 0.9rem; margin-left: 0.5rem;"><strong>Clase:</strong> <%= e.leccion_titulo %></span>
-                    </div>
-
-                    <div style="background: #ffffff; padding: 1rem; border-left: 4px solid #184168; border-radius: 4px; color: #2d3748; white-space: pre-wrap; border-top: 1px solid #edf2f7; border-right: 1px solid #edf2f7; border-bottom: 1px solid #edf2f7;">
-                        <strong>Respuesta del Alumno:</strong><br><%= e.contenido %>
-                    </div>
-
-                    <% if (e.devolucion_mensaje) { %>
-                        <div class="devolucion-existente">
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <strong style="color: #2b6cb0;">✍️ Tu Devolución Enviada (<%= new Date(e.devolucion_fecha).toLocaleString('es-AR') %>):</strong>
-                                <% if (e.devolucion_nota !== null && e.devolucion_nota !== undefined) { %>
-                                    <span class="nota-badge">Nota: <%= e.devolucion_nota %>/10</span>
-                                <% } %>
-                            </div>
-                            <p style="margin: 0.5rem 0 0 0; color: #2d3748; white-space: pre-wrap;"><%= e.devolucion_mensaje %></p>
-                        </div>
-                    <% } %>
-
-                    <div class="devolucion-box">
-                        <h4 style="margin-top: 0; color: #0b2238;"><%= e.devolucion_mensaje ? 'Editar Devolución' : 'Enviar Devolución al Alumno' %></h4>
-                        
-                        <textarea id="dev-text-<%= e.id %>" placeholder="Escribe aquí tus correcciones o comentarios para el alumno..." style="width: 100%; height: 90px; padding: 0.7rem; border: 1px solid #cbd5e0; border-radius: 6px; font-family: inherit; font-size: 0.95rem; margin-bottom: 0.8rem;"><%= e.devolucion_mensaje || '' %></textarea>
-
-                        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.8rem;">
-                            <label for="dev-nota-<%= e.id %>" style="color: #2d3748; font-weight: bold; font-size: 0.9rem;">Calificación (1 - 10):</label>
-                            <input type="number" id="dev-nota-<%= e.id %>" min="1" max="10" placeholder="Ej: 8" value="<%= (e.devolucion_nota !== null && e.devolucion_nota !== undefined) ? e.devolucion_nota : '' %>" style="width: 80px; padding: 0.4rem 0.6rem; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 0.95rem;">
-                        </div>
-
-                        <button type="button" onclick="enviarDevolucion(<%= e.id %>, <%= e.usuario_id %>, this)" style="background: #184168; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 6px; font-weight: bold; cursor: pointer;">
-                            <%= e.devolucion_mensaje ? 'Actualizar Devolución' : 'Enviar Devolución' %>
-                        </button>
-                    </div>
+            <div class="chat-body" id="chat-body">
+                <div class="chat-placeholder" id="chat-placeholder">
+                    <div style="font-size: 3rem; margin-bottom: 0.5rem;">👨‍🏫</div>
+                    <h3 style="color: #0b2238; margin-top: 0;">Panel de Control del Profesor</h3>
+                    <p>Selecciona un alumno de la lista lateral para ver el historial de sus entregas y responderle.</p>
                 </div>
-            <% }); %>
-        <% } else { %>
-            <p style="color: #718096;">Aún no hay entregas registradas por parte de los alumnos.</p>
-        <% } %>
-    </main>
+
+                <div id="contenedor-entregas-alumno" style="display: none;"></div>
+            </div>
+        </main>
+    </div>
 
     <%- include('partials/footer') %>
 
     <script>
+        // Array global recibido de EJS
+        const entregasGlobales = <%- JSON.stringify(entregas || []) %>;
+
+        // Agrupar entregas por usuario_id
+        const mapaAlumnos = new Map();
+
+        entregasGlobales.forEach(e => {
+            if (!mapaAlumnos.has(e.usuario_id)) {
+                mapaAlumnos.set(e.usuario_id, {
+                    id: e.usuario_id,
+                    nombre: e.usuario_nombre,
+                    email: e.usuario_email,
+                    entregas: [],
+                    pendientes: 0
+                });
+            }
+
+            const alumno = mapaAlumnos.get(e.usuario_id);
+            alumno.entregas.push(e);
+
+            // Contar si hay entregas sin responder
+            if (!e.devolucion_mensaje) {
+                alumno.pendientes++;
+            }
+        });
+
+        // Cargar lista de alumnos en la barra lateral
+        const contenedorLista = document.getElementById('lista-alumnos');
+
+        if (mapaAlumnos.size === 0) {
+            contenedorLista.innerHTML = '<p style="padding: 1.5rem; color: #718096; text-align: center;">Aún no hay entregas registradas.</p>';
+        } else {
+            mapaAlumnos.forEach(alumno => {
+                const div = document.createElement('div');
+                div.className = 'alumno-item';
+                div.id = `item-alumno-${alumno.id}`;
+                div.onclick = () => abrirChatAlumno(alumno.id);
+
+                div.innerHTML = `
+                    <div>
+                        <span class="alumno-nombre">${alumno.nombre}</span>
+                        <span class="alumno-email">${alumno.email}</span>
+                    </div>
+                    ${alumno.pendientes > 0 ? `<span class="badge-pendiente">${alumno.pendientes} sin corregir</span>` : ''}
+                `;
+                contenedorLista.appendChild(div);
+            });
+        }
+
+        // Mostrar conversación del alumno seleccionado
+        function abrirChatAlumno(usuarioId) {
+            const alumno = mapaAlumnos.get(usuarioId);
+            if (!alumno) return;
+
+            // Marcar elemento activo en la lista
+            document.querySelectorAll('.alumno-item').forEach(el => el.classList.remove('active'));
+            document.getElementById(`item-alumno-${usuarioId}`).classList.add('active');
+
+            // Mostrar vista de chat
+            document.getElementById('chat-placeholder').style.display = 'none';
+            document.getElementById('chat-header').style.display = 'block';
+            document.getElementById('chat-alumno-nombre').innerText = alumno.nombre;
+            document.getElementById('chat-alumno-email').innerText = `(${alumno.email})`;
+
+            const contenedor = document.getElementById('contenedor-entregas-alumno');
+            contenedor.style.display = 'block';
+            contenedor.innerHTML = '';
+
+            // Generar tarjetas de entrega
+            alumno.entregas.forEach(e => {
+                const card = document.createElement('div');
+                card.className = 'entrega-card';
+
+                const tieneDevolucion = !!e.devolucion_mensaje;
+
+                card.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
+                        <div>
+                            <span class="badge">${e.curso_titulo}</span>
+                            <span style="color: #4a5568; font-size: 0.9rem; margin-left: 0.5rem;"><strong>Clase:</strong> ${e.leccion_titulo}</span>
+                        </div>
+                        <span style="color: #718096; font-size: 0.85rem;">${new Date(e.fecha).toLocaleString('es-AR')}</span>
+                    </div>
+
+                    <div style="background: #ffffff; padding: 1rem; border-left: 4px solid #184168; border-radius: 4px; color: #2d3748; white-space: pre-wrap; border-top: 1px solid #edf2f7; border-right: 1px solid #edf2f7; border-bottom: 1px solid #edf2f7;">
+                        <strong>Respuesta del Alumno:</strong><br>${e.contenido}
+                    </div>
+
+                    ${tieneDevolucion ? `
+                        <div class="devolucion-existente">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <strong style="color: #2b6cb0;">✍️ Tu Devolución Enviada (${new Date(e.devolucion_fecha).toLocaleString('es-AR')}):</strong>
+                                ${e.devolucion_nota !== null && e.devolucion_nota !== undefined ? `<span class="nota-badge">Nota: ${e.devolucion_nota}/10</span>` : ''}
+                            </div>
+                            <p style="margin: 0.5rem 0 0 0; color: #2d3748; white-space: pre-wrap;">${e.devolucion_mensaje}</p>
+                        </div>
+                    ` : ''}
+
+                    <div class="devolucion-box">
+                        <h4 style="margin-top: 0; color: #0b2238;">${tieneDevolucion ? 'Editar Devolución' : 'Enviar Devolución al Alumno'}</h4>
+                        
+                        <textarea id="dev-text-${e.id}" placeholder="Escribe aquí tus correcciones o comentarios para el alumno..." style="width: 100%; height: 90px; padding: 0.7rem; border: 1px solid #cbd5e0; border-radius: 6px; font-family: inherit; font-size: 0.95rem; margin-bottom: 0.8rem;">${e.devolucion_mensaje || ''}</textarea>
+
+                        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.8rem;">
+                            <label for="dev-nota-${e.id}" style="color: #2d3748; font-weight: bold; font-size: 0.9rem;">Calificación (1 - 10):</label>
+                            <input type="number" id="dev-nota-${e.id}" min="1" max="10" placeholder="Ej: 8" value="${(e.devolucion_nota !== null && e.devolucion_nota !== undefined) ? e.devolucion_nota : ''}" style="width: 80px; padding: 0.4rem 0.6rem; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 0.95rem;">
+                        </div>
+
+                        <button type="button" onclick="enviarDevolucion(${e.id}, ${e.usuario_id}, this)" style="background: #184168; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 6px; font-weight: bold; cursor: pointer;">
+                            ${tieneDevolucion ? 'Actualizar Devolución' : 'Enviar Devolución'}
+                        </button>
+                    </div>
+                `;
+
+                contenedor.appendChild(card);
+            });
+        }
+
+        // Función de envío exacta a la que tenías
         async function enviarDevolucion(entregaId, usuarioId, btn) {
             const textarea = document.getElementById(`dev-text-${entregaId}`);
             const inputNota = document.getElementById(`dev-nota-${entregaId}`);
