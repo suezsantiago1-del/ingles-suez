@@ -165,7 +165,7 @@ export const renderClassroom = async (req, res) => {
             return res.send('<h1>Este curso aún no tiene lecciones cargadas.</h1>');
         }
 
-        // 2. Consulta con subconsulta para traer ÚNICAMENTE la entrega MÁS RECIENTE de cada lección
+        // 2. Obtener ÚNICALMENTE la última entrega realizada por lección
         const entregasAlumno = await db.all(`
             SELECT e.leccion_id, d.nota, e.id as entrega_id
             FROM entregas e
@@ -179,13 +179,12 @@ export const renderClassroom = async (req, res) => {
               )
         `, [usuarioId, cursoId, usuarioId, cursoId]);
 
-        // Mapa para asociar leccion_id -> nota de la última entrega
         const mapaEntregas = new Map();
         entregasAlumno.forEach(e => {
             mapaEntregas.set(e.leccion_id, e.nota);
         });
 
-        // 3. Verificar si TODAS las lecciones previas a la Clase 10 están APROBADAS (nota >= 6) en su última entrega
+        // 3. Evaluar si las lecciones 1 a 9 están aprobadas (nota >= 6)
         const leccionesPreviasExamen = lecciones.filter(l => l.orden < 10);
         const todasPreviasAprobadas = leccionesPreviasExamen.length > 0 && leccionesPreviasExamen.every(l => {
             if (!mapaEntregas.has(l.id)) return false; 
@@ -193,7 +192,7 @@ export const renderClassroom = async (req, res) => {
             return nota !== null && nota !== undefined && parseInt(nota, 10) >= 6;
         });
 
-        // 4. Determinar el estado de desbloqueo
+        // 4. Mapear estado de desbloqueo garantizando acceso a Clase 10 si las previas están aprobadas
         let leccionAnteriorEntregada = true;
         const leccionesConEstado = lecciones.map((leccion, index) => {
             const entregada = mapaEntregas.has(leccion.id);
@@ -201,6 +200,7 @@ export const renderClassroom = async (req, res) => {
             let desbloqueada = false;
 
             if (leccion.orden === 10) {
+                // LA CLASE 10 SE DESBLOQUEA DIRECTAMENTE SI 1-9 ESTÁN APROBADAS
                 desbloqueada = todasPreviasAprobadas;
             } else if (index === 0) {
                 desbloqueada = true;
@@ -218,7 +218,7 @@ export const renderClassroom = async (req, res) => {
             };
         });
 
-        // 5. Determinar la lección activa
+        // 5. Determinar lección activa
         let leccionActiva = leccionesConEstado[0];
 
         if (leccionId) {
@@ -243,7 +243,7 @@ export const renderClassroom = async (req, res) => {
     }
 };
 
-// Guardar entregas de tareas/revisiones manuales de los alumnos
+// Guardar entregas de tareas/revisiones manuales y Proyecto Integrador (Clase 10)
 export const guardarEntrega = async (req, res) => {
     if (!req.session.user) {
         return res.status(401).json({ success: false, message: 'Usuario no autenticado' });
@@ -259,7 +259,36 @@ export const guardarEntrega = async (req, res) => {
     try {
         const db = await dbPromise;
 
-        // Verificar si la ÚLTIMA entrega de esta lección ya fue APROBADA
+        // Obtener la lección que se está entregando
+        const leccionActual = await db.get('SELECT orden FROM lecciones WHERE id = ?', [leccionId]);
+
+        if (!leccionActual) {
+            return res.status(404).json({ success: false, message: 'Lección no encontrada' });
+        }
+
+        // Si es la Clase 10, validamos primero que las 9 previas estén aprobadas
+        if (leccionActual.orden === 10) {
+            const leccionesPrevias = await db.all('SELECT id FROM lecciones WHERE curso_id = ? AND orden < 10', [cursoId]);
+            
+            for (const prev of leccionesPrevias) {
+                const entregaPrev = await db.get(`
+                    SELECT d.nota 
+                    FROM entregas e
+                    LEFT JOIN devoluciones d ON d.entrega_id = e.id
+                    WHERE e.usuario_id = ? AND e.leccion_id = ?
+                    ORDER BY e.id DESC LIMIT 1
+                `, [usuarioId, prev.id]);
+
+                if (!entregaPrev || entregaPrev.nota === null || parseInt(entregaPrev.nota, 10) < 6) {
+                    return res.status(403).json({ 
+                        success: false, 
+                        message: 'Debes tener aprobadas las clases 1 a 9 para enviar el Proyecto Integrador.' 
+                    });
+                }
+            }
+        }
+
+        // Verificar si la última entrega de ESTA lección en concreto ya fue aprobada (nota >= 6)
         const ultimaEntrega = await db.get(`
             SELECT d.nota 
             FROM entregas e
@@ -272,10 +301,11 @@ export const guardarEntrega = async (req, res) => {
         if (ultimaEntrega && ultimaEntrega.nota !== null && parseInt(ultimaEntrega.nota, 10) >= 6) {
             return res.status(400).json({ 
                 success: false, 
-                message: 'Esta clase ya se encuentra aprobada y no requiere nuevos envíos.' 
+                message: 'Esta clase/proyecto ya se encuentra aprobado y no permite más envíos.' 
             });
         }
 
+        // Registrar la entrega del alumno
         await db.run(`
             INSERT INTO entregas (usuario_id, curso_id, leccion_id, contenido)
             VALUES (?, ?, ?, ?)

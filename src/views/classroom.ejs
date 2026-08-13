@@ -256,7 +256,7 @@
             const textarea = parentSection ? parentSection.querySelector('textarea') : null;
 
             if (textarea && textarea.value.trim() === '') {
-                alert('Por favor, escribe tu respuesta antes de enviar.');
+                alert('Por favor, escribe tu respuesta o proyecto antes de enviar.');
                 return;
             }
 
@@ -288,7 +288,7 @@
                     }
 
                     const toast = document.getElementById('toast-notification');
-                    toast.classList.add('show');
+                    if (toast) toast.classList.add('show');
                     
                     setTimeout(() => {
                         window.location.reload();
@@ -311,7 +311,14 @@
             const buttons = document.querySelectorAll('button');
             buttons.forEach(btn => {
                 const text = btn.innerText.toUpperCase();
-                if (text.includes('ENVIAR A REVISIÓN') || text.includes('ENVIAR A REVISIÓN MANUAL') || text.includes('REHACER')) {
+                if (
+                    text.includes('ENVIAR') || 
+                    text.includes('ENTREGAR') || 
+                    text.includes('PROYECTO') || 
+                    text.includes('EXAMEN') || 
+                    text.includes('FINAL') || 
+                    text.includes('REHACER')
+                ) {
                     btn.setAttribute('onclick', 'submitRevision(this)');
                 }
             });
@@ -321,35 +328,29 @@
             const nota = notaRaw !== "" ? parseInt(notaRaw, 10) : -1;
             const estaEnviadaSinNota = <%= (leccionActiva && leccionActiva.completada && (leccionActiva.nota === null || leccionActiva.nota === undefined)) ? 'true' : 'false' %>;
 
-            // Bloquear formulario si APROBÓ (nota >= 6) o si está EN REVISIÓN
+            // Bloquear formulario únicamente si APROBÓ (nota >= 6) o si está EN REVISIÓN (enviado sin nota)
             if (nota >= 6 || estaEnviadaSinNota) {
                 const textareas = document.querySelectorAll('.leccion-body textarea');
                 const btnEnviars = document.querySelectorAll('.leccion-body button');
 
                 textareas.forEach(t => {
                     t.disabled = true;
-                    t.placeholder = nota >= 6 ? "Entregable Aprobado." : "Entrega enviada en proceso de revisión...";
+                    t.placeholder = nota >= 6 ? "Entregable / Proyecto Aprobado." : "Entrega enviada, en proceso de revisión...";
                     t.style.backgroundColor = "#edf2f7";
                 });
 
                 btnEnviars.forEach(btn => {
-                    const text = btn.innerText.toUpperCase();
-                    if (text.includes('ENVIAR')) {
-                        btn.disabled = true;
-                        btn.innerText = nota >= 6 ? '✔ APROBADO' : '⏳ EN REVISIÓN';
-                        btn.style.background = nota >= 6 ? '#38a169' : '#718096';
-                        btn.style.cursor = 'not-allowed';
-                    }
+                    btn.disabled = true;
+                    btn.innerText = nota >= 6 ? '✔ APROBADO' : '⏳ EN REVISIÓN';
+                    btn.style.background = nota >= 6 ? '#38a169' : '#718096';
+                    btn.style.cursor = 'not-allowed';
                 });
             } else if (nota !== -1 && nota < 6) {
                 // Si REPROBÓ (< 6), habilitar botón como "REHACER ENTREGABLE"
                 const btnEnviars = document.querySelectorAll('.leccion-body button');
                 btnEnviars.forEach(btn => {
-                    const text = btn.innerText.toUpperCase();
-                    if (text.includes('ENVIAR')) {
-                        btn.innerText = '🔄 REHACER Y ENVIAR ENTREGABLE';
-                        btn.style.background = '#e53e3e';
-                    }
+                    btn.innerText = '🔄 REHACER Y ENVIAR ENTREGABLE';
+                    btn.style.background = '#e53e3e';
                 });
             }
         });
