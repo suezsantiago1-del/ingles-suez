@@ -15,7 +15,8 @@ import {
     guardarEntrega,
     renderPanelProfesor,
     guardarDevolucion,
-    renderMensajesAlumno
+    renderMensajesAlumno,
+    descargarCertificado
 } from './src/controllers/courseController.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -114,13 +115,14 @@ app.get('/', async (req, res) => {
     }
 });
 
-// Cursos y pagos
+// Cursos, pagos y aula virtual
 app.get('/course/:id', renderCourseDetail);
 app.post('/checkout/:id', processCheckout);
 app.get('/payment/success', paymentSuccess);
 app.get('/payment/failure', paymentFailure);
 app.get('/mis-cursos', renderMyCourses);
 app.get('/classroom/:cursoId', renderClassroom);
+app.get('/classroom/:cursoId/certificado', descargarCertificado);
 
 // Entregas de alumnos y panel del profesor
 app.post('/entregas', guardarEntrega);

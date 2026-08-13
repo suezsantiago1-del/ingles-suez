@@ -24,6 +24,31 @@
         .video-container { background: #000; width: 100%; aspect-ratio: 16/9; border-radius: 10px; overflow: hidden; display: flex; align-items: center; justify-content: center; margin-bottom: 2rem; color: white; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
         .video-placeholder { text-align: center; color: #a4c4de; }
         
+        /* Banner Certificado */
+        .certificado-banner {
+            background: #e2ebd5;
+            border: 2px solid #184168;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .btn-certificado {
+            display: inline-block;
+            background: #184168;
+            color: #ffffff !important;
+            padding: 0.8rem 1.6rem;
+            border-radius: 6px;
+            font-weight: bold;
+            text-decoration: none;
+            margin-top: 0.8rem;
+            transition: background 0.2s;
+        }
+        .btn-certificado:hover {
+            background: #0b2238;
+        }
+
         /* Estilos de Botones y Opciones Interactivas */
         .option-btn {
             display: block;
@@ -134,6 +159,19 @@
         <main class="main-content">
             <h1 style="font-family: 'Tenor Sans', sans-serif; color: #0b2238;"><%= leccionActiva.titulo %></h1>
 
+            <!-- Banner de Descarga de Certificado (Visible solo al aprobar la Clase 10) -->
+            <% if (leccionActiva && leccionActiva.orden === 10 && leccionActiva.nota !== null && leccionActiva.nota !== undefined && leccionActiva.nota >= 6) { %>
+                <div class="certificado-banner">
+                    <h2 style="color: #0b2238; margin-top: 0; font-size: 1.4rem;">🎓 ¡Felicitaciones por completar el curso!</h2>
+                    <p style="color: #2d3748; margin-bottom: 0.5rem;">
+                        Has finalizado y aprobado la evaluación con una nota de <strong><%= leccionActiva.nota %>/10</strong>.
+                    </p>
+                    <a href="/classroom/<%= curso.id %>/certificado" class="btn-certificado">
+                        🏆 Descargar mi Certificado Oficial (PDF)
+                    </a>
+                </div>
+            <% } %>
+
             <!-- Reproductor de Video -->
             <div class="video-container">
                 <% if (leccionActiva.video_url) { %>
@@ -227,7 +265,7 @@
                     const toast = document.getElementById('toast-notification');
                     toast.classList.add('show');
                     
-                    // Recargar la página automáticamente para desbloquear la siguiente lección
+                    // Recargar la página automáticamente para actualizar desbloqueos / certificados
                     setTimeout(() => {
                         window.location.reload();
                     }, 1500);

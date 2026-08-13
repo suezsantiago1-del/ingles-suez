@@ -1,5 +1,12 @@
 import dbPromise from '../config/database.js';
 import { MercadoPagoConfig, Preference } from 'mercadopago';
+import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const client = new MercadoPagoConfig({
     accessToken: process.env.MP_ACCESS_TOKEN ? process.env.MP_ACCESS_TOKEN.trim() : ''
@@ -382,5 +389,102 @@ export const renderMensajesAlumno = async (req, res) => {
     } catch (error) {
         console.error('Error al obtener mensajes del alumno:', error);
         return res.redirect('/');
+    }
+};
+
+// Generar y descargar el Certificado en PDF al aprobar la Clase 10
+export const descargarCertificado = async (req, res) => {
+    if (!req.session.user) {
+        return res.redirect('/auth/login');
+    }
+
+    const { cursoId } = req.params;
+    const usuarioId = req.session.user.id;
+
+    try {
+        const db = await dbPromise;
+
+        // 1. Obtener la lección 10 del curso
+        const leccion10 = await db.get('SELECT id FROM lecciones WHERE curso_id = ? AND orden = 10', [cursoId]);
+        
+        if (!leccion10) {
+            return res.status(404).send('No se encontró la evaluación final.');
+        }
+
+        // 2. Verificar que el alumno tenga entrega y devolución con nota >= 6 en la lección 10
+        const devolucionExamen = await db.get(`
+            SELECT d.nota, d.fecha 
+            FROM entregas e
+            JOIN devoluciones d ON d.entrega_id = e.id
+            WHERE e.usuario_id = ? AND e.leccion_id = ? AND d.nota >= 6
+        `, [usuarioId, leccion10.id]);
+
+        if (!devolucionExamen) {
+            return res.status(403).send('<h1>Aún no has aprobado el examen final (Clase 10) para descargar este certificado.</h1>');
+        }
+
+        // 3. Obtener datos del alumno y del curso
+        const usuario = await db.get('SELECT nombre FROM usuarios WHERE id = ?', [usuarioId]);
+        const curso = await db.get('SELECT titulo FROM cursos WHERE id = ?', [cursoId]);
+
+        // 4. Cargar el PDF Plantilla desde la carpeta public
+        const pdfPath = path.join(__dirname, '../../public/certificados/plantilla.pdf');
+        
+        if (!fs.existsSync(pdfPath)) {
+            return res.status(500).send('Error: Plantilla de certificado no encontrada en el servidor.');
+        }
+
+        const existingPdfBytes = fs.readFileSync(pdfPath);
+        const pdfDoc = await PDFDocument.load(existingPdfBytes);
+
+        // 5. Modificar el PDF (Escribir datos)
+        const pages = pdfDoc.getPages();
+        const firstPage = pages[0];
+        const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+        const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
+
+        // Nombre del Alumno
+        firstPage.drawText(usuario.nombre.toUpperCase(), {
+            x: 200,
+            y: 320,
+            size: 28,
+            font: fontBold,
+            color: rgb(0.04, 0.13, 0.22) // Azul #0b2238
+        });
+
+        // Nombre del Curso
+        firstPage.drawText(curso.titulo, {
+            x: 200,
+            y: 250,
+            size: 20,
+            font: fontRegular,
+            color: rgb(0.1, 0.1, 0.1)
+        });
+
+        // Fecha de Emisión
+        const fechaAprobacion = new Date(devolucionExamen.fecha).toLocaleDateString('es-AR', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric'
+        });
+
+        firstPage.drawText(`Emitido el ${fechaAprobacion}`, {
+            x: 200,
+            y: 180,
+            size: 12,
+            font: fontRegular,
+            color: rgb(0.4, 0.4, 0.4)
+        });
+
+        // 6. Generar el buffer y enviar para descarga
+        const pdfBytes = await pdfDoc.save();
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="Certificado_${usuario.nombre.replace(/\s+/g, '_')}.pdf"`);
+        return res.send(Buffer.from(pdfBytes));
+
+    } catch (error) {
+        console.error('Error generando certificado:', error);
+        return res.status(500).send('Error interno al generar el certificado.');
     }
 };
