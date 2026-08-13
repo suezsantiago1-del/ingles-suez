@@ -15,8 +15,9 @@
         /* Sidebar de Lecciones */
         .sidebar-lessons { width: 320px; background: #0b2238; color: white; padding: 1.5rem; flex-shrink: 0; }
         .sidebar-lessons h3 { font-family: 'Tenor Sans', sans-serif; font-size: 1.1rem; color: #a4c4de; border-bottom: 1px solid #184168; padding-bottom: 0.8rem; }
-        .lesson-item { display: block; padding: 0.8rem 1rem; color: #cbd5e0; text-decoration: none; border-radius: 6px; margin-bottom: 0.5rem; transition: background 0.2s; }
+        .lesson-item { display: flex; align-items: center; justify-content: space-between; padding: 0.8rem 1rem; color: #cbd5e0; text-decoration: none; border-radius: 6px; margin-bottom: 0.5rem; transition: background 0.2s; }
         .lesson-item:hover, .lesson-item.active { background: #184168; color: white; font-weight: bold; }
+        .lesson-item.disabled { color: #64748b; background: rgba(255, 255, 255, 0.03); cursor: not-allowed; pointer-events: none; }
         
         /* Contenido Principal */
         .main-content { flex-grow: 1; padding: 2rem 3rem; max-width: 900px; }
@@ -96,7 +97,7 @@
         <span style="font-size: 1.2rem;">✅</span>
         <div>
             <strong style="display: block; font-size: 0.95rem;">¡Entregable Registrado!</strong>
-            <span style="font-size: 0.85rem; color: #a4c4de;">Tu respuesta ha sido enviada para corrección.</span>
+            <span style="font-size: 0.85rem; color: #a4c4de;">Desbloqueando siguiente clase...</span>
         </div>
     </div>
 
@@ -108,9 +109,18 @@
             
             <div style="margin-top: 1.5rem;">
                 <% lecciones.forEach(l => { %>
-                    <a href="/classroom/<%= curso.id %>?leccion=<%= l.id %>" class="lesson-item <%= (leccionActiva && leccionActiva.id == l.id) ? 'active' : '' %>">
-                        📖 <%= l.titulo %>
-                    </a>
+                    <% if (l.desbloqueada) { %>
+                        <a href="/classroom/<%= curso.id %>?leccion=<%= l.id %>" class="lesson-item <%= (leccionActiva && leccionActiva.id == l.id) ? 'active' : '' %>">
+                            <span>📖 <%= l.titulo %></span>
+                            <% if (l.completada) { %> 
+                                <span title="Clase completada">✅</span> 
+                            <% } %>
+                        </a>
+                    <% } else { %>
+                        <div class="lesson-item disabled" title="Completa la entrega de la clase anterior para desbloquear">
+                            <span>🔒 <%= l.titulo %></span>
+                        </div>
+                    <% } %>
                 <% }); %>
             </div>
         </aside>
@@ -211,9 +221,11 @@
                     // Lanzar notificación push (toast)
                     const toast = document.getElementById('toast-notification');
                     toast.classList.add('show');
+                    
+                    // Recargar la página automáticamente para desbloquear la siguiente lección
                     setTimeout(() => {
-                        toast.classList.remove('show');
-                    }, 4000);
+                        window.location.reload();
+                    }, 1500);
                 } else {
                     alert(data.message || 'Ocurrió un error al guardar tu entrega.');
                     btn.innerText = originalText;

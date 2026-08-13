@@ -141,6 +141,7 @@ export const renderClassroom = async (req, res) => {
     try {
         const db = await dbPromise;
 
+        // 1. Validar compra del curso
         const compra = await db.get(
             'SELECT id FROM compras WHERE usuario_id = ? AND curso_id = ?',
             [usuarioId, cursoId]
@@ -157,13 +158,54 @@ export const renderClassroom = async (req, res) => {
             return res.send('<h1>Este curso aún no tiene lecciones cargadas.</h1>');
         }
 
-        let leccionActiva = lecciones[0];
+        // 2. Obtener entregas del alumno en este curso
+        const entregasAlumno = await db.all(
+            'SELECT DISTINCT leccion_id FROM entregas WHERE usuario_id = ? AND curso_id = ?',
+            [usuarioId, cursoId]
+        );
+        const leccionesCompletadasIds = new Set(entregasAlumno.map(e => e.leccion_id));
+
+        // 3. Determinar estado de desbloqueo cronológico
+        let leccionAnteriorCompletada = true;
+        const leccionesConEstado = lecciones.map((leccion, index) => {
+            const completada = leccionesCompletadasIds.has(leccion.id);
+            let desbloqueada = false;
+
+            if (index === 0) {
+                desbloqueada = true; // La lección 1 siempre se puede cursar
+            } else {
+                desbloqueada = leccionAnteriorCompletada; // La actual se desbloquea si la anterior fue entregada
+            }
+
+            leccionAnteriorCompletada = completada;
+
+            return {
+                ...leccion,
+                completada,
+                desbloqueada
+            };
+        });
+
+        // 4. Determinar lección activa segura (evita saltarse bloqueos por URL)
+        let leccionActiva = leccionesConEstado[0];
+
         if (leccionId) {
-            const encontrada = lecciones.find(l => l.id == leccionId);
-            if (encontrada) leccionActiva = encontrada;
+            const encontrada = leccionesConEstado.find(l => l.id == leccionId);
+            if (encontrada && encontrada.desbloqueada) {
+                leccionActiva = encontrada;
+            } else {
+                // Si intenta entrar a una lección bloqueada, lo enviamos a la última desbloqueada
+                const ultimasDesbloqueadas = leccionesConEstado.filter(l => l.desbloqueada);
+                leccionActiva = ultimasDesbloqueadas[ultimasDesbloqueadas.length - 1];
+            }
         }
 
-        return res.render('classroom', { curso, lecciones, leccionActiva });
+        return res.render('classroom', { 
+            curso, 
+            lecciones: leccionesConEstado, 
+            leccionActiva 
+        });
+
     } catch (error) {
         console.error('Error al ingresar al aula virtual:', error);
         return res.redirect('/mis-cursos');
@@ -258,7 +300,6 @@ export const guardarDevolucion = async (req, res) => {
         return res.status(400).json({ success: false, message: 'Faltan campos requeridos' });
     }
 
-    // Normalizar la nota: si viene valor numérico se guarda como entero, si no, null
     const notaValor = (nota !== undefined && nota !== null && nota !== '') ? parseInt(nota, 10) : null;
 
     try {
@@ -315,7 +356,6 @@ export const renderMensajesAlumno = async (req, res) => {
             ORDER BY d.fecha DESC
         `, [usuarioId]);
 
-        // Marcar mensajes como leídos al entrar a la bandeja
         await db.run('UPDATE devoluciones SET leida = TRUE WHERE usuario_id = ?', [usuarioId]);
 
         return res.render('student-messages', { mensajes });
