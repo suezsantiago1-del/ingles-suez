@@ -4,29 +4,40 @@ class DatabaseAdapter {
     constructor() {
         this.pgPool = new pg.Pool({
             connectionString: process.env.DATABASE_URL,
-            ssl: { rejectUnauthorized: false }
+            ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
         });
     }
 
-    async run(sql, params = []) {
+    // Convierte marcadores '?' a '$1', '$2', etc. compatibles con PostgreSQL
+    parseSql(sql) {
         let paramIndex = 1;
-        const pgSql = sql.replace(/\?/g, () => `$${paramIndex++}`);
+        return sql.replace(/\?/g, () => `$${paramIndex++}`);
+    }
+
+    async run(sql, params = []) {
+        const pgSql = this.parseSql(sql);
         const res = await this.pgPool.query(pgSql, params);
-        return { lastID: res.rows[0] ? res.rows[0].id : null, changes: res.rowCount };
+        
+        // Obtiene el ID retornado (si la consulta incluye RETURNING id)
+        const returnedRow = res.rows[0];
+        const lastID = returnedRow ? (returnedRow.id || returnedRow.lastid || null) : null;
+
+        return { 
+            lastID, 
+            changes: res.rowCount 
+        };
     }
 
     async all(sql, params = []) {
-        let paramIndex = 1;
-        const pgSql = sql.replace(/\?/g, () => `$${paramIndex++}`);
+        const pgSql = this.parseSql(sql);
         const res = await this.pgPool.query(pgSql, params);
         return res.rows;
     }
 
     async get(sql, params = []) {
-        let paramIndex = 1;
-        const pgSql = sql.replace(/\?/g, () => `$${paramIndex++}`);
+        const pgSql = this.parseSql(sql);
         const res = await this.pgPool.query(pgSql, params);
-        return res.rows[0];
+        return res.rows[0] || null;
     }
 }
 
@@ -78,7 +89,7 @@ const dbPromise = (async () => {
 
         CREATE TABLE IF NOT EXISTS devoluciones (
             id SERIAL PRIMARY KEY,
-            entrega_id UNIQUE INTEGER NOT NULL,
+            entrega_id INTEGER UNIQUE NOT NULL,
             usuario_id INTEGER NOT NULL,
             mensaje TEXT NOT NULL,
             leida BOOLEAN DEFAULT FALSE,
@@ -231,7 +242,6 @@ const dbPromise = (async () => {
         // ==========================================
         const contenidoClase3 = `
             <div class="clase-contenido" style="color: #1a202c; font-family: system-ui, -apple-system, sans-serif;">
-                
                 <header style="margin-bottom: 2rem; border-bottom: 2px solid #0b2238; padding-bottom: 1rem;">
                     <span style="background: #0b2238; color: white; padding: 0.3rem 0.8rem; border-radius: 4px; font-size: 0.75rem; text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px;">FASE DE PRÁCTICA INTERACTIVA</span>
                     <h2 style="color: #0b2238; margin-top: 0.8rem; margin-bottom: 0;">Ejercicios de Alto Rendimiento — Clase 3</h2>
@@ -297,7 +307,6 @@ const dbPromise = (async () => {
         // ==========================================
         const contenidoClase4 = `
             <div class="clase-contenido" style="color: #1a202c; font-family: system-ui, -apple-system, sans-serif;">
-                
                 <header style="margin-bottom: 2rem; border-bottom: 2px solid #0b2238; padding-bottom: 1rem;">
                     <span style="background: #0b2238; color: white; padding: 0.3rem 0.8rem; border-radius: 4px; font-size: 0.75rem; text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px;">FASE DE PRÁCTICA INTERACTIVA</span>
                     <h2 style="color: #0b2238; margin-top: 0.8rem; margin-bottom: 0;">Ejercicios de Alto Rendimiento — Clase 4</h2>
@@ -379,7 +388,6 @@ const dbPromise = (async () => {
         // ==========================================
         const contenidoClase5 = `
             <div class="clase-contenido" style="color: #1a202c; font-family: system-ui, -apple-system, sans-serif;">
-                
                 <header style="margin-bottom: 2rem; border-bottom: 2px solid #0b2238; padding-bottom: 1rem;">
                     <span style="background: #0b2238; color: white; padding: 0.3rem 0.8rem; border-radius: 4px; font-size: 0.75rem; text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px;">FASE DE PRÁCTICA INTERACTIVA</span>
                     <h2 style="color: #0b2238; margin-top: 0.8rem; margin-bottom: 0;">Ejercicios de Alto Rendimiento — Clase 5</h2>
