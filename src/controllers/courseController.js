@@ -430,7 +430,7 @@ export const renderMensajesAlumno = async (req, res) => {
     }
 };
 
-// Generar y descargar el Certificado en PDF (Alineado a las líneas de la plantilla)
+// Generar y descargar el Certificado en PDF (Coordenadas ajustadas para plantilla horizontal)
 export const descargarCertificado = async (req, res) => {
     if (!req.session.user) {
         return res.redirect('/auth/login');
@@ -462,7 +462,6 @@ export const descargarCertificado = async (req, res) => {
         }
 
         const usuario = await db.get('SELECT nombre FROM usuarios WHERE id = ?', [usuarioId]);
-        const curso = await db.get('SELECT titulo FROM cursos WHERE id = ?', [cursoId]);
 
         const pdfPath = path.join(__dirname, '../../public/certificados/plantilla.pdf');
         
@@ -475,54 +474,39 @@ export const descargarCertificado = async (req, res) => {
 
         const pages = pdfDoc.getPages();
         const firstPage = pages[0];
-        const { width, height } = firstPage.getSize();
 
         const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-        const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
-        // --- 1. DIBUJAR NOMBRE DEL ALUMNO (Centrado sobre "Otorgado formalmente a:") ---
+        // 1. NOMBRE DEL ALUMNO (Centrado sobre la guía de nombre)
         const nombreTexto = usuario.nombre.toUpperCase();
         const sizeNombre = 22;
         const widthNombre = fontBold.widthOfTextAtSize(nombreTexto, sizeNombre);
 
         firstPage.drawText(nombreTexto, {
-            x: (width - widthNombre) / 2,
-            y: height - 260,
+            x: (firstPage.getWidth() - widthNombre) / 2,
+            y: 335,
             size: sizeNombre,
             font: fontBold,
             color: rgb(0.04, 0.13, 0.22)
         });
 
-        // --- 2. DIBUJAR NOMBRE DEL CURSO (Centrado sobre "Por haber completado...") ---
-        const cursoTexto = curso.titulo.toUpperCase();
-        const sizeCurso = 16;
-        const widthCurso = fontBold.widthOfTextAtSize(cursoTexto, sizeCurso);
-
-        firstPage.drawText(cursoTexto, {
-            x: (width - widthCurso) / 2,
-            y: height - 340,
-            size: sizeCurso,
-            font: fontBold,
-            color: rgb(0.09, 0.25, 0.41)
-        });
-
-        // --- 3. DIBUJAR FECHA DE EMISIÓN (Rellenando las líneas: Dado a los __ días del mes...) ---
+        // 2. DÍA Y MES (Ubicados en las líneas en blanco)
         const fechaObj = new Date(devolucionExamen.fecha);
         const dia = fechaObj.getDate().toString();
-        const mes = fechaObj.toLocaleDateString('es-AR', { month: 'long' });
+        const mes = fechaObj.toLocaleDateString('es-AR', { month: 'long' }).toUpperCase();
 
         firstPage.drawText(dia, {
-            x: width / 2 - 110,
-            y: height - 422,
-            size: 11,
+            x: 275,
+            y: 205,
+            size: 13,
             font: fontBold,
             color: rgb(0.04, 0.13, 0.22)
         });
 
-        firstPage.drawText(mes.toUpperCase(), {
-            x: width / 2 - 25,
-            y: height - 422,
-            size: 11,
+        firstPage.drawText(mes, {
+            x: 410,
+            y: 205,
+            size: 13,
             font: fontBold,
             color: rgb(0.04, 0.13, 0.22)
         });
