@@ -9,6 +9,7 @@
         .container-mensajes { max-width: 850px; margin: 3rem auto; padding: 0 1.5rem; }
         .mensaje-card { background: #ffffff; border: 1px solid #cbd5e0; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .badge { background: #e2ebd5; color: #184168; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
+        .badge-nota { background: #2b6cb0; color: #ffffff; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.85rem; font-weight: bold; margin-right: 0.5rem; }
     </style>
 </head>
 <body>
@@ -24,7 +25,12 @@
                 <div class="mensaje-card">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
                         <span class="badge"><%= m.curso_titulo %></span>
-                        <span style="color: #718096; font-size: 0.85rem;"><%= new Date(m.fecha).toLocaleString('es-AR') %></span>
+                        <div style="display: flex; align-items: center;">
+                            <% if (m.nota !== null && m.nota !== undefined) { %>
+                                <span class="badge-nota">⭐ Calificación: <%= m.nota %>/10</span>
+                            <% } %>
+                            <span style="color: #718096; font-size: 0.85rem;"><%= new Date(m.fecha).toLocaleString('es-AR') %></span>
+                        </div>
                     </div>
 
                     <h3 style="color: #0b2238; margin: 0.5rem 0;"><%= m.leccion_titulo %></h3>
