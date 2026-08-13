@@ -430,7 +430,7 @@ export const renderMensajesAlumno = async (req, res) => {
     }
 };
 
-// Generar y descargar el Certificado en PDF (Coordenadas ajustadas para plantilla horizontal)
+// Generar y descargar el Certificado en PDF (Posicionamiento ajustado a la mitad superior)
 export const descargarCertificado = async (req, res) => {
     if (!req.session.user) {
         return res.redirect('/auth/login');
@@ -474,39 +474,40 @@ export const descargarCertificado = async (req, res) => {
 
         const pages = pdfDoc.getPages();
         const firstPage = pages[0];
+        const { width, height } = firstPage.getSize();
 
         const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
-        // 1. NOMBRE DEL ALUMNO (Centrado sobre la guía de nombre)
+        // 1. NOMBRE DEL ALUMNO (Ubicado a ~68% de la altura de la página)
         const nombreTexto = usuario.nombre.toUpperCase();
         const sizeNombre = 22;
         const widthNombre = fontBold.widthOfTextAtSize(nombreTexto, sizeNombre);
 
         firstPage.drawText(nombreTexto, {
-            x: (firstPage.getWidth() - widthNombre) / 2,
-            y: 335,
+            x: (width - widthNombre) / 2,
+            y: height * 0.68,
             size: sizeNombre,
             font: fontBold,
             color: rgb(0.04, 0.13, 0.22)
         });
 
-        // 2. DÍA Y MES (Ubicados en las líneas en blanco)
+        // 2. DÍA Y MES (Ubicación en renglón de fecha ~42% de altura)
         const fechaObj = new Date(devolucionExamen.fecha);
         const dia = fechaObj.getDate().toString();
         const mes = fechaObj.toLocaleDateString('es-AR', { month: 'long' }).toUpperCase();
 
         firstPage.drawText(dia, {
-            x: 275,
-            y: 205,
-            size: 13,
+            x: width * 0.32,
+            y: height * 0.42,
+            size: 12,
             font: fontBold,
             color: rgb(0.04, 0.13, 0.22)
         });
 
         firstPage.drawText(mes, {
-            x: 410,
-            y: 205,
-            size: 13,
+            x: width * 0.50,
+            y: height * 0.42,
+            size: 12,
             font: fontBold,
             color: rgb(0.04, 0.13, 0.22)
         });
