@@ -92,12 +92,15 @@ const dbPromise = (async () => {
             entrega_id INTEGER UNIQUE NOT NULL,
             usuario_id INTEGER NOT NULL,
             mensaje TEXT NOT NULL,
+            nota INTEGER DEFAULT NULL,
             leida BOOLEAN DEFAULT FALSE,
             fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
     `);
 
+    // Asegurar columnas requeridas en tablas previamente existentes
     await adapter.pgPool.query(`ALTER TABLE cursos ADD COLUMN IF NOT EXISTS imagen_url VARCHAR(255);`);
+    await adapter.pgPool.query(`ALTER TABLE devoluciones ADD COLUMN IF NOT EXISTS nota INTEGER DEFAULT NULL;`);
 
     // Cursos iniciales (solo si la tabla está vacía)
     const countRes = await adapter.pgPool.query("SELECT COUNT(*) FROM cursos");

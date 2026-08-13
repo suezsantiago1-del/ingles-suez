@@ -224,6 +224,7 @@ export const renderPanelProfesor = async (req, res) => {
                 c.titulo AS curso_titulo,
                 l.titulo AS leccion_titulo,
                 d.mensaje AS devolucion_mensaje,
+                d.nota AS devolucion_nota,
                 d.fecha AS devolucion_fecha
             FROM entregas e
             JOIN usuarios u ON e.usuario_id = u.id
@@ -240,7 +241,7 @@ export const renderPanelProfesor = async (req, res) => {
     }
 };
 
-// Guardar devolución/corrección enviada por el profesor
+// Guardar devolución/corrección enviada por el profesor (incluyendo nota)
 export const guardarDevolucion = async (req, res) => {
     if (!req.session.user) {
         return res.status(401).json({ success: false, message: 'No autenticado' });
@@ -251,11 +252,14 @@ export const guardarDevolucion = async (req, res) => {
         return res.status(403).json({ success: false, message: 'Acceso no autorizado' });
     }
 
-    const { entregaId, usuarioId, mensaje } = req.body;
+    const { entregaId, usuarioId, mensaje, nota } = req.body;
 
     if (!entregaId || !usuarioId || !mensaje || mensaje.trim() === '') {
         return res.status(400).json({ success: false, message: 'Faltan campos requeridos' });
     }
+
+    // Normalizar la nota: si viene valor numérico se guarda como entero, si no, null
+    const notaValor = (nota !== undefined && nota !== null && nota !== '') ? parseInt(nota, 10) : null;
 
     try {
         const db = await dbPromise;
@@ -265,14 +269,14 @@ export const guardarDevolucion = async (req, res) => {
         if (devExistente) {
             await db.run(`
                 UPDATE devoluciones 
-                SET mensaje = ?, fecha = CURRENT_TIMESTAMP, leida = FALSE
+                SET mensaje = ?, nota = ?, fecha = CURRENT_TIMESTAMP, leida = FALSE
                 WHERE entrega_id = ?
-            `, [mensaje.trim(), entregaId]);
+            `, [mensaje.trim(), notaValor, entregaId]);
         } else {
             await db.run(`
-                INSERT INTO devoluciones (entrega_id, usuario_id, mensaje)
-                VALUES (?, ?, ?)
-            `, [entregaId, usuarioId, mensaje.trim()]);
+                INSERT INTO devoluciones (entrega_id, usuario_id, mensaje, nota)
+                VALUES (?, ?, ?, ?)
+            `, [entregaId, usuarioId, mensaje.trim(), notaValor]);
         }
 
         return res.json({ success: true, message: 'Devolución guardada correctamente' });
@@ -297,6 +301,7 @@ export const renderMensajesAlumno = async (req, res) => {
             SELECT 
                 d.id,
                 d.mensaje,
+                d.nota,
                 d.fecha,
                 d.leida,
                 l.titulo AS leccion_titulo,

@@ -94,8 +94,6 @@ app.get('/clases-particulares', (req, res) => {
 app.get('/cursos-todos', async (req, res) => {
     try {
         const db = await dbPromise;
-        await db.run("UPDATE cursos SET precio = 5000");
-        await db.run("DELETE FROM cursos WHERE titulo LIKE '%Negocios%' OR titulo LIKE '%Business%'");
         const cursos = await db.all('SELECT * FROM cursos');
         res.render('courses', { cursos });
     } catch (error) {
@@ -108,8 +106,6 @@ app.get('/cursos-todos', async (req, res) => {
 app.get('/', async (req, res) => {
     try {
         const db = await dbPromise;
-        await db.run("UPDATE cursos SET precio = 5000");
-        await db.run("DELETE FROM cursos WHERE titulo LIKE '%Negocios%' OR titulo LIKE '%Business%'");
         const cursos = await db.all('SELECT * FROM cursos');
         res.render('index', { cursos });
     } catch (error) {
@@ -141,12 +137,10 @@ app.use((req, res) => {
 
 app.listen(PORT, async () => {
     try {
-        const db = await dbPromise;
-        await db.run("UPDATE cursos SET precio = 5000");
-        await db.run("DELETE FROM cursos WHERE titulo LIKE '%Negocios%' OR titulo LIKE '%Business%'");
-        console.log("Datos actualizados correctamente");
+        await dbPromise;
+        console.log("Base de datos conectada correctamente");
     } catch (e) {
-        console.error("Error al actualizar la base de datos:", e);
+        console.error("Error al conectar la base de datos:", e);
     }
     console.log(`Servidor listo en: http://localhost:${PORT}`);
 });
