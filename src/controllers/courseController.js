@@ -477,23 +477,23 @@ export const descargarCertificado = async (req, res) => {
 
         const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
-        // --- 1. TAPAR "[NOMBRE Y APELLIDO DEL ALUMNO]" CON RECTÁNGULO BLANCO PURO ---
+        // --- 1. TAPAR COMPLETO "[NOMBRE Y APELLIDO DEL ALUMNO]" ---
         firstPage.drawRectangle({
-            x: 200,
-            y: 285,
-            width: 440,
-            height: 28,
+            x: 160,
+            y: 280,
+            width: 520,
+            height: 32,
             color: rgb(1, 1, 1) // Blanco #ffffff
         });
 
-        // --- 2. ESCRIBIR EL NOMBRE REAL DEL ALUMNO EN EL LUGAR EXACTO ---
+        // --- 2. ESCRIBIR EL NOMBRE REAL DEL ALUMNO CENTRADO ---
         const nombreTexto = usuario.nombre.toUpperCase();
-        const sizeNombre = 20;
+        const sizeNombre = 21;
         const widthNombre = fontBold.widthOfTextAtSize(nombreTexto, sizeNombre);
 
         firstPage.drawText(nombreTexto, {
             x: (firstPage.getWidth() - widthNombre) / 2,
-            y: 292,
+            y: 288,
             size: sizeNombre,
             font: fontBold,
             color: rgb(0.04, 0.13, 0.22) // Azul #0b2238
@@ -505,16 +505,16 @@ export const descargarCertificado = async (req, res) => {
         const mes = fechaObj.toLocaleDateString('es-AR', { month: 'long' }).toUpperCase();
 
         firstPage.drawText(dia, {
-            x: 382,
-            y: 180,
+            x: 375,
+            y: 168,
             size: 11,
             font: fontBold,
             color: rgb(0.04, 0.13, 0.22)
         });
 
         firstPage.drawText(mes, {
-            x: 485,
-            y: 180,
+            x: 480,
+            y: 168,
             size: 11,
             font: fontBold,
             color: rgb(0.04, 0.13, 0.22)
