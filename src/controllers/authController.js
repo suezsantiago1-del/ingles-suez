@@ -10,10 +10,11 @@ export const renderLogin = (req, res) => {
 
 export const processLogin = async (req, res) => {
     const { email, password, remember } = req.body;
+    const cleanEmail = email ? email.toLowerCase().trim() : '';
 
     try {
         const db = await dbPromise;
-        const usuario = await db.get('SELECT * FROM usuarios WHERE email = ?', [email]);
+        const usuario = await db.get('SELECT * FROM usuarios WHERE LOWER(email) = ?', [cleanEmail]);
 
         if (!usuario) {
             return res.render('login', { error: 'Correo electrónico o contraseña incorrectos.' });
@@ -25,7 +26,7 @@ export const processLogin = async (req, res) => {
         }
 
         if (remember) {
-            req.session.cookie.maxAge = 1000 * 60 * 60 * 24 * 30;
+            req.session.cookie.maxAge = 1000 * 60 * 60 * 24 * 30; // 30 días
         } else {
             req.session.cookie.expires = false;
         }
@@ -36,7 +37,15 @@ export const processLogin = async (req, res) => {
             email: usuario.email
         };
 
-        return res.redirect('/');
+        // Forzar el guardado explícito de la sesión antes de redirigir
+        req.session.save((err) => {
+            if (err) {
+                console.error('Error al guardar la sesión:', err);
+                return res.render('login', { error: 'Error al iniciar sesión. Intente nuevamente.' });
+            }
+            return res.redirect('/');
+        });
+
     } catch (error) {
         console.error('Error en el login:', error);
         return res.render('login', { error: 'Ocurrió un error inesperado.' });
@@ -52,10 +61,11 @@ export const renderRegister = (req, res) => {
 
 export const processRegister = async (req, res) => {
     const { nombre, email, password } = req.body;
+    const cleanEmail = email ? email.toLowerCase().trim() : '';
 
     try {
         const db = await dbPromise;
-        const usuarioExistente = await db.get('SELECT id FROM usuarios WHERE email = ?', [email]);
+        const usuarioExistente = await db.get('SELECT id FROM usuarios WHERE LOWER(email) = ?', [cleanEmail]);
 
         if (usuarioExistente) {
             return res.render('register', { error: 'El correo electrónico ya está registrado.' });
@@ -63,18 +73,26 @@ export const processRegister = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
+        // Agregado RETURNING id para compatibilidad con PostgreSQL
         const result = await db.run(
-            'INSERT INTO usuarios (nombre, email, password) VALUES (?, ?, ?)',
-            [nombre, email, hashedPassword]
+            'INSERT INTO usuarios (nombre, email, password) VALUES (?, ?, ?) RETURNING id',
+            [nombre.trim(), cleanEmail, hashedPassword]
         );
 
         req.session.user = {
             id: result.lastID,
-            nombre,
-            email
+            nombre: nombre.trim(),
+            email: cleanEmail
         };
 
-        return res.redirect('/');
+        req.session.save((err) => {
+            if (err) {
+                console.error('Error al guardar sesión tras registro:', err);
+                return res.render('register', { error: 'Ocurrió un error al iniciar sesión automática.' });
+            }
+            return res.redirect('/');
+        });
+
     } catch (error) {
         console.error('Error en el registro:', error);
         return res.render('register', { error: 'Ocurrió un error al crear la cuenta.' });
@@ -82,8 +100,12 @@ export const processRegister = async (req, res) => {
 };
 
 export const logout = (req, res) => {
-    req.session.destroy(() => {
-        res.redirect('/');
+    req.session.destroy((err) => {
+        if (err) {
+            console.error('Error cerrando sesión:', err);
+        }
+        res.clearCookie('connect.sid'); // Limpia la cookie del navegador
+        return res.redirect('/');
     });
 };
 
@@ -113,20 +135,21 @@ export const updateProfile = async (req, res) => {
     }
 
     const { nombre, email } = req.body;
+    const cleanEmail = email ? email.toLowerCase().trim() : '';
     const usuarioId = req.session.user.id;
 
     try {
         const db = await dbPromise;
-        await db.run('UPDATE usuarios SET nombre = ?, email = ? WHERE id = ?', [nombre, email, usuarioId]);
+        await db.run('UPDATE usuarios SET nombre = ?, email = ? WHERE id = ?', [nombre.trim(), cleanEmail, usuarioId]);
 
-        req.session.user.nombre = nombre;
-        req.session.user.email = email;
+        req.session.user.nombre = nombre.trim();
+        req.session.user.email = cleanEmail;
 
         const usuario = await db.get('SELECT id, nombre, email FROM usuarios WHERE id = ?', [usuarioId]);
         return res.render('profile', { usuario, success: 'Datos actualizados correctamente.', error: null });
     } catch (error) {
         console.error('Error al actualizar el perfil:', error);
-        const usuario = { id: usuarioId, nombre, email };
+        const usuario = { id: usuarioId, nombre, email: cleanEmail };
         return res.render('profile', { usuario, success: null, error: 'El correo electrónico ya está en uso.' });
     }
 };
