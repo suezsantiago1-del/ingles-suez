@@ -148,7 +148,6 @@ export const renderClassroom = async (req, res) => {
     try {
         const db = await dbPromise;
 
-        // 1. Validar compra del curso
         const compra = await db.get(
             'SELECT id FROM compras WHERE usuario_id = ? AND curso_id = ?',
             [usuarioId, cursoId]
@@ -165,7 +164,6 @@ export const renderClassroom = async (req, res) => {
             return res.send('<h1>Este curso aún no tiene lecciones cargadas.</h1>');
         }
 
-        // 2. Obtener ÚNICALMENTE la última entrega realizada por lección
         const entregasAlumno = await db.all(`
             SELECT e.leccion_id, d.nota, e.id as entrega_id
             FROM entregas e
@@ -184,7 +182,6 @@ export const renderClassroom = async (req, res) => {
             mapaEntregas.set(e.leccion_id, e.nota);
         });
 
-        // 3. Evaluar si las lecciones 1 a 9 están aprobadas (nota >= 6)
         const leccionesPreviasExamen = lecciones.filter(l => l.orden < 10);
         const todasPreviasAprobadas = leccionesPreviasExamen.length > 0 && leccionesPreviasExamen.every(l => {
             if (!mapaEntregas.has(l.id)) return false; 
@@ -192,7 +189,6 @@ export const renderClassroom = async (req, res) => {
             return nota !== null && nota !== undefined && parseInt(nota, 10) >= 6;
         });
 
-        // 4. Mapear estado de desbloqueo garantizando acceso a Clase 10 si las previas están aprobadas
         let leccionAnteriorEntregada = true;
         const leccionesConEstado = lecciones.map((leccion, index) => {
             const entregada = mapaEntregas.has(leccion.id);
@@ -200,7 +196,6 @@ export const renderClassroom = async (req, res) => {
             let desbloqueada = false;
 
             if (leccion.orden === 10) {
-                // LA CLASE 10 SE DESBLOQUEA DIRECTAMENTE SI 1-9 ESTÁN APROBADAS
                 desbloqueada = todasPreviasAprobadas;
             } else if (index === 0) {
                 desbloqueada = true;
@@ -218,7 +213,6 @@ export const renderClassroom = async (req, res) => {
             };
         });
 
-        // 5. Determinar lección activa
         let leccionActiva = leccionesConEstado[0];
 
         if (leccionId) {
@@ -243,7 +237,6 @@ export const renderClassroom = async (req, res) => {
     }
 };
 
-// Guardar entregas de tareas/revisiones manuales y Proyecto Integrador (Clase 10)
 export const guardarEntrega = async (req, res) => {
     if (!req.session.user) {
         return res.status(401).json({ success: false, message: 'Usuario no autenticado' });
@@ -259,14 +252,12 @@ export const guardarEntrega = async (req, res) => {
     try {
         const db = await dbPromise;
 
-        // Obtener la lección que se está entregando
         const leccionActual = await db.get('SELECT orden FROM lecciones WHERE id = ?', [leccionId]);
 
         if (!leccionActual) {
             return res.status(404).json({ success: false, message: 'Lección no encontrada' });
         }
 
-        // Si es la Clase 10, validamos primero que las 9 previas estén aprobadas
         if (leccionActual.orden === 10) {
             const leccionesPrevias = await db.all('SELECT id FROM lecciones WHERE curso_id = ? AND orden < 10', [cursoId]);
             
@@ -288,7 +279,6 @@ export const guardarEntrega = async (req, res) => {
             }
         }
 
-        // Verificar si la última entrega de ESTA lección en concreto ya fue aprobada (nota >= 6)
         const ultimaEntrega = await db.get(`
             SELECT d.nota 
             FROM entregas e
@@ -305,7 +295,6 @@ export const guardarEntrega = async (req, res) => {
             });
         }
 
-        // Registrar la entrega del alumno
         await db.run(`
             INSERT INTO entregas (usuario_id, curso_id, leccion_id, contenido)
             VALUES (?, ?, ?, ?)
@@ -318,7 +307,6 @@ export const guardarEntrega = async (req, res) => {
     }
 };
 
-// Obtener SOLO entregas PENDIENTES de corrección (EXCLUSIVO PROFESOR)
 export const renderPanelProfesor = async (req, res) => {
     if (!req.session.user) {
         return res.redirect('/auth/login');
@@ -362,7 +350,6 @@ export const renderPanelProfesor = async (req, res) => {
     }
 };
 
-// Guardar devolución/corrección enviada por el profesor (incluyendo nota)
 export const guardarDevolucion = async (req, res) => {
     if (!req.session.user) {
         return res.status(401).json({ success: false, message: 'No autenticado' });
@@ -406,7 +393,6 @@ export const guardarDevolucion = async (req, res) => {
     }
 };
 
-// Bandeja de Entrada de Mensajes/Devoluciones para Alumnos
 export const renderMensajesAlumno = async (req, res) => {
     if (!req.session.user) {
         return res.redirect('/auth/login');
@@ -444,7 +430,7 @@ export const renderMensajesAlumno = async (req, res) => {
     }
 };
 
-// Generar y descargar el Certificado en PDF al aprobar la Clase 10
+// Generar y descargar el Certificado en PDF (Alineado a las líneas de la plantilla)
 export const descargarCertificado = async (req, res) => {
     if (!req.session.user) {
         return res.redirect('/auth/login');
@@ -489,37 +475,56 @@ export const descargarCertificado = async (req, res) => {
 
         const pages = pdfDoc.getPages();
         const firstPage = pages[0];
+        const { width, height } = firstPage.getSize();
+
         const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
         const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
-        firstPage.drawText(usuario.nombre.toUpperCase(), {
-            x: 200,
-            y: 320,
-            size: 28,
+        // --- 1. DIBUJAR NOMBRE DEL ALUMNO (Centrado sobre "Otorgado formalmente a:") ---
+        const nombreTexto = usuario.nombre.toUpperCase();
+        const sizeNombre = 22;
+        const widthNombre = fontBold.widthOfTextAtSize(nombreTexto, sizeNombre);
+
+        firstPage.drawText(nombreTexto, {
+            x: (width - widthNombre) / 2,
+            y: height - 260,
+            size: sizeNombre,
             font: fontBold,
             color: rgb(0.04, 0.13, 0.22)
         });
 
-        firstPage.drawText(curso.titulo, {
-            x: 200,
-            y: 250,
-            size: 20,
-            font: fontRegular,
-            color: rgb(0.1, 0.1, 0.1)
+        // --- 2. DIBUJAR NOMBRE DEL CURSO (Centrado sobre "Por haber completado...") ---
+        const cursoTexto = curso.titulo.toUpperCase();
+        const sizeCurso = 16;
+        const widthCurso = fontBold.widthOfTextAtSize(cursoTexto, sizeCurso);
+
+        firstPage.drawText(cursoTexto, {
+            x: (width - widthCurso) / 2,
+            y: height - 340,
+            size: sizeCurso,
+            font: fontBold,
+            color: rgb(0.09, 0.25, 0.41)
         });
 
-        const fechaAprobacion = new Date(devolucionExamen.fecha).toLocaleDateString('es-AR', {
-            day: '2-digit',
-            month: 'long',
-            year: 'numeric'
+        // --- 3. DIBUJAR FECHA DE EMISIÓN (Rellenando las líneas: Dado a los __ días del mes...) ---
+        const fechaObj = new Date(devolucionExamen.fecha);
+        const dia = fechaObj.getDate().toString();
+        const mes = fechaObj.toLocaleDateString('es-AR', { month: 'long' });
+
+        firstPage.drawText(dia, {
+            x: width / 2 - 110,
+            y: height - 422,
+            size: 11,
+            font: fontBold,
+            color: rgb(0.04, 0.13, 0.22)
         });
 
-        firstPage.drawText(`Emitido el ${fechaAprobacion}`, {
-            x: 200,
-            y: 180,
-            size: 12,
-            font: fontRegular,
-            color: rgb(0.4, 0.4, 0.4)
+        firstPage.drawText(mes.toUpperCase(), {
+            x: width / 2 - 25,
+            y: height - 422,
+            size: 11,
+            font: fontBold,
+            color: rgb(0.04, 0.13, 0.22)
         });
 
         const pdfBytes = await pdfDoc.save();
