@@ -430,7 +430,7 @@ export const renderMensajesAlumno = async (req, res) => {
     }
 };
 
-// Generar y descargar el Certificado en PDF (Posicionamiento ajustado a la mitad superior)
+// Generar y descargar el Certificado en PDF
 export const descargarCertificado = async (req, res) => {
     if (!req.session.user) {
         return res.redirect('/auth/login');
@@ -461,6 +461,7 @@ export const descargarCertificado = async (req, res) => {
             return res.status(403).send('<h1>Aún no has aprobado el examen final (Clase 10) para descargar este certificado.</h1>');
         }
 
+        // Obtener el usuario activo
         const usuario = await db.get('SELECT nombre FROM usuarios WHERE id = ?', [usuarioId]);
 
         const pdfPath = path.join(__dirname, '../../public/certificados/plantilla.pdf');
@@ -474,40 +475,51 @@ export const descargarCertificado = async (req, res) => {
 
         const pages = pdfDoc.getPages();
         const firstPage = pages[0];
-        const { width, height } = firstPage.getSize();
 
         const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
-        // 1. NOMBRE DEL ALUMNO (Ubicado a ~68% de la altura de la página)
+        // --- 1. TAPAR " [NOMBRE Y APELLIDO DEL ALUMNO] " ---
+        // Dibujamos parche en el color de fondo gris (#f4f7f6 / rgb 0.95, 0.96, 0.96)
+        firstPage.drawRectangle({
+            x: 180,
+            y: 350,
+            width: 480,
+            height: 32,
+            color: rgb(0.95, 0.96, 0.96)
+        });
+
+        // --- 2. ESCRIBIR EL NOMBRE REAL DEL ALUMNO CENTRADO ---
         const nombreTexto = usuario.nombre.toUpperCase();
         const sizeNombre = 22;
         const widthNombre = fontBold.widthOfTextAtSize(nombreTexto, sizeNombre);
 
         firstPage.drawText(nombreTexto, {
-            x: (width - widthNombre) / 2,
-            y: height * 0.68,
+            x: (firstPage.getWidth() - widthNombre) / 2,
+            y: 358,
             size: sizeNombre,
             font: fontBold,
-            color: rgb(0.04, 0.13, 0.22)
+            color: rgb(0.04, 0.13, 0.22) // Azul #0b2238
         });
 
-        // 2. DÍA Y MES (Ubicación en renglón de fecha ~42% de altura)
+        // --- 3. RELLENAR DÍA Y MES EN LA FECHA ---
         const fechaObj = new Date(devolucionExamen.fecha);
         const dia = fechaObj.getDate().toString();
         const mes = fechaObj.toLocaleDateString('es-AR', { month: 'long' }).toUpperCase();
 
+        // Rellenar día en las rayitas del día
         firstPage.drawText(dia, {
-            x: width * 0.32,
-            y: height * 0.42,
-            size: 12,
+            x: 278,
+            y: 222,
+            size: 11,
             font: fontBold,
             color: rgb(0.04, 0.13, 0.22)
         });
 
+        // Rellenar mes en las rayitas del mes
         firstPage.drawText(mes, {
-            x: width * 0.50,
-            y: height * 0.42,
-            size: 12,
+            x: 410,
+            y: 222,
+            size: 11,
             font: fontBold,
             color: rgb(0.04, 0.13, 0.22)
         });
