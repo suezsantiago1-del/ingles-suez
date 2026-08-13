@@ -158,35 +158,55 @@ export const renderClassroom = async (req, res) => {
             return res.send('<h1>Este curso aún no tiene lecciones cargadas.</h1>');
         }
 
-        // 2. Obtener entregas del alumno en este curso
-        const entregasAlumno = await db.all(
-            'SELECT DISTINCT leccion_id FROM entregas WHERE usuario_id = ? AND curso_id = ?',
-            [usuarioId, cursoId]
-        );
-        const leccionesCompletadasIds = new Set(entregasAlumno.map(e => e.leccion_id));
+        // 2. Obtener entregas del alumno en este curso junto con sus devoluciones y notas
+        const entregasAlumno = await db.all(`
+            SELECT e.leccion_id, d.nota 
+            FROM entregas e
+            LEFT JOIN devoluciones d ON d.entrega_id = e.id
+            WHERE e.usuario_id = ? AND e.curso_id = ?
+        `, [usuarioId, cursoId]);
 
-        // 3. Determinar estado de desbloqueo cronológico
-        let leccionAnteriorCompletada = true;
+        // Mapa auxiliar para asociar lección ID -> nota
+        const mapaEntregas = new Map();
+        entregasAlumno.forEach(e => {
+            mapaEntregas.set(e.leccion_id, e.nota);
+        });
+
+        // 3. Verificar si TODAS las lecciones previas a la Clase 10 están entregadas y APROBADAS (nota >= 6)
+        const leccionesPreviasExamen = lecciones.filter(l => l.orden < 10);
+        const todasPreviasAprobadas = leccionesPreviasExamen.length > 0 && leccionesPreviasExamen.every(l => {
+            if (!mapaEntregas.has(l.id)) return false; // Falta entregar la tarea
+            const nota = mapaEntregas.get(l.id);
+            return nota !== null && nota !== undefined && parseInt(nota, 10) >= 6; // Corregida y aprobada
+        });
+
+        // 4. Determinar el estado de desbloqueo cronológico
+        let leccionAnteriorEntregada = true;
         const leccionesConEstado = lecciones.map((leccion, index) => {
-            const completada = leccionesCompletadasIds.has(leccion.id);
+            const entregada = mapaEntregas.has(leccion.id);
+            const nota = mapaEntregas.get(leccion.id);
             let desbloqueada = false;
 
-            if (index === 0) {
-                desbloqueada = true; // La lección 1 siempre se puede cursar
+            if (leccion.orden === 10) {
+                // LA CLASE 10 SOLO SE DESBLOQUEA SI TODAS LAS ANTERIORES ESTÁN APROBADAS POR EL PROFESOR
+                desbloqueada = todasPreviasAprobadas;
+            } else if (index === 0) {
+                desbloqueada = true; // La Clase 1 siempre está disponible
             } else {
-                desbloqueada = leccionAnteriorCompletada; // La actual se desbloquea si la anterior fue entregada
+                desbloqueada = leccionAnteriorEntregada; // Clase 2 a 9 requieren haber enviado la entrega de la lección anterior
             }
 
-            leccionAnteriorCompletada = completada;
+            leccionAnteriorEntregada = entregada;
 
             return {
                 ...leccion,
-                completada,
+                completada: entregada,
+                nota: nota,
                 desbloqueada
             };
         });
 
-        // 4. Determinar lección activa segura (evita saltarse bloqueos por URL)
+        // 5. Determinar la lección activa de forma segura (previene accesos forzados por URL)
         let leccionActiva = leccionesConEstado[0];
 
         if (leccionId) {
@@ -194,7 +214,7 @@ export const renderClassroom = async (req, res) => {
             if (encontrada && encontrada.desbloqueada) {
                 leccionActiva = encontrada;
             } else {
-                // Si intenta entrar a una lección bloqueada, lo enviamos a la última desbloqueada
+                // Si intenta ingresar a una lección bloqueada (incluida la Clase 10), redirige a la última permitida
                 const ultimasDesbloqueadas = leccionesConEstado.filter(l => l.desbloqueada);
                 leccionActiva = ultimasDesbloqueadas[ultimasDesbloqueadas.length - 1];
             }
