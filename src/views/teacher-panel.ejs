@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Particulares - INGLÉS SUEZ</title>
+    <title>Panel del Profesor - INGLÉS SUEZ</title>
     <link rel="stylesheet" href="/css/styles.css">
     <style>
         body { background-color: #f4f7f6; margin: 0; font-family: system-ui, -apple-system, sans-serif; }
@@ -28,12 +28,12 @@
         .chat-body { flex-grow: 1; padding: 2rem; overflow-y: auto; }
         .chat-placeholder { text-align: center; color: #a0aec0; margin-top: 6rem; }
 
-        /* Tarjetas de Consultas Particulares */
-        .consulta-card { background: #ffffff; border: 1px solid #cbd5e0; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.8rem; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+        /* Tarjetas de Entregas */
+        .entrega-card { background: #ffffff; border: 1px solid #cbd5e0; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.8rem; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
         .badge { background: #e2ebd5; color: #184168; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
-        .badge-objetivo { background: #edf2f7; color: #2d3748; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.8rem; font-weight: 600; margin-left: 0.4rem; }
-        .respuesta-box { margin-top: 1.2rem; background: #f7fafc; padding: 1.2rem; border-radius: 6px; border: 1px solid #e2e8f0; }
-        .respuesta-existente { background: #ebf8ff; border-left: 4px solid #3182ce; padding: 1rem; border-radius: 4px; margin-top: 1rem; }
+        .devolucion-box { margin-top: 1.2rem; background: #f7fafc; padding: 1.2rem; border-radius: 6px; border: 1px solid #e2e8f0; }
+        .devolucion-existente { background: #ebf8ff; border-left: 4px solid #3182ce; padding: 1rem; border-radius: 4px; margin-top: 1rem; }
+        .nota-badge { background: #2b6cb0; color: #ffffff; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.85rem; font-weight: bold; margin-left: 0.5rem; }
 
         @media (max-width: 850px) {
             .teacher-layout { flex-direction: column; height: auto; }
@@ -49,7 +49,7 @@
         <!-- Sidebar: Lista Agrupada por Alumno -->
         <aside class="sidebar-alumnos">
             <div class="sidebar-header">
-                <h2>🎯 Clases Particulares</h2>
+                <h2>💬 Chats por Alumno</h2>
             </div>
             <div class="lista-alumnos" id="lista-alumnos">
                 <!-- Se poblará dinámicamente -->
@@ -65,12 +65,12 @@
 
             <div class="chat-body" id="chat-body">
                 <div class="chat-placeholder" id="chat-placeholder">
-                    <div style="font-size: 3rem; margin-bottom: 0.5rem;">🎓</div>
-                    <h3 style="color: #0b2238; margin-top: 0;">Consultas de Clases Particulares</h3>
-                    <p>Selecciona un alumno para revisar su solicitud de clase particular y responderle.</p>
+                    <div style="font-size: 3rem; margin-bottom: 0.5rem;">👨‍🏫</div>
+                    <h3 style="color: #0b2238; margin-top: 0;">Panel de Control del Profesor</h3>
+                    <p>Selecciona un alumno de la lista lateral para ver el historial de sus entregas y responderle.</p>
                 </div>
 
-                <div id="contenedor-consultas-alumno" style="display: none;"></div>
+                <div id="contenedor-entregas-alumno" style="display: none;"></div>
             </div>
         </main>
     </div>
@@ -78,28 +78,28 @@
     <%- include('partials/footer') %>
 
     <script>
-        // Array global de consultas recibido desde EJS
-        const consultasGlobales = <%- JSON.stringify(consultas || []) %>;
+        // Array global recibido de EJS
+        const entregasGlobales = <%- JSON.stringify(typeof entregas !== 'undefined' ? entregas : []) %>;
 
-        // Agrupar consultas por usuario_id
+        // Agrupar entregas por usuario_id
         const mapaAlumnos = new Map();
 
-        consultasGlobales.forEach(c => {
-            if (!mapaAlumnos.has(c.usuario_id)) {
-                mapaAlumnos.set(c.usuario_id, {
-                    id: c.usuario_id,
-                    nombre: c.usuario_nombre,
-                    email: c.usuario_email,
-                    consultas: [],
+        entregasGlobales.forEach(e => {
+            if (!mapaAlumnos.has(e.usuario_id)) {
+                mapaAlumnos.set(e.usuario_id, {
+                    id: e.usuario_id,
+                    nombre: e.usuario_nombre,
+                    email: e.usuario_email,
+                    entregas: [],
                     pendientes: 0
                 });
             }
 
-            const alumno = mapaAlumnos.get(c.usuario_id);
-            alumno.consultas.push(c);
+            const alumno = mapaAlumnos.get(e.usuario_id);
+            alumno.entregas.push(e);
 
-            // Contar solicitudes sin respuesta del profesor
-            if (!c.respuesta_profesor) {
+            // Contar si hay entregas sin responder
+            if (!e.devolucion_mensaje) {
                 alumno.pendientes++;
             }
         });
@@ -108,7 +108,7 @@
         const contenedorLista = document.getElementById('lista-alumnos');
 
         if (mapaAlumnos.size === 0) {
-            contenedorLista.innerHTML = '<p style="padding: 1.5rem; color: #718096; text-align: center;">No hay solicitudes de clases particulares.</p>';
+            contenedorLista.innerHTML = '<p style="padding: 1.5rem; color: #718096; text-align: center;">Aún no hay entregas registradas.</p>';
         } else {
             mapaAlumnos.forEach(alumno => {
                 const div = document.createElement('div');
@@ -121,7 +121,7 @@
                         <span class="alumno-nombre">${alumno.nombre}</span>
                         <span class="alumno-email">${alumno.email}</span>
                     </div>
-                    ${alumno.pendientes > 0 ? `<span class="badge-pendiente">${alumno.pendientes} pend.</span>` : ''}
+                    ${alumno.pendientes > 0 ? `<span class="badge-pendiente">${alumno.pendientes} sin corregir</span>` : ''}
                 `;
                 contenedorLista.appendChild(div);
             });
@@ -136,50 +136,58 @@
             document.querySelectorAll('.alumno-item').forEach(el => el.classList.remove('active'));
             document.getElementById(`item-alumno-${usuarioId}`).classList.add('active');
 
-            // Mostrar header de chat
+            // Mostrar vista de chat
             document.getElementById('chat-placeholder').style.display = 'none';
             document.getElementById('chat-header').style.display = 'block';
             document.getElementById('chat-alumno-nombre').innerText = alumno.nombre;
             document.getElementById('chat-alumno-email').innerText = `(${alumno.email})`;
 
-            const contenedor = document.getElementById('contenedor-consultas-alumno');
+            const contenedor = document.getElementById('contenedor-entregas-alumno');
             contenedor.style.display = 'block';
             contenedor.innerHTML = '';
 
-            // Renderizar tarjetas de consultas
-            alumno.consultas.forEach(c => {
+            // Generar tarjetas de entrega
+            alumno.entregas.forEach(e => {
                 const card = document.createElement('div');
-                card.className = 'consulta-card';
+                card.className = 'entrega-card';
 
-                const tieneRespuesta = !!c.respuesta_profesor;
+                const tieneDevolucion = !!e.devolucion_mensaje;
 
                 card.innerHTML = `
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
                         <div>
-                            <span class="badge">Modalidad: ${c.modalidad}</span>
-                            <span class="badge-objetivo">Objetivo: ${c.objetivo}</span>
+                            <span class="badge">${e.curso_titulo}</span>
+                            <span style="color: #4a5568; font-size: 0.9rem; margin-left: 0.5rem;"><strong>Clase:</strong> ${e.leccion_titulo}</span>
                         </div>
-                        <span style="color: #718096; font-size: 0.85rem;">${new Date(c.fecha_consulta).toLocaleString('es-AR')}</span>
+                        <span style="color: #718096; font-size: 0.85rem;">${new Date(e.fecha).toLocaleString('es-AR')}</span>
                     </div>
 
                     <div style="background: #ffffff; padding: 1rem; border-left: 4px solid #184168; border-radius: 4px; color: #2d3748; white-space: pre-wrap; border-top: 1px solid #edf2f7; border-right: 1px solid #edf2f7; border-bottom: 1px solid #edf2f7;">
-                        <strong>Consulta del Alumno:</strong><br>${c.mensaje_alumno}
+                        <strong>Respuesta del Alumno:</strong><br>${e.contenido}
                     </div>
 
-                    ${tieneRespuesta ? `
-                        <div class="respuesta-existente">
-                            <strong style="color: #2b6cb0;">💬 Tu Respuesta Enviada (${new Date(c.fecha_respuesta).toLocaleString('es-AR')}):</strong>
-                            <p style="margin: 0.5rem 0 0 0; color: #2d3748; white-space: pre-wrap;">${c.respuesta_profesor}</p>
+                    ${tieneDevolucion ? `
+                        <div class="devolucion-existente">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <strong style="color: #2b6cb0;">✍️ Tu Devolución Enviada (${new Date(e.devolucion_fecha).toLocaleString('es-AR')}):</strong>
+                                ${e.devolucion_nota !== null && e.devolucion_nota !== undefined ? `<span class="nota-badge">Nota: ${e.devolucion_nota}/10</span>` : ''}
+                            </div>
+                            <p style="margin: 0.5rem 0 0 0; color: #2d3748; white-space: pre-wrap;">${e.devolucion_mensaje}</p>
                         </div>
                     ` : ''}
 
-                    <div class="respuesta-box">
-                        <h4 style="margin-top: 0; color: #0b2238;">${tieneRespuesta ? 'Editar Respuesta' : 'Responder Consulta Particular'}</h4>
+                    <div class="devolucion-box">
+                        <h4 style="margin-top: 0; color: #0b2238;">${tieneDevolucion ? 'Editar Devolución' : 'Enviar Devolución al Alumno'}</h4>
                         
-                        <textarea id="resp-text-${c.id}" placeholder="Escribe tu propuesta, disponibilidad u orientaciones para la clase particular..." style="width: 100%; height: 90px; padding: 0.7rem; border: 1px solid #cbd5e0; border-radius: 6px; font-family: inherit; font-size: 0.95rem; margin-bottom: 0.8rem;">${c.respuesta_profesor || ''}</textarea>
+                        <textarea id="dev-text-${e.id}" placeholder="Escribe aquí tus correcciones o comentarios para el alumno..." style="width: 100%; height: 90px; padding: 0.7rem; border: 1px solid #cbd5e0; border-radius: 6px; font-family: inherit; font-size: 0.95rem; margin-bottom: 0.8rem;">${e.devolucion_mensaje || ''}</textarea>
 
-                        <button type="button" onclick="enviarRespuesta(${c.id}, this)" style="background: #184168; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 6px; font-weight: bold; cursor: pointer;">
-                            ${tieneRespuesta ? 'Actualizar Respuesta' : 'Enviar Respuesta'}
+                        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.8rem;">
+                            <label for="dev-nota-${e.id}" style="color: #2d3748; font-weight: bold; font-size: 0.9rem;">Calificación (1 - 10):</label>
+                            <input type="number" id="dev-nota-${e.id}" min="1" max="10" placeholder="Ej: 8" value="${(e.devolucion_nota !== null && e.devolucion_nota !== undefined) ? e.devolucion_nota : ''}" style="width: 80px; padding: 0.4rem 0.6rem; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 0.95rem;">
+                        </div>
+
+                        <button type="button" onclick="enviarDevolucion(${e.id}, ${e.usuario_id}, this)" style="background: #184168; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 6px; font-weight: bold; cursor: pointer;">
+                            ${tieneDevolucion ? 'Actualizar Devolución' : 'Enviar Devolución'}
                         </button>
                     </div>
                 `;
@@ -188,13 +196,20 @@
             });
         }
 
-        // Función AJAX para enviar respuesta
-        async function enviarRespuesta(consultaId, btn) {
-            const textarea = document.getElementById(`resp-text-${consultaId}`);
-            const respuesta = textarea.value.trim();
+        async function enviarDevolucion(entregaId, usuarioId, btn) {
+            const textarea = document.getElementById(`dev-text-${entregaId}`);
+            const inputNota = document.getElementById(`dev-nota-${entregaId}`);
+            
+            const mensaje = textarea.value.trim();
+            const nota = inputNota ? inputNota.value.trim() : null;
 
-            if (!respuesta) {
-                alert('Por favor escribe una respuesta antes de enviar.');
+            if (!mensaje) {
+                alert('Escribe una devolución antes de enviar.');
+                return;
+            }
+
+            if (nota !== "" && (isNaN(nota) || parseInt(nota) < 1 || parseInt(nota) > 10)) {
+                alert('Por favor, ingresa una nota válida entre 1 y 10.');
                 return;
             }
 
@@ -203,25 +218,25 @@
             btn.disabled = true;
 
             try {
-                const res = await fetch('/profesor/particulares/responder', {
+                const response = await fetch('/profesor/devolucion', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ consultaId, respuesta })
+                    body: JSON.stringify({ entregaId, usuarioId, mensaje, nota })
                 });
 
-                const data = await res.json();
+                const data = await response.json();
 
                 if (data.success) {
-                    alert('¡Respuesta enviada con éxito!');
+                    alert('¡Devolución enviada correctamente al alumno!');
                     window.location.reload();
                 } else {
-                    alert(data.message || 'Error al guardar la respuesta.');
+                    alert(data.message || 'Error al guardar la devolución.');
                     btn.innerText = textoOriginal;
                     btn.disabled = false;
                 }
             } catch (err) {
                 console.error(err);
-                alert('Error de conexión al enviar la respuesta.');
+                alert('Error de conexión al enviar la devolución.');
                 btn.innerText = textoOriginal;
                 btn.disabled = false;
             }
