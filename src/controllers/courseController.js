@@ -522,6 +522,22 @@ export const descargarCertificado = async (req, res) => {
             color: rgb(0.04, 0.13, 0.22)
         });
 
+        // --- 4. AGREGAR FIRMA DEL PROFESOR (firma.jpg) ---
+        const firmaPath = path.join(__dirname, '../../public/certificados/firma.jpg');
+
+        if (fs.existsSync(firmaPath)) {
+            const firmaBytes = fs.readFileSync(firmaPath);
+            const firmaImage = await pdfDoc.embedJpg(firmaBytes);
+
+            // Coordenadas base para ubicar la firma sobre "PROF. SANTIAGO SUEZ"
+            firstPage.drawImage(firmaImage, {
+                x: 550,       // Ajustá según necesites mover hacia izq/der
+                y: 115,       // Ajustá según necesites mover hacia arriba/abajo
+                width: 120,   // Ancho de la imagen de la firma
+                height: 50    // Alto de la imagen de la firma
+            });
+        }
+
         const pdfBytes = await pdfDoc.save();
 
         res.setHeader('Content-Type', 'application/pdf');
