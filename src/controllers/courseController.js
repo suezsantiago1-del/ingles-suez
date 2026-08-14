@@ -531,10 +531,10 @@ export const descargarCertificado = async (req, res) => {
 
             // Coordenadas base para ubicar la firma sobre "PROF. SANTIAGO SUEZ"
             firstPage.drawImage(firmaImage, {
-                x: 600,       // Ajustá según necesites mover hacia izq/der
+                x: 615,       // Ajustá según necesites mover hacia izq/der
                 y: 115,       // Ajustá según necesites mover hacia arriba/abajo
-                width: 120,   // Ancho de la imagen de la firma
-                height: 80    // Alto de la imagen de la firma
+                width: 110,   // Ancho de la imagen de la firma
+                height: 70    // Alto de la imagen de la firma
             });
         }
 
