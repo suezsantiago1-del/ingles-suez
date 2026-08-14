@@ -55,3 +55,51 @@ export const calificarEntrega = async (req, res) => {
         return res.status(500).send('Error al guardar la calificación.');
     }
 };
+
+// ==========================================
+// CONTROLADORES PARA CLASES PARTICULARES
+// ==========================================
+
+export const renderPanelParticularesProfesor = async (req, res) => {
+    try {
+        const db = await dbPromise;
+
+        const consultas = await db.all(`
+            SELECT mp.id, mp.modalidad, mp.objetivo, mp.mensaje_alumno, 
+                   mp.respuesta_profesor, mp.fecha_consulta, mp.fecha_respuesta,
+                   u.id as usuario_id, u.nombre as usuario_nombre, u.email as usuario_email
+            FROM mensajes_particulares mp
+            INNER JOIN usuarios u ON mp.usuario_id = u.id
+            ORDER BY mp.fecha_consulta DESC
+        `);
+
+        return res.render('teacher-particulares-panel', { consultas: consultas || [] });
+    } catch (error) {
+        console.error('Error al cargar panel de particulares:', error);
+        return res.status(500).send('Error al cargar el panel de clases particulares.');
+    }
+};
+
+export const responderConsultaParticular = async (req, res) => {
+    const { consultaId, respuesta } = req.body;
+
+    if (!consultaId || !respuesta || !respuesta.trim()) {
+        return res.status(400).json({ success: false, message: 'La respuesta no puede estar vacía.' });
+    }
+
+    try {
+        const db = await dbPromise;
+
+        await db.run(
+            `UPDATE mensajes_particulares 
+             SET respuesta_profesor = ?, fecha_respuesta = CURRENT_TIMESTAMP 
+             WHERE id = ?`,
+            [respuesta.trim(), consultaId]
+        );
+
+        return res.json({ success: true, message: 'Respuesta guardada correctamente.' });
+    } catch (error) {
+        console.error('Error al responder consulta particular:', error);
+        return res.status(500).json({ success: false, message: 'Error en la base de datos al guardar la respuesta.' });
+    }
+};

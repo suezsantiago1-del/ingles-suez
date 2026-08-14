@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Particulares - INGLÉS SUEZ</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        body { background-color: #f4f7f6; margin: 0; font-family: system-ui, -apple-system, sans-serif; }
+        
+        /* Pestañas de Navegación del Profesor */
+        .teacher-nav-tabs {
+            max-width: 1400px;
+            margin: 1.5rem auto 0 auto;
+            display: flex;
+            gap: 0.5rem;
+            padding: 0 1rem;
+        }
+        .teacher-tab {
+            padding: 0.8rem 1.5rem;
+            background: #cbd5e0;
+            color: #0b2238;
+            text-decoration: none;
+            font-weight: bold;
+            border-radius: 8px 8px 0 0;
+            font-size: 0.95rem;
+            transition: background 0.2s, color 0.2s;
+        }
+        .teacher-tab:hover { background: #a0aec0; }
+        .teacher-tab.active {
+            background: #ffffff;
+            color: #184168;
+            border-top: 3px solid #184168;
+        }
+
+        .teacher-layout { display: flex; height: calc(100vh - 140px); max-width: 1400px; margin: 0 auto 2rem auto; background: #ffffff; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-radius: 0 0 8px 8px; }
+        
+        /* Sidebar de Alumnos */
+        .sidebar-alumnos { width: 340px; background: #ffffff; border-right: 1px solid #cbd5e0; flex-shrink: 0; display: flex; flex-direction: column; }
+        .sidebar-header { padding: 1.2rem 1.5rem; background: #0b2238; color: #ffffff; }
+        .sidebar-header h2 { margin: 0; font-size: 1.1rem; }
+        .lista-alumnos { overflow-y: auto; flex-grow: 1; }
+        
+        .alumno-item { padding: 1rem 1.2rem; border-bottom: 1px solid #edf2f7; cursor: pointer; transition: background 0.2s; display: flex; justify-content: space-between; align-items: center; }
+        .alumno-item:hover { background: #f8fafc; }
+        .alumno-item.active { background: #ebf8ff; border-left: 4px solid #3182ce; }
+        .alumno-nombre { font-weight: bold; color: #0b2238; display: block; font-size: 0.95rem; }
+        .alumno-email { font-size: 0.8rem; color: #718096; }
+        .badge-pendiente { background: #e53e3e; color: #ffffff; border-radius: 12px; padding: 0.15rem 0.5rem; font-size: 0.75rem; font-weight: bold; }
+
+        /* Área Central */
+        .chat-container { flex-grow: 1; display: flex; flex-direction: column; background: #f8fafc; }
+        .chat-header { padding: 1.2rem 2rem; background: #ffffff; border-bottom: 1px solid #cbd5e0; }
+        .chat-body { flex-grow: 1; padding: 2rem; overflow-y: auto; }
+        .chat-placeholder { text-align: center; color: #a0aec0; margin-top: 6rem; }
+
+        /* Tarjetas de Consultas Particulares */
+        .consulta-card { background: #ffffff; border: 1px solid #cbd5e0; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.8rem; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+        .badge { background: #e2ebd5; color: #184168; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
+        .badge-objetivo { background: #edf2f7; color: #2d3748; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.8rem; font-weight: 600; margin-left: 0.4rem; }
+        .respuesta-box { margin-top: 1.2rem; background: #f7fafc; padding: 1.2rem; border-radius: 6px; border: 1px solid #e2e8f0; }
+        .respuesta-existente { background: #ebf8ff; border-left: 4px solid #3182ce; padding: 1rem; border-radius: 4px; margin-top: 1rem; }
+
+        @media (max-width: 850px) {
+            .teacher-layout { flex-direction: column; height: auto; }
+            .sidebar-alumnos { width: 100%; height: 250px; }
+        }
+    </style>
+</head>
+<body>
+
+    <%- include('partials/header') %>
+
+    <!-- Navegación de Pestañas del Profesor -->
+    <div class="teacher-nav-tabs">
+        <a href="/teacher-panel" class="teacher-tab">📚 Entregas de Cursos</a>
+        <a href="/profesor/particulares" class="teacher-tab active">🎯 Clases Particulares</a>
+    </div>
+
+    <div class="teacher-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar-alumnos">
+            <div class="sidebar-header">
+                <h2>🎯 Consultas Particulares</h2>
+            </div>
+            <div class="lista-alumnos" id="lista-alumnos">
+                <!-- Dinámico -->
+            </div>
+        </aside>
+
+        <!-- Chat Container -->
+        <main class="chat-container">
+            <div class="chat-header" id="chat-header" style="display: none;">
+                <h3 id="chat-alumno-nombre" style="margin: 0; color: #0b2238;"></h3>
+                <span id="chat-alumno-email" style="color: #718096; font-size: 0.85rem;"></span>
+            </div>
+
+            <div class="chat-body" id="chat-body">
+                <div class="chat-placeholder" id="chat-placeholder">
+                    <div style="font-size: 3rem; margin-bottom: 0.5rem;">🎓</div>
+                    <h3 style="color: #0b2238; margin-top: 0;">Consultas de Clases Particulares</h3>
+                    <p>Selecciona un alumno para revisar su solicitud de clase particular y responderle.</p>
+                </div>
+
+                <div id="contenedor-consultas-alumno" style="display: none;"></div>
+            </div>
+        </main>
+    </div>
+
+    <%- include('partials/footer') %>
+
+    <script>
+        const consultasGlobales = <%- JSON.stringify(typeof consultas !== 'undefined' ? consultas : []) %>;
+        const mapaAlumnos = new Map();
+
+        consultasGlobales.forEach(c => {
+            if (!mapaAlumnos.has(c.usuario_id)) {
+                mapaAlumnos.set(c.usuario_id, {
+                    id: c.usuario_id,
+                    nombre: c.usuario_nombre,
+                    email: c.usuario_email,
+                    consultas: [],
+                    pendientes: 0
+                });
+            }
+
+            const alumno = mapaAlumnos.get(c.usuario_id);
+            alumno.consultas.push(c);
+
+            if (!c.respuesta_profesor) {
+                alumno.pendientes++;
+            }
+        });
+
+        const contenedorLista = document.getElementById('lista-alumnos');
+
+        if (mapaAlumnos.size === 0) {
+            contenedorLista.innerHTML = '<p style="padding: 1.5rem; color: #718096; text-align: center;">No hay solicitudes registradas.</p>';
+        } else {
+            mapaAlumnos.forEach(alumno => {
+                const div = document.createElement('div');
+                div.className = 'alumno-item';
+                div.id = `item-alumno-${alumno.id}`;
+                div.onclick = () => abrirChatAlumno(alumno.id);
+
+                div.innerHTML = `
+                    <div>
+                        <span class="alumno-nombre">${alumno.nombre}</span>
+                        <span class="alumno-email">${alumno.email}</span>
+                    </div>
+                    ${alumno.pendientes > 0 ? `<span class="badge-pendiente">${alumno.pendientes} pend.</span>` : ''}
+                `;
+                contenedorLista.appendChild(div);
+            });
+        }
+
+        function abrirChatAlumno(usuarioId) {
+            const alumno = mapaAlumnos.get(usuarioId);
+            if (!alumno) return;
+
+            document.querySelectorAll('.alumno-item').forEach(el => el.classList.remove('active'));
+            document.getElementById(`item-alumno-${usuarioId}`).classList.add('active');
+
+            document.getElementById('chat-placeholder').style.display = 'none';
+            document.getElementById('chat-header').style.display = 'block';
+            document.getElementById('chat-alumno-nombre').innerText = alumno.nombre;
+            document.getElementById('chat-alumno-email').innerText = `(${alumno.email})`;
+
+            const contenedor = document.getElementById('contenedor-consultas-alumno');
+            contenedor.style.display = 'block';
+            contenedor.innerHTML = '';
+
+            alumno.consultas.forEach(c => {
+                const card = document.createElement('div');
+                card.className = 'consulta-card';
+                const tieneRespuesta = !!c.respuesta_profesor;
+
+                card.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
+                        <div>
+                            <span class="badge">Modalidad: ${c.modalidad}</span>
+                            <span class="badge-objetivo">Objetivo: ${c.objetivo}</span>
+                        </div>
+                        <span style="color: #718096; font-size: 0.85rem;">${new Date(c.fecha_consulta).toLocaleString('es-AR')}</span>
+                    </div>
+
+                    <div style="background: #ffffff; padding: 1rem; border-left: 4px solid #184168; border-radius: 4px; color: #2d3748; white-space: pre-wrap; border-top: 1px solid #edf2f7; border-right: 1px solid #edf2f7; border-bottom: 1px solid #edf2f7;">
+                        <strong>Consulta del Alumno:</strong><br>${c.mensaje_alumno}
+                    </div>
+
+                    ${tieneRespuesta ? `
+                        <div class="respuesta-existente">
+                            <strong style="color: #2b6cb0;">💬 Tu Respuesta Enviada (${new Date(c.fecha_respuesta).toLocaleString('es-AR')}):</strong>
+                            <p style="margin: 0.5rem 0 0 0; color: #2d3748; white-space: pre-wrap;">${c.respuesta_profesor}</p>
+                        </div>
+                    ` : ''}
+
+                    <div class="respuesta-box">
+                        <h4 style="margin-top: 0; color: #0b2238;">${tieneRespuesta ? 'Editar Respuesta' : 'Responder Consulta Particular'}</h4>
+                        
+                        <textarea id="resp-text-${c.id}" placeholder="Escribe tu propuesta, disponibilidad u orientaciones..." style="width: 100%; height: 90px; padding: 0.7rem; border: 1px solid #cbd5e0; border-radius: 6px; font-family: inherit; font-size: 0.95rem; margin-bottom: 0.8rem;">${c.respuesta_profesor || ''}</textarea>
+
+                        <button type="button" onclick="enviarRespuesta(${c.id}, this)" style="background: #184168; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 6px; font-weight: bold; cursor: pointer;">
+                            ${tieneRespuesta ? 'Actualizar Respuesta' : 'Enviar Respuesta'}
+                        </button>
+                    </div>
+                `;
+
+                contenedor.appendChild(card);
+            });
+        }
+
+        async function enviarRespuesta(consultaId, btn) {
+            const textarea = document.getElementById(`resp-text-${consultaId}`);
+            const respuesta = textarea.value.trim();
+
+            if (!respuesta) {
+                alert('Por favor escribe una respuesta antes de enviar.');
+                return;
+            }
+
+            const textoOriginal = btn.innerText;
+            btn.innerText = 'Guardando...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/profesor/particulares/responder', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ consultaId, respuesta })
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    alert('¡Respuesta enviada con éxito!');
+                    window.location.reload();
+                } else {
+                    alert(data.message || 'Error al guardar la respuesta.');
+                    btn.innerText = textoOriginal;
+                    btn.disabled = false;
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Error de conexión al enviar la respuesta.');
+                btn.innerText = textoOriginal;
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
