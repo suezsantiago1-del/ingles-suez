@@ -58,11 +58,11 @@
                 <p style="color: #718096; margin-bottom: 1.5rem;">Completa el formulario y te responderemos por nuestro canal interno a la brevedad.</p>
 
                 <% if (user) { %>
-                    <form action="/clases-particulares/mensaje" method="POST" style="display: flex; flex-direction: column; gap: 1.2rem;">
+                    <form id="form-consulta-particular" style="display: flex; flex-direction: column; gap: 1.2rem;">
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
                             <div>
                                 <label style="display: block; color: #0b2238; font-weight: bold; margin-bottom: 0.4rem;">Modalidad Preferida:</label>
-                                <select name="modalidad" style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 1rem; box-sizing: border-box;">
+                                <select id="modalidad" name="modalidad" style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 1rem; box-sizing: border-box;" required>
                                     <option value="Online">Online</option>
                                     <option value="Presencial">Presencial</option>
                                     <option value="A Domicilio">A Domicilio</option>
@@ -71,7 +71,7 @@
 
                             <div>
                                 <label style="display: block; color: #0b2238; font-weight: bold; margin-bottom: 0.4rem;">Objetivo Principal:</label>
-                                <select name="objetivo" style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 1rem; box-sizing: border-box;">
+                                <select id="objetivo" name="objetivo" style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 1rem; box-sizing: border-box;" required>
                                     <option value="Conversación y Fluidez">Conversación y Fluidez</option>
                                     <option value="Preparación de Examen">Preparación de Examen</option>
                                     <option value="Inglés desde Cero">Inglés desde Cero</option>
@@ -82,10 +82,10 @@
 
                         <div>
                             <label style="display: block; color: #0b2238; font-weight: bold; margin-bottom: 0.4rem;">Mensaje o Consulta:</label>
-                            <textarea name="mensaje" rows="4" required placeholder="Cuéntame sobre tu disponibilidad horaria, barrio o dudas particulares..." style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 1rem; box-sizing: border-box;"></textarea>
+                            <textarea id="mensaje" name="mensaje" rows="4" required placeholder="Cuéntame sobre tu disponibilidad horaria, barrio o dudas particulares..." style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 1rem; box-sizing: border-box;"></textarea>
                         </div>
 
-                        <button type="submit" style="background: #0b2238; color: white; border: none; padding: 0.9rem 2rem; border-radius: 6px; font-size: 1rem; cursor: pointer; align-self: flex-start;">
+                        <button type="submit" id="btn-submit" style="background: #0b2238; color: white; border: none; padding: 0.9rem 2rem; border-radius: 6px; font-size: 1rem; cursor: pointer; align-self: flex-start;">
                             Enviar Consulta
                         </button>
                     </form>
@@ -98,11 +98,11 @@
             </div>
 
             <!-- Bandeja de Consultas Realizadas por el Alumno -->
-            <% if (user && typeof consultas !== 'undefined' && consultas.length > 0) { %>
+            <% if (user && typeof misConsultas !== 'undefined' && misConsultas.length > 0) { %>
                 <div style="border-top: 2px solid #e3edf5; margin-top: 3rem; padding-top: 2rem;">
                     <h2 style="color: #0b2238; font-size: 1.5rem; margin-bottom: 1.5rem;">Mis Consultas de Clases Particulares</h2>
                     <div style="display: flex; flex-direction: column; gap: 1.2rem;">
-                        <% consultas.forEach(c => { %>
+                        <% misConsultas.forEach(c => { %>
                             <div style="background: #f8fafc; border: 1px solid #cbd5e0; border-radius: 8px; padding: 1.2rem;">
                                 <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: #718096; margin-bottom: 0.5rem;">
                                     <span><strong>Modalidad:</strong> <%= c.modalidad %> | <strong>Objetivo:</strong> <%= c.objetivo %></span>
@@ -113,7 +113,7 @@
                                 <% if (c.respuesta_profesor) { %>
                                     <div style="background: #ebf8ff; border-left: 4px solid #3182ce; padding: 0.8rem 1rem; margin-top: 0.8rem; border-radius: 0 6px 6px 0;">
                                         <span style="display: block; font-weight: bold; color: #2b6cb0; font-size: 0.85rem; margin-bottom: 0.2rem;">Respuesta del Profesor:</span>
-                                        <p style="margin: 0; color: #2d3748;"><%= c.respuesta_profesor %></p>
+                                        <p style="margin: 0; color: #2d3748; white-space: pre-wrap;"><%= c.respuesta_profesor %></p>
                                     </div>
                                 <% } else { %>
                                     <span style="display: inline-block; margin-top: 0.5rem; font-size: 0.8rem; color: #d69e2e; background: #fefcbf; padding: 0.2rem 0.6rem; border-radius: 4px;">Pendiente de respuesta</span>
@@ -129,5 +129,44 @@
 
     <%- include('partials/footer') %>
 
+    <script>
+        const form = document.getElementById('form-consulta-particular');
+        if (form) {
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const btn = document.getElementById('btn-submit');
+                const modalidad = document.getElementById('modalidad').value;
+                const objetivo = document.getElementById('objetivo').value;
+                const mensaje = document.getElementById('mensaje').value;
+
+                btn.disabled = true;
+                btn.innerText = 'Enviando...';
+
+                try {
+                    const res = await fetch('/particulares/consulta', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ modalidad, objetivo, mensaje })
+                    });
+
+                    const data = await res.json();
+
+                    if (data.success) {
+                        alert(data.message);
+                        window.location.reload();
+                    } else {
+                        alert(data.message || 'Error al enviar la consulta.');
+                        btn.disabled = false;
+                        btn.innerText = 'Enviar Consulta';
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert('Error de conexión al enviar la consulta.');
+                    btn.disabled = false;
+                    btn.innerText = 'Enviar Consulta';
+                }
+            });
+        }
+    </script>
 </body>
 </html>

@@ -17,6 +17,7 @@ import {
     guardarDevolucion,
     renderMensajesAlumno,
     descargarCertificado,
+    renderPrivateClasses,
     guardarConsultaParticulares,
     renderPanelParticularesProfesor,
     guardarRespuestaParticular
@@ -97,10 +98,8 @@ app.get('/about', (req, res) => {
     res.render('about');
 });
 
-// Ruta de vista pública de Clases Particulares
-app.get('/clases-particulares', (req, res) => {
-    res.render('privateClasses');
-});
+// Ruta de vista pública e historial de Clases Particulares
+app.get('/clases-particulares', renderPrivateClasses);
 
 // Ruta para guardar la consulta de clase particular enviada por el alumno
 app.post('/particulares/consulta', guardarConsultaParticulares);
@@ -147,7 +146,7 @@ app.post('/entregas', guardarEntrega);
 app.get('/profesor/entregas', renderPanelProfesor);
 app.post('/profesor/devolucion', guardarDevolucion);
 
-// Bandeja de entrada de devoluciones para los alumnos
+// Bandeja de entrada de devoluciones para los alumnos (exclusivo cursos)
 app.get('/mis-mensajes', renderMensajesAlumno);
 
 // Manejo de error 404
