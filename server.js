@@ -29,6 +29,14 @@ const PORT = process.env.PORT || 3000;
 // Permite que Express confíe en las cookies enviadas a través del Proxy HTTPS
 app.set('trust proxy', 1);
 
+// Middleware para forzar HTTPS en Render (Evita advertencias de conexión no segura)
+app.use((req, res, next) => {
+    if (process.env.NODE_ENV === 'production' && req.headers['x-forwarded-proto'] !== 'https') {
+        return res.redirect(`https://${req.headers.host}${req.url}`);
+    }
+    next();
+});
+
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'src/views'));
 
