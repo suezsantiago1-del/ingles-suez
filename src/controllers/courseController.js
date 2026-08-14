@@ -12,6 +12,8 @@ const client = new MercadoPagoConfig({
     accessToken: process.env.MP_ACCESS_TOKEN ? process.env.MP_ACCESS_TOKEN.trim() : ''
 });
 
+const EMAIL_PROFESOR = 'suezsantiago1@gmail.com';
+
 export const renderCourseDetail = async (req, res) => {
     const { id } = req.params;
     try {
@@ -54,19 +56,49 @@ export const processCheckout = async (req, res) => {
             return res.status(404).send('Curso no encontrado');
         }
 
-        const compraExistente = await db.get(
-            'SELECT id FROM compras WHERE usuario_id = ? AND curso_id = ?',
-            [usuarioId, curso.id]
-        );
-
-        if (!compraExistente) {
-            await db.run(`
-                INSERT INTO compras (usuario_id, curso_id)
-                VALUES (?, ?)
-            `, [usuarioId, curso.id]);
+        // If current user is the professor, grant access immediately
+        if (req.session.user && req.session.user.email === EMAIL_PROFESOR) {
+            const compraExistente = await db.get(
+                'SELECT id FROM compras WHERE usuario_id = ? AND curso_id = ?',
+                [usuarioId, curso.id]
+            );
+            if (!compraExistente) {
+                await db.run(`INSERT INTO compras (usuario_id, curso_id) VALUES (?, ?)`,[usuarioId, curso.id]);
+            }
+            return res.redirect(`/classroom/${curso.id}`);
         }
 
-        return res.redirect(`/classroom/${curso.id}`);
+        // For regular students, create a MercadoPago preference and redirect to payment
+        const baseUrl = `${req.protocol}://${req.get('host')}`;
+
+        try {
+            const preference = await Preference.create({
+                items: [
+                    {
+                        title: curso.titulo,
+                        quantity: 1,
+                        unit_price: parseFloat(curso.precio) || 0
+                    }
+                ],
+                back_urls: {
+                    success: `${baseUrl}/payment/success?cursoId=${curso.id}`,
+                    failure: `${baseUrl}/payment/failure`
+                },
+                auto_return: 'approved'
+            });
+
+            // Try multiple possible locations for init_point
+            const initPoint = preference?.response?.init_point || preference?.body?.init_point || preference?.init_point;
+            if (initPoint) {
+                return res.redirect(initPoint);
+            }
+        } catch (mpErr) {
+            console.error('MercadoPago error creating preference:', mpErr);
+            // Fall back to showing course page with error
+            return res.redirect(`/course/${id}`);
+        }
+
+        return res.redirect(`/course/${id}`);
     } catch (error) {
         console.error('Error al procesar la inscripción:', error);
         return res.redirect(`/course/${id}`);
@@ -148,10 +180,16 @@ export const renderClassroom = async (req, res) => {
     try {
         const db = await dbPromise;
 
-        const compra = await db.get(
-            'SELECT id FROM compras WHERE usuario_id = ? AND curso_id = ?',
-            [usuarioId, cursoId]
-        );
+        // Allow the professor automatic access
+        let compra = null;
+        if (req.session.user && req.session.user.email === EMAIL_PROFESOR) {
+            compra = { id: 'instructor' };
+        } else {
+            compra = await db.get(
+                'SELECT id FROM compras WHERE usuario_id = ? AND curso_id = ?',
+                [usuarioId, cursoId]
+            );
+        }
 
         if (!compra) {
             return res.redirect(`/course/${cursoId}`);
