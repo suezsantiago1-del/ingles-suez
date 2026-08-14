@@ -96,6 +96,19 @@ const dbPromise = (async () => {
             leida BOOLEAN DEFAULT FALSE,
             fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
+
+        -- NUEVA TABLA PARA EXCLUSIVA DE CLASES PARTICULARES
+        CREATE TABLE IF NOT EXISTS mensajes_particulares (
+            id SERIAL PRIMARY KEY,
+            usuario_id INTEGER NOT NULL,
+            modalidad VARCHAR(255) NOT NULL,
+            objetivo VARCHAR(255) NOT NULL,
+            mensaje_alumno TEXT NOT NULL,
+            respuesta_profesor TEXT DEFAULT NULL,
+            fecha_consulta TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            fecha_respuesta TIMESTAMP DEFAULT NULL,
+            FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+        );
     `);
 
     // Asegurar columnas requeridas en tablas previamente existentes
@@ -1053,7 +1066,7 @@ const dbPromise = (async () => {
                         <div class="quiz-question" style="margin-bottom: 1.5rem;">
                             <p><strong>5. Decís que este fue el peor día de la semana:</strong></p>
                             <button class="option-btn" onclick="checkAnswer(this, false, 'c9_5', 'Bad es irregular, no forma superlativo con -est.')">( A ) This was the baddest day of the week.</button>
-                            <button class="option-btn" onclick="checkAnswer(this, true, 'c9_5', 'El superlativo irregular del adjetivo bad es the worst.')">( B ) This was the worst day of the week.</button>
+                            <button class="option-btn" onclick="checkAnswer(this, true, 'c9_5', 'El superlativo irregular del adjetivo bad es the worst.')">( B ) This was the worse day of the week.</button>
                             <button class="option-btn" onclick="checkAnswer(this, false, 'c9_5', 'Worse es comparativo, para superlativo corresponde worst.')">( C ) This was the worse day of the week.</button>
                             <div id="c9_5" style="display:none; padding: 0.8rem; border-radius: 6px; margin-top: 0.5rem; font-size: 0.9rem;"></div>
                         </div>
