@@ -16,7 +16,10 @@ import {
     renderPanelProfesor,
     guardarDevolucion,
     renderMensajesAlumno,
-    descargarCertificado
+    descargarCertificado,
+    guardarConsultaParticulares,
+    renderPanelParticularesProfesor,
+    guardarRespuestaParticular
 } from './src/controllers/courseController.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -29,7 +32,7 @@ const PORT = process.env.PORT || 3000;
 // Permite que Express confíe en las cookies enviadas a través del Proxy HTTPS
 app.set('trust proxy', 1);
 
-// Middleware para forzar HTTPS en Render (Evita advertencias de conexión no segura)
+// Middleware para forzar HTTPS en producción
 app.use((req, res, next) => {
     if (process.env.NODE_ENV === 'production' && req.headers['x-forwarded-proto'] !== 'https') {
         return res.redirect(`https://${req.headers.host}${req.url}`);
@@ -52,7 +55,7 @@ app.use(session({
     saveUninitialized: false,
     cookie: { 
         maxAge: 1000 * 60 * 60 * 24, // 1 día
-        secure: process.env.NODE_ENV === 'production', // Seguro en producción
+        secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax'
     }
 }));
@@ -94,10 +97,17 @@ app.get('/about', (req, res) => {
     res.render('about');
 });
 
-// Ruta de Clases Particulares
+// Ruta de vista pública de Clases Particulares
 app.get('/clases-particulares', (req, res) => {
     res.render('privateClasses');
 });
+
+// Ruta para guardar la consulta de clase particular enviada por el alumno
+app.post('/particulares/consulta', guardarConsultaParticulares);
+
+// Rutas del panel del profesor para Clases Particulares
+app.get('/profesor/particulares', renderPanelParticularesProfesor);
+app.post('/profesor/particulares/responder', guardarRespuestaParticular);
 
 // Ruta de Todos los Cursos
 app.get('/cursos-todos', async (req, res) => {
@@ -132,7 +142,7 @@ app.get('/mis-cursos', renderMyCourses);
 app.get('/classroom/:cursoId', renderClassroom);
 app.get('/classroom/:cursoId/certificado', descargarCertificado);
 
-// Entregas de alumnos y panel del profesor
+// Entregas de alumnos y panel del profesor para cursos
 app.post('/entregas', guardarEntrega);
 app.get('/profesor/entregas', renderPanelProfesor);
 app.post('/profesor/devolucion', guardarDevolucion);

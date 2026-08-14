@@ -533,7 +533,7 @@ export const descargarCertificado = async (req, res) => {
             firstPage.drawImage(firmaImage, {
                 x: 637,       // Ajustá según necesites mover hacia izq/der
                 y: 110,       // Ajustá según necesites mover hacia arriba/abajo
-                width: 95,   // Ancho de la imagen de la firma
+                width: 95,    // Ancho de la imagen de la firma
                 height: 70    // Alto de la imagen de la firma
             });
         }
@@ -547,5 +547,121 @@ export const descargarCertificado = async (req, res) => {
     } catch (error) {
         console.error('Error generando certificado:', error);
         return res.status(500).send('Error interno al generar el certificado.');
+    }
+};
+
+// ==========================================
+// SECCIÓN: CLASES PARTICULARES
+// ==========================================
+
+/**
+ * Guarda la consulta/solicitud enviada por el alumno para Clases Particulares
+ */
+export const guardarConsultaParticulares = async (req, res) => {
+    if (!req.session.user) {
+        return res.status(401).json({ success: false, message: 'Usuario no autenticado' });
+    }
+
+    const { modalidad, objetivo, mensaje } = req.body;
+    const usuarioId = req.session.user.id;
+
+    if (!modalidad || !objetivo || !mensaje || mensaje.trim() === '') {
+        return res.status(400).json({ success: false, message: 'Todos los campos son obligatorios.' });
+    }
+
+    try {
+        const db = await dbPromise;
+
+        await db.run(`
+            INSERT INTO mensajes_particulares (usuario_id, modalidad, objetivo, mensaje_alumno)
+            VALUES (?, ?, ?, ?)
+        `, [usuarioId, modalidad, objetivo, mensaje.trim()]);
+
+        return res.json({ 
+            success: true, 
+            message: 'Tu consulta para clases particulares ha sido enviada con éxito.' 
+        });
+    } catch (error) {
+        console.error('Error al guardar la consulta de clases particulares:', error);
+        return res.status(500).json({ 
+            success: false, 
+            message: 'Error interno del servidor al procesar la solicitud.' 
+        });
+    }
+};
+
+/**
+ * Renderiza el panel de gestión de Clases Particulares para el Profesor
+ */
+export const renderPanelParticularesProfesor = async (req, res) => {
+    if (!req.session.user) {
+        return res.redirect('/auth/login');
+    }
+
+    const EMAIL_PROFESOR = 'suezsantiago1@gmail.com';
+
+    if (req.session.user.email !== EMAIL_PROFESOR) {
+        return res.status(403).send('<h1>403 - Acceso denegado: Solo el profesor puede ver esta sección.</h1>');
+    }
+
+    try {
+        const db = await dbPromise;
+
+        const consultas = await db.all(`
+            SELECT 
+                mp.id,
+                mp.usuario_id,
+                mp.modalidad,
+                mp.objetivo,
+                mp.mensaje_alumno,
+                mp.respuesta_profesor,
+                mp.fecha_consulta,
+                mp.fecha_respuesta,
+                u.nombre AS usuario_nombre,
+                u.email AS usuario_email
+            FROM mensajes_particulares mp
+            JOIN usuarios u ON mp.usuario_id = u.id
+            ORDER BY mp.fecha_consulta DESC
+        `);
+
+        return res.render('teacher-particulares-panel', { consultas });
+    } catch (error) {
+        console.error('Error al obtener consultas de clases particulares:', error);
+        return res.redirect('/');
+    }
+};
+
+/**
+ * Guarda la respuesta del profesor a una consulta de Clase Particular
+ */
+export const guardarRespuestaParticular = async (req, res) => {
+    if (!req.session.user) {
+        return res.status(401).json({ success: false, message: 'No autenticado' });
+    }
+
+    const EMAIL_PROFESOR = 'suezsantiago1@gmail.com';
+    if (req.session.user.email !== EMAIL_PROFESOR) {
+        return res.status(403).json({ success: false, message: 'Acceso no autorizado' });
+    }
+
+    const { consultaId, respuesta } = req.body;
+
+    if (!consultaId || !respuesta || respuesta.trim() === '') {
+        return res.status(400).json({ success: false, message: 'La respuesta no puede estar vacía.' });
+    }
+
+    try {
+        const db = await dbPromise;
+
+        await db.run(`
+            UPDATE mensajes_particulares
+            SET respuesta_profesor = ?, fecha_respuesta = CURRENT_TIMESTAMP
+            WHERE id = ?
+        `, [respuesta.trim(), consultaId]);
+
+        return res.json({ success: true, message: 'Respuesta guardada correctamente.' });
+    } catch (error) {
+        console.error('Error al guardar la respuesta del profesor:', error);
+        return res.status(500).json({ success: false, message: 'Error interno del servidor.' });
     }
 };
