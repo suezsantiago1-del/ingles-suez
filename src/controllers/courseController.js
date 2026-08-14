@@ -56,8 +56,8 @@ export const processCheckout = async (req, res) => {
             return res.status(404).send('Curso no encontrado');
         }
 
-        // If current user is the professor, grant access immediately
-        if (req.session.user && req.session.user.email === EMAIL_PROFESOR) {
+        // If current user is the course instructor, grant access immediately
+        if (req.session.user && curso.instructor_email && req.session.user.email === curso.instructor_email) {
             const compraExistente = await db.get(
                 'SELECT id FROM compras WHERE usuario_id = ? AND curso_id = ?',
                 [usuarioId, curso.id]
@@ -84,6 +84,7 @@ export const processCheckout = async (req, res) => {
                     success: `${baseUrl}/payment/success?cursoId=${curso.id}`,
                     failure: `${baseUrl}/payment/failure`
                 },
+                external_reference: `${curso.id}:${usuarioId}`,
                 auto_return: 'approved'
             });
 
@@ -102,6 +103,106 @@ export const processCheckout = async (req, res) => {
     } catch (error) {
         console.error('Error al procesar la inscripción:', error);
         return res.redirect(`/course/${id}`);
+    }
+};
+
+// Webhook handler for Mercado Pago notifications
+export const handleMpWebhook = async (req, res) => {
+    try {
+        const mpAccessToken = process.env.MP_ACCESS_TOKEN ? process.env.MP_ACCESS_TOKEN.trim() : null;
+        if (!mpAccessToken) {
+            console.error('MP_ACCESS_TOKEN not configured for webhook processing');
+            return res.status(500).send('MP not configured');
+        }
+
+        // Mercado Pago may send different payload shapes. Try common locations for the resource id.
+        const body = req.body || {};
+        let paymentId = null;
+
+        if (body.data && body.data.id) paymentId = body.data.id;
+        else if (body.id) paymentId = body.id;
+        else if (body.resource && body.resource.id) paymentId = body.resource.id;
+
+        if (!paymentId && req.query && req.query.id) paymentId = req.query.id;
+
+        if (!paymentId) {
+            console.warn('MercadoPago webhook received without payment id:', body);
+            return res.status(400).send('No payment id');
+        }
+
+        // Fetch payment details from Mercado Pago
+        const mpUrl = `https://api.mercadopago.com/v1/payments/${paymentId}`;
+        const resp = await fetch(mpUrl, { headers: { Authorization: `Bearer ${mpAccessToken}` } });
+        if (!resp.ok) {
+            const txt = await resp.text();
+            console.error('Error fetching MP payment:', resp.status, txt);
+            return res.status(502).send('Error fetching payment');
+        }
+
+        const payment = await resp.json();
+        console.log('MercadoPago payment fetched for webhook:', payment.id, payment.status);
+
+        // Only act on approved payments
+        if (payment.status && payment.status.toLowerCase() === 'approved') {
+            // Try to read external_reference which we set when creating the preference
+            const ext = payment.external_reference || (payment.order && payment.order.external_reference) || (payment.additional_info && payment.additional_info.items && payment.additional_info.items[0] && payment.additional_info.items[0].external_reference) || null;
+
+            let courseId = null;
+            let userId = null;
+
+            if (ext && typeof ext === 'string' && ext.includes(':')) {
+                const parts = ext.split(':');
+                courseId = parts[0];
+                userId = parts[1];
+            }
+
+            // As a fallback, try metadata/user_id or payer.email lookup
+            const db = await dbPromise;
+
+            if (!courseId || !userId) {
+                // Try to infer courseId from payment.description or items
+                if (payment.external_reference && typeof payment.external_reference === 'string' && payment.external_reference.includes(':')) {
+                    const parts = payment.external_reference.split(':');
+                    courseId = parts[0]; userId = parts[1];
+                }
+            }
+
+            if (!courseId) {
+                console.warn('Could not determine courseId from payment:', payment.id);
+                // Still respond 200 to acknowledge webhook
+                return res.status(200).send('Ignored');
+            }
+
+            // If we have no userId, try to match by payer email
+            if (!userId && payment.payer && payment.payer.email) {
+                const usuario = await db.get('SELECT id FROM usuarios WHERE email = ?', [payment.payer.email]);
+                if (usuario) userId = usuario.id;
+            }
+
+            if (!userId) {
+                console.warn('Could not determine userId for payment:', payment.id);
+                return res.status(200).send('Ignored');
+            }
+
+            // Insert into compras if not exists
+            const existe = await db.get('SELECT id FROM compras WHERE usuario_id = ? AND curso_id = ?', [userId, courseId]);
+            if (!existe) {
+                try {
+                    await db.run('INSERT INTO compras (usuario_id, curso_id) VALUES (?, ?)', [userId, courseId]);
+                    console.log(`Registered purchase for user ${userId} course ${courseId} from MP webhook`);
+                } catch (e) {
+                    console.error('Error inserting compra from webhook:', e);
+                }
+            } else {
+                console.log('Compra already exists for user/course:', userId, courseId);
+            }
+        }
+
+        // Acknowledge webhook
+        return res.status(200).send('OK');
+    } catch (err) {
+        console.error('Error handling MP webhook:', err);
+        return res.status(500).send('Server error');
     }
 };
 
@@ -180,9 +281,13 @@ export const renderClassroom = async (req, res) => {
     try {
         const db = await dbPromise;
 
-        // Allow the professor automatic access
+        // Load course to determine instructor and validate access
+        const curso = await db.get('SELECT * FROM cursos WHERE id = ?', [cursoId]);
+        if (!curso) return res.status(404).send('Curso no encontrado');
+
+        // Allow the instructor (per-course) automatic access
         let compra = null;
-        if (req.session.user && req.session.user.email === EMAIL_PROFESOR) {
+        if (req.session.user && curso.instructor_email && req.session.user.email === curso.instructor_email) {
             compra = { id: 'instructor' };
         } else {
             compra = await db.get(
@@ -194,8 +299,6 @@ export const renderClassroom = async (req, res) => {
         if (!compra) {
             return res.redirect(`/course/${cursoId}`);
         }
-
-        const curso = await db.get('SELECT * FROM cursos WHERE id = ?', [cursoId]);
         const lecciones = await db.all('SELECT * FROM lecciones WHERE curso_id = ? ORDER BY orden ASC', [cursoId]);
 
         if (!lecciones || lecciones.length === 0) {

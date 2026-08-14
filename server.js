@@ -16,6 +16,7 @@ import {
     renderPanelProfesor,
     guardarDevolucion,
     uploadLessonVideo,
+    handleMpWebhook,
     renderMensajesAlumno,
     descargarCertificado,
     renderPrivateClasses,
@@ -142,6 +143,9 @@ app.get('/payment/failure', paymentFailure);
 app.get('/mis-cursos', renderMyCourses);
 app.get('/classroom/:cursoId', renderClassroom);
 app.get('/classroom/:cursoId/certificado', descargarCertificado);
+
+// Mercado Pago webhook endpoint for async payment notifications
+app.post('/mercadopago/webhook', express.json(), handleMpWebhook);
 
 // Entregas de alumnos y panel del profesor para cursos
 app.post('/entregas', guardarEntrega);
