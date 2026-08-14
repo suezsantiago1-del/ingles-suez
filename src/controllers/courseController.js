@@ -589,6 +589,7 @@ export const renderPrivateClasses = async (req, res) => {
 
 /**
  * Guarda la consulta/solicitud enviada por el alumno para Clases Particulares
+ * e inserta el primer mensaje en el historial de chat interactivo.
  */
 export const guardarConsultaParticulares = async (req, res) => {
     if (!req.session.user) {
@@ -605,10 +606,26 @@ export const guardarConsultaParticulares = async (req, res) => {
     try {
         const db = await dbPromise;
 
-        await db.run(`
+        // 1. Guardar consulta principal y retornar el ID generado
+        const result = await db.run(`
             INSERT INTO mensajes_particulares (usuario_id, modalidad, objetivo, mensaje_alumno)
             VALUES (?, ?, ?, ?)
+            RETURNING id
         `, [usuarioId, modalidad, objetivo, mensaje.trim()]);
+
+        const consultaId = result ? result.lastID : null;
+
+        // 2. Registrar el mensaje inicial en el historial del chat
+        if (consultaId) {
+            try {
+                await db.run(`
+                    INSERT INTO chat_mensajes_particulares (consulta_id, usuario_id, emisor, mensaje)
+                    VALUES (?, ?, 'ALUMNO', ?)
+                `, [consultaId, usuarioId, mensaje.trim()]);
+            } catch (e) {
+                console.log('Error insertando mensaje inicial en el chat:', e.message);
+            }
+        }
 
         return res.json({ 
             success: true, 
@@ -620,6 +637,36 @@ export const guardarConsultaParticulares = async (req, res) => {
             success: false, 
             message: 'Error interno del servidor al procesar la solicitud.' 
         });
+    }
+};
+
+/**
+ * Permite al alumno enviar mensajes continuos dentro de una consulta activa
+ */
+export const enviarMensajeAlumnoChat = async (req, res) => {
+    const { consultaId, mensaje } = req.body;
+    const usuarioId = req.session?.user?.id;
+
+    if (!usuarioId) {
+        return res.status(401).json({ success: false, message: 'No autenticado' });
+    }
+
+    if (!consultaId || !mensaje || !mensaje.trim()) {
+        return res.status(400).json({ success: false, message: 'El mensaje no puede estar vacío.' });
+    }
+
+    try {
+        const db = await dbPromise;
+
+        await db.run(`
+            INSERT INTO chat_mensajes_particulares (consulta_id, usuario_id, emisor, mensaje)
+            VALUES (?, ?, 'ALUMNO', ?)
+        `, [consultaId, usuarioId, mensaje.trim()]);
+
+        return res.json({ success: true, message: 'Mensaje enviado correctamente.' });
+    } catch (error) {
+        console.error('Error al guardar mensaje en el chat:', error);
+        return res.status(500).json({ success: false, message: 'Error interno del servidor al procesar el mensaje.' });
     }
 };
 

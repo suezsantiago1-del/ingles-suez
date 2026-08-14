@@ -11,10 +11,12 @@ import {
 } from '../controllers/authController.js';
 
 import {
+    renderPrivateClasses,
+    guardarConsultaParticulares,
+    enviarMensajeAlumnoChat,
     renderPanelParticularesProfesor,
-    responderConsultaParticular,
-    enviarMensajeAlumnoChat
-} from '../controllers/teacherController.js';
+    guardarRespuestaParticular
+} from '../controllers/courseController.js';
 
 const router = express.Router();
 
@@ -33,10 +35,16 @@ router.post('/profile/update', updateProfile);
 router.post('/profile/password', updatePassword);
 
 // ==========================================
-// RUTAS CHAT CLASES PARTICULARES
+// RUTAS DE CLASES PARTICULARES (CHAT)
 // ==========================================
-router.get('/profesor/particulares', renderPanelParticularesProfesor);
-router.post('/profesor/particulares/responder', responderConsultaParticular);
+
+// Vistas y envíos de alumnos
+router.get('/clases-particulares', renderPrivateClasses);
+router.post('/clases-particulares/enviar', guardarConsultaParticulares);
 router.post('/clases-particulares/enviar-mensaje', enviarMensajeAlumnoChat);
+
+// Panel y respuestas del profesor
+router.get('/profesor/particulares', renderPanelParticularesProfesor);
+router.post('/profesor/particulares/responder', guardarRespuestaParticular);
 
 export default router;

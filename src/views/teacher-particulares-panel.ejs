@@ -214,40 +214,44 @@
                 const card = document.createElement('div');
                 card.className = 'consulta-card';
 
-                // Generar los elementos HTML del hilo del chat
-                let chatHtml = `
-                    <div class="chat-msg-item msg-alumno">
-                        <div class="msg-header">
-                            <span>🙋‍♂️ Alumno (${alumno.nombre})</span>
-                            <span>${new Date(c.fecha_consulta).toLocaleDateString('es-AR')}</span>
-                        </div>
-                        ${c.mensaje_alumno}
-                    </div>
-                `;
+                let chatHtml = '';
 
+                // Si hay historial en chat_mensajes_particulares, renderizamos exactamente lo guardado
                 if (c.mensajesChat && c.mensajesChat.length > 0) {
                     c.mensajesChat.forEach(m => {
                         const esProfesor = m.emisor === 'PROFESOR';
                         chatHtml += `
                             <div class="chat-msg-item ${esProfesor ? 'msg-profesor' : 'msg-alumno'}">
                                 <div class="msg-header">
-                                    <span>${esProfesor ? '👨‍🏫 Tú (Profesor)' : '🙋‍♂️ Alumno'}</span>
+                                    <span>${esProfesor ? '👨‍🏫 Tú (Profesor)' : `🙋‍♂️ ${alumno.nombre}`}</span>
                                     <span>${new Date(m.fecha).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}</span>
                                 </div>
                                 ${m.mensaje}
                             </div>
                         `;
                     });
-                } else if (c.respuesta_profesor) {
-                    chatHtml += `
-                        <div class="chat-msg-item msg-profesor">
+                } else {
+                    // Fallback para consultas antiguas creadas antes de la migración del chat
+                    chatHtml = `
+                        <div class="chat-msg-item msg-alumno">
                             <div class="msg-header">
-                                <span>👨‍🏫 Tú (Profesor)</span>
-                                <span>${c.fecha_respuesta ? new Date(c.fecha_respuesta).toLocaleDateString('es-AR') : ''}</span>
+                                <span>🙋‍♂️ ${alumno.nombre}</span>
+                                <span>${new Date(c.fecha_consulta).toLocaleDateString('es-AR')}</span>
                             </div>
-                            ${c.respuesta_profesor}
+                            ${c.mensaje_alumno}
                         </div>
                     `;
+                    if (c.respuesta_profesor) {
+                        chatHtml += `
+                            <div class="chat-msg-item msg-profesor">
+                                <div class="msg-header">
+                                    <span>👨‍🏫 Tú (Profesor)</span>
+                                    <span>${c.fecha_respuesta ? new Date(c.fecha_respuesta).toLocaleDateString('es-AR') : ''}</span>
+                                </div>
+                                ${c.respuesta_profesor}
+                            </div>
+                        `;
+                    }
                 }
 
                 card.innerHTML = `
