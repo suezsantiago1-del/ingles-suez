@@ -504,17 +504,19 @@ export const descargarCertificado = async (req, res) => {
         const dia = fechaObj.getDate().toString();
         const mes = fechaObj.toLocaleDateString('es-AR', { month: 'long' }).toUpperCase();
 
+        // Día (Alineado tras "Dado a los")
         firstPage.drawText(dia, {
-            x: 375,
-            y: 168,
+            x: 388,
+            y: 165,
             size: 11,
             font: fontBold,
             color: rgb(0.04, 0.13, 0.22)
         });
 
+        // Mes (Alineado tras "del mes de")
         firstPage.drawText(mes, {
-            x: 480,
-            y: 168,
+            x: 525,
+            y: 165,
             size: 11,
             font: fontBold,
             color: rgb(0.04, 0.13, 0.22)
