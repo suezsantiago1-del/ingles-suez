@@ -104,6 +104,26 @@
                     <p>Selecciona un alumno de la lista lateral para ver el historial de sus entregas y responderle.</p>
                 </div>
 
+                <!-- SECTION: Video Management for Lessons (Visible to Professor) -->
+                <div id="video-management" style="padding: 1rem 2rem; border: 1px dashed #cbd5e0; margin: 1rem; border-radius: 8px; background: #fff;">
+                    <h3 style="margin-top: 0; color: #184168;">🎬 Gestionar Videos de Lecciones</h3>
+                    <p style="color: #718096; margin-top: 0.2rem;">Seleccioná la lección, pega una URL de YouTube/directa o subí un archivo MP4.</p>
+
+                    <div style="display:flex; gap:1rem; align-items:flex-start; flex-wrap:wrap;">
+                        <select id="select-leccion" style="padding: 0.5rem; border-radius:6px; border:1px solid #cbd5e0; min-width: 320px;">
+                            <option value="">-- Selecciona una lección --</option>
+                        </select>
+
+                        <input id="input-video-url" type="text" placeholder="https://youtube.com/watch?v=... o URL directa .mp4" style="flex:1; padding:0.5rem; border-radius:6px; border:1px solid #cbd5e0; min-width: 300px;" />
+
+                        <input id="input-video-file" type="file" accept="video/mp4,video/*" style="padding:0.3rem;" />
+
+                        <button id="btn-upload-video" style="background:#184168; color:white; border:none; padding:0.6rem 1rem; border-radius:6px; cursor:pointer;">Guardar Video</button>
+                    </div>
+
+                    <div id="video-management-feedback" style="margin-top:0.8rem;color:#22543d;display:none;"></div>
+                </div>
+
                 <div id="contenedor-entregas-alumno" style="display: none;"></div>
             </div>
         </main>
@@ -275,6 +295,59 @@
                 btn.disabled = false;
             }
         }
+
+        // --- Video management logic ---
+        const leccionesGlobal = <%- JSON.stringify(typeof lecciones !== 'undefined' ? lecciones : []) %>;
+
+        (function initVideoManagement(){
+            const select = document.getElementById('select-leccion');
+            if (!select) return;
+
+            leccionesGlobal.forEach(l => {
+                const opt = document.createElement('option');
+                opt.value = l.leccion_id;
+                opt.text = `${l.curso_titulo} — ${l.leccion_titulo} (orden ${l.orden})`;
+                select.appendChild(opt);
+            });
+
+            const btn = document.getElementById('btn-upload-video');
+            btn.addEventListener('click', async () => {
+                const leccionId = select.value;
+                const videoUrl = document.getElementById('input-video-url').value.trim();
+                const fileInput = document.getElementById('input-video-file');
+
+                if (!leccionId) { alert('Selecciona una lección.'); return; }
+
+                const formData = new FormData();
+                formData.append('leccionId', leccionId);
+                if (videoUrl) formData.append('videoUrl', videoUrl);
+                if (fileInput && fileInput.files && fileInput.files[0]) formData.append('videoFile', fileInput.files[0]);
+
+                btn.disabled = true; btn.innerText = 'Guardando...';
+
+                try {
+                    const resp = await fetch('/profesor/leccion/video', { method: 'POST', body: formData });
+                    const data = await resp.json();
+                    const fb = document.getElementById('video-management-feedback');
+
+                    if (data.success) {
+                        fb.style.display = 'block';
+                        fb.style.color = '#22543d';
+                        fb.innerText = 'Video guardado correctamente.';
+                        // Update local leccionesGlobal entry
+                        const found = leccionesGlobal.find(x => x.leccion_id == leccionId);
+                        if (found) found.video_url = data.video_url;
+                    } else {
+                        alert(data.message || 'Error al guardar el video');
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert('Error de conexión al subir el video.');
+                } finally {
+                    btn.disabled = false; btn.innerText = 'Guardar Video';
+                }
+            });
+        })();
     </script>
 
 </body>

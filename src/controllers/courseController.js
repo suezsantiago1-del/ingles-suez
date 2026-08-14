@@ -343,7 +343,15 @@ export const renderPanelProfesor = async (req, res) => {
             ORDER BY e.fecha ASC
         `);
 
-        return res.render('teacher-panel', { entregas: entregas || [] });
+        // Also load lecciones for management (course + lesson info)
+        const lecciones = await db.all(`
+            SELECT l.id as leccion_id, l.titulo as leccion_titulo, l.curso_id, l.orden, l.video_url, c.titulo as curso_titulo
+            FROM lecciones l
+            JOIN cursos c ON l.curso_id = c.id
+            ORDER BY c.id, l.orden ASC
+        `);
+
+        return res.render('teacher-panel', { entregas: entregas || [], lecciones: lecciones || [] });
     } catch (error) {
         console.error('Error al obtener las entregas:', error);
         return res.redirect('/');
@@ -770,5 +778,67 @@ export const guardarRespuestaParticular = async (req, res) => {
     } catch (error) {
         console.error('Error al guardar la respuesta del profesor:', error);
         return res.status(500).json({ success: false, message: 'Error interno del servidor.' });
+    }
+};
+
+// Upload or set a video for a lesson (file upload or external URL)
+export const uploadLessonVideo = async (req, res) => {
+    if (!req.session.user) {
+        return res.status(401).json({ success: false, message: 'No autenticado' });
+    }
+
+    const EMAIL_PROFESOR = 'suezsantiago1@gmail.com';
+    if (req.session.user.email !== EMAIL_PROFESOR) {
+        return res.status(403).json({ success: false, message: 'Acceso no autorizado' });
+    }
+
+    try {
+        const db = await dbPromise;
+
+        const { leccionId, videoUrl } = req.body;
+
+        if (!leccionId) {
+            return res.status(400).json({ success: false, message: 'Falta el ID de la lección' });
+        }
+
+        let finalUrl = null;
+
+        // If a file was uploaded (middleware should populate req.file)
+        if (req.file && req.file.filename) {
+            // Serve from /videos/ on the public folder
+            finalUrl = `/videos/${req.file.filename}`;
+        } else if (videoUrl && videoUrl.trim() !== '') {
+            let candidate = videoUrl.trim();
+
+            // Normalize YouTube watch/share links to embed form
+            try {
+                if (candidate.includes('youtube.com/watch')) {
+                    const urlObj = new URL(candidate);
+                    const v = urlObj.searchParams.get('v');
+                    if (v) candidate = `https://www.youtube.com/embed/${v}`;
+                } else if (candidate.includes('youtu.be/')) {
+                    const parts = candidate.split('youtu.be/');
+                    if (parts[1]) {
+                        const id = parts[1].split(/[?&]/)[0];
+                        candidate = `https://www.youtube.com/embed/${id}`;
+                    }
+                }
+            } catch (e) {
+                // ignore URL parsing errors and fall back to raw value
+            }
+
+            finalUrl = candidate;
+        }
+
+        if (!finalUrl) {
+            return res.status(400).json({ success: false, message: 'No se proporcionó archivo ni URL de video' });
+        }
+
+        await db.run('UPDATE lecciones SET video_url = ? WHERE id = ?', [finalUrl, leccionId]);
+
+        return res.json({ success: true, message: 'Video de la lección guardado correctamente', video_url: finalUrl });
+    } catch (error) {
+        console.error('Error al subir/guardar video de la lección:', error);
+        return res.status(500).json({ success: false, message: 'Error interno al procesar el video' });
     }
 };

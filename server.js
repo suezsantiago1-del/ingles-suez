@@ -15,6 +15,7 @@ import {
     guardarEntrega,
     renderPanelProfesor,
     guardarDevolucion,
+    uploadLessonVideo,
     renderMensajesAlumno,
     descargarCertificado,
     renderPrivateClasses,
@@ -23,6 +24,7 @@ import {
     renderPanelParticularesProfesor,
     guardarRespuestaParticular
 } from './src/controllers/courseController.js';
+import multer from 'multer';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -145,6 +147,22 @@ app.get('/classroom/:cursoId/certificado', descargarCertificado);
 app.post('/entregas', guardarEntrega);
 app.get('/profesor/entregas', renderPanelProfesor);
 app.post('/profesor/devolucion', guardarDevolucion);
+
+// Multer setup for lesson video uploads (stored in public/videos)
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, path.join(__dirname, 'public', 'videos'));
+    },
+    filename: function (req, file, cb) {
+        const safeName = file.originalname.replace(/[^a-z0-9\.\-\_]/gi, '_');
+        cb(null, Date.now() + '-' + safeName);
+    }
+});
+
+const upload = multer({ storage, limits: { fileSize: 1024 * 1024 * 1024 } }); // up to ~1GB
+
+// Endpoint for professor to upload a lesson video or set a video URL
+app.post('/profesor/leccion/video', upload.single('videoFile'), uploadLessonVideo);
 
 // Bandeja de entrada de devoluciones para los alumnos (exclusivo cursos)
 app.get('/mis-mensajes', renderMensajesAlumno);
