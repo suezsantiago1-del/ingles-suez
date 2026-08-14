@@ -30,6 +30,59 @@
         .btn-primary:hover { background: #0b2238; }
         .btn-success { background: #0b2238; color: #ffffff; }
         .btn-success:hover { background: #184168; }
+        .course-info-section {
+            margin-top: 2.5rem;
+            padding-top: 2rem;
+            border-top: 2px solid #e2ebd5;
+        }
+        .course-info-section h2 {
+            color: #0b2238;
+            font-size: 1.35rem;
+            margin-top: 0;
+            margin-bottom: 1.2rem;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.2rem;
+        }
+        .info-card {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-left: 4px solid #184168;
+            border-radius: 8px;
+            padding: 1.2rem 1.4rem;
+        }
+        .info-card h3 {
+            color: #0b2238;
+            font-size: 1rem;
+            margin: 0 0 0.5rem 0;
+        }
+        .info-card p {
+            color: #4a5568;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin: 0;
+        }
+        .info-card .info-icon {
+            font-size: 1.4rem;
+            margin-bottom: 0.4rem;
+        }
+        .course-highlights {
+            margin-top: 1.5rem;
+            background: #e2ebd5;
+            border-radius: 8px;
+            padding: 1.2rem 1.5rem;
+        }
+        .course-highlights ul {
+            margin: 0;
+            padding-left: 1.2rem;
+            color: #2d3748;
+            line-height: 1.8;
+        }
+        .course-highlights li {
+            margin-bottom: 0.3rem;
+        }
     </style>
 </head>
 <body>
@@ -74,6 +127,40 @@
                 </div>
             </div>
         </div>
+
+        <% if (curso.id == 1 || curso.titulo.toLowerCase().includes('intensivo')) { %>
+        <section class="course-info-section">
+            <h2>¿Qué incluye este curso?</h2>
+
+            <div class="info-grid">
+                <div class="info-card">
+                    <div class="info-icon">📝</div>
+                    <h3>Entregables en cada clase</h3>
+                    <p>Todas las clases incluyen actividades y entregables manuales que debés completar para avanzar en el curso.</p>
+                </div>
+                <div class="info-card">
+                    <div class="info-icon">👨‍🏫</div>
+                    <h3>Corrección personalizada</h3>
+                    <p>Cada entrega es revisada y corregida manualmente por el profesor, con devoluciones detalladas para que puedas mejorar.</p>
+                </div>
+                <div class="info-card">
+                    <div class="info-icon">🏆</div>
+                    <h3>Certificado de nivel A1</h3>
+                    <p>Al completar y aprobar el curso, recibirás un certificado oficial de nivel A1 que acredita tu formación en inglés básico.</p>
+                </div>
+            </div>
+
+            <div class="course-highlights">
+                <ul>
+                    <li><strong>10 clases progresivas</strong> con contenido interactivo y ejercicios prácticos.</li>
+                    <li><strong>Seguimiento individual:</strong> el profesor corrige cada entrega y te envía observaciones personalizadas.</li>
+                    <li><strong>Acceso al aula virtual</strong> las 24 horas para avanzar a tu ritmo.</li>
+                    <li><strong>Certificado descargable</strong> al aprobar la evaluación final del curso.</li>
+                </ul>
+            </div>
+        </section>
+        <% } %>
+
     </main>
 
     <%- include('partials/footer') %>
