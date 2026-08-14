@@ -57,13 +57,14 @@ export const calificarEntrega = async (req, res) => {
 };
 
 // ==========================================
-// CONTROLADORES PARA CLASES PARTICULARES
+// CONTROLADORES PARA CLASES PARTICULARES (CHAT RECORRENTE)
 // ==========================================
 
 export const renderPanelParticularesProfesor = async (req, res) => {
     try {
         const db = await dbPromise;
 
+        // Obtener consultas principales
         const consultas = await db.all(`
             SELECT mp.id, mp.modalidad, mp.objetivo, mp.mensaje_alumno, 
                    mp.respuesta_profesor, mp.fecha_consulta, mp.fecha_respuesta,
@@ -72,6 +73,19 @@ export const renderPanelParticularesProfesor = async (req, res) => {
             INNER JOIN usuarios u ON mp.usuario_id = u.id
             ORDER BY mp.fecha_consulta DESC
         `);
+
+        // Cargar historial de chat si existe la tabla
+        for (let c of consultas) {
+            try {
+                c.mensajesChat = await db.all(`
+                    SELECT * FROM chat_mensajes_particulares 
+                    WHERE consulta_id = ? 
+                    ORDER BY fecha ASC
+                `, [c.id]);
+            } catch (err) {
+                c.mensajesChat = [];
+            }
+        }
 
         return res.render('teacher-particulares-panel', { consultas: consultas || [] });
     } catch (error) {
@@ -84,12 +98,19 @@ export const responderConsultaParticular = async (req, res) => {
     const { consultaId, respuesta } = req.body;
 
     if (!consultaId || !respuesta || !respuesta.trim()) {
-        return res.status(400).json({ success: false, message: 'La respuesta no puede estar vacía.' });
+        return res.status(400).json({ success: false, message: 'El mensaje no puede estar vacío.' });
     }
 
     try {
         const db = await dbPromise;
 
+        // 1. Obtener datos de la consulta original
+        const consulta = await db.get('SELECT usuario_id FROM mensajes_particulares WHERE id = ?', [consultaId]);
+        if (!consulta) {
+            return res.status(404).json({ success: false, message: 'Consulta no encontrada.' });
+        }
+
+        // 2. Actualizar respuesta principal en mensajes_particulares
         await db.run(
             `UPDATE mensajes_particulares 
              SET respuesta_profesor = ?, fecha_respuesta = CURRENT_TIMESTAMP 
@@ -97,9 +118,49 @@ export const responderConsultaParticular = async (req, res) => {
             [respuesta.trim(), consultaId]
         );
 
-        return res.json({ success: true, message: 'Respuesta guardada correctamente.' });
+        // 3. Registrar el mensaje en el hilo del chat
+        try {
+            await db.run(`
+                INSERT INTO chat_mensajes_particulares (consulta_id, usuario_id, emisor, mensaje)
+                VALUES (?, ?, 'PROFESOR', ?)
+            `, [consultaId, consulta.usuario_id, respuesta.trim()]);
+        } catch (e) {
+            console.log('Tabla de chat secundario en preparación:', e.message);
+        }
+
+        return res.json({ success: true, message: 'Mensaje enviado correctamente.' });
     } catch (error) {
         console.error('Error al responder consulta particular:', error);
         return res.status(500).json({ success: false, message: 'Error en la base de datos al guardar la respuesta.' });
+    }
+};
+
+/**
+ * Permite al alumno enviar mensajes adicionales en el mismo chat desde /clases-particulares
+ */
+export const enviarMensajeAlumnoChat = async (req, res) => {
+    const { consultaId, mensaje } = req.body;
+    const usuarioId = req.session.user ? req.session.user.id : null;
+
+    if (!usuarioId) {
+        return res.status(401).json({ success: false, message: 'No autenticado' });
+    }
+
+    if (!consultaId || !mensaje || !mensaje.trim()) {
+        return res.status(400).json({ success: false, message: 'El mensaje no puede estar vacío.' });
+    }
+
+    try {
+        const db = await dbPromise;
+
+        await db.run(`
+            INSERT INTO chat_mensajes_particulares (consulta_id, usuario_id, emisor, mensaje)
+            VALUES (?, ?, 'ALUMNO', ?)
+        `, [consultaId, usuarioId, mensaje.trim()]);
+
+        return res.json({ success: true, message: 'Mensaje enviado al chat.' });
+    } catch (error) {
+        console.error('Error al guardar mensaje en chat:', error);
+        return res.status(500).json({ success: false, message: 'Error interno al enviar mensaje.' });
     }
 };

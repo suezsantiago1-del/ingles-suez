@@ -4,169 +4,319 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clases Particulares - INGLÉS SUEZ</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=GFS+Didot&family=Tenor+Sans&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/styles.css">
     <style>
-        body, p, span, div, a, li, label, input, textarea, select { font-family: 'GFS Didot', serif; }
-        h1, h2, h3, h4, h5, h6, button { font-family: 'Tenor Sans', sans-serif !important; }
-        body { background-color: #e3edf5; margin: 0; padding: 0; color: #1a202c; }
+        .particulares-container { 
+            max-width: 1200px; 
+            margin: 2rem auto; 
+            padding: 0 1rem; 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 2rem; 
+        }
+        .card-box { 
+            background: white; 
+            border-radius: 8px; 
+            padding: 1.8rem; 
+            border: 1px solid #cbd5e0; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04); 
+        }
+        .card-box h2 { 
+            color: #0b2238; 
+            margin-top: 0; 
+            font-size: 1.3rem; 
+            border-bottom: 2px solid #0b2238; 
+            padding-bottom: 0.5rem; 
+        }
+        
+        .chat-card { 
+            background: #ffffff; 
+            border: 1px solid #cbd5e0; 
+            border-radius: 8px; 
+            padding: 1.2rem; 
+            margin-bottom: 1.2rem; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+        .badge-tag { 
+            background: #184168; 
+            color: white; 
+            padding: 0.2rem 0.6rem; 
+            border-radius: 4px; 
+            font-size: 0.75rem; 
+            font-weight: bold; 
+        }
+        .badge-obj {
+            background: #edf2f7;
+            color: #2d3748;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* ESTILOS DEL HILO DEL CHAT */
+        .chat-thread {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            margin: 1rem 0;
+            max-height: 250px;
+            overflow-y: auto;
+            padding-right: 0.3rem;
+        }
+        .chat-msg {
+            padding: 0.7rem 0.9rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            max-width: 88%;
+            white-space: pre-wrap;
+            line-height: 1.4;
+        }
+        .chat-msg-alumno {
+            background: #e2e8f0;
+            color: #2d3748;
+            align-self: flex-end;
+            border-bottom-right-radius: 2px;
+        }
+        .chat-msg-profesor {
+            background: #e2ebd5;
+            color: #1a202c;
+            align-self: flex-start;
+            border-bottom-left-radius: 2px;
+            border-left: 3px solid #184168;
+        }
+        .chat-msg-header {
+            font-size: 0.75rem;
+            font-weight: bold;
+            margin-bottom: 0.2rem;
+            display: flex;
+            justify-content: space-between;
+            gap: 0.5rem;
+        }
+
+        .reply-box {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.8rem;
+            border-top: 1px solid #edf2f7;
+            padding-top: 0.8rem;
+        }
+        .reply-input {
+            flex: 1;
+            padding: 0.5rem 0.8rem;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.88rem;
+            resize: none;
+            height: 38px;
+        }
+        .reply-btn {
+            background: #184168;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 0 1rem;
+            font-weight: bold;
+            font-size: 0.85rem;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 850px) {
+            .particulares-container { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
 
     <%- include('partials/header') %>
 
-    <main style="max-width: 950px; margin: 4rem auto; padding: 0 1.5rem;">
-        <div style="background: white; border-radius: 12px; padding: 3rem; box-shadow: 0 15px 35px rgba(11, 34, 56, 0.15), 0 5px 15px rgba(0, 0, 0, 0.05); border: 1px solid #c0d4e5;">
-            
-            <span style="background: #184168; color: white; padding: 0.35rem 0.8rem; border-radius: 4px; font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase;">
-                ENSEÑANZA PERSONALIZADA
-            </span>
-
-            <h1 style="color: #0b2238; font-size: 2.3rem; margin: 1.5rem 0 1rem 0;">
-                CLASES PARTICULARES 1 A 1
-            </h1>
-
-            <p style="color: #4a5568; font-size: 1.15rem; line-height: 1.7; margin-bottom: 2rem;">
-                ¿Necesitas preparar un examen específico, mejorar tu conversación para un trabajo o aprender a tu propio ritmo? Las clases individuales adaptan el contenido al 100% a tus objetivos particulares.
-            </p>
-
-            <!-- Sección de Modalidades -->
-            <h2 style="color: #0b2238; font-size: 1.5rem; margin-bottom: 1rem;">Modalidades Disponibles</h2>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
-                <div style="background: #f0f6fa; padding: 1.5rem; border-radius: 8px; border: 1px solid #c0d4e5;">
-                    <h3 style="color: #0b2238; margin-top: 0; font-size: 1.15rem;">Clases Online</h3>
-                    <p style="color: #4a5568; margin-bottom: 0; font-size: 0.95rem; line-height: 1.6;">En vivo mediante Google Meet o Zoom, con material digital interactivo y flexibilidad desde cualquier lugar.</p>
+    <div class="particulares-container">
+        
+        <!-- FORMULARIO DE SOLICITUD -->
+        <div class="card-box">
+            <h2>🎯 Solicitar Clase Particular</h2>
+            <form id="form-consulta-particular">
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 0.3rem;">Modalidad preferida:</label>
+                    <select name="modalidad" required style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid #cbd5e0;">
+                        <option value="Online (1 a 1)">Online (1 a 1)</option>
+                        <option value="Presencial">Presencial</option>
+                        <option value="Grupal Reducida">Grupal Reducida</option>
+                    </select>
                 </div>
 
-                <div style="background: #f0f6fa; padding: 1.5rem; border-radius: 8px; border: 1px solid #c0d4e5;">
-                    <h3 style="color: #0b2238; margin-top: 0; font-size: 1.15rem;">Clases Presenciales</h3>
-                    <p style="color: #4a5568; margin-bottom: 0; font-size: 0.95rem; line-height: 1.6;">Encuentros individuales presenciales enfocados en práctica oral intensiva y seguimiento cercano.</p>
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 0.3rem;">Objetivo principal:</label>
+                    <select name="objetivo" required style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid #cbd5e0;">
+                        <option value="Preparación de Exámenes">Preparación de Exámenes</option>
+                        <option value="Inglés Laboral / Entrevistas">Inglés Laboral / Entrevistas</option>
+                        <option value="Conversación y Fluidez">Conversación y Fluidez</option>
+                        <option value="Apoyo Escolar / Universitario">Apoyo Escolar / Universitario</option>
+                    </select>
                 </div>
 
-                <div style="background: #f0f6fa; padding: 1.5rem; border-radius: 8px; border: 1px solid #c0d4e5;">
-                    <h3 style="color: #0b2238; margin-top: 0; font-size: 1.15rem;">Clases a Domicilio</h3>
-                    <p style="color: #4a5568; margin-bottom: 0; font-size: 0.95rem; line-height: 1.6;">Atención personalizada en la comodidad de tu hogar o lugar de trabajo con horarios coordinados a conveniencia.</p>
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 0.3rem;">Tu consulta o disponibilidad horaria:</label>
+                    <textarea name="mensaje" required placeholder="Escribe tus dudas, nivel aproximado o días/horarios disponibles..." style="width: 100%; height: 110px; padding: 0.6rem; border-radius: 6px; border: 1px solid #cbd5e0; font-family: inherit;"></textarea>
                 </div>
-            </div>
 
-            <!-- Formulario de Consulta directa -->
-            <div style="border-top: 2px solid #e3edf5; padding-top: 2rem;">
-                <h2 style="color: #0b2238; font-size: 1.6rem; margin-top: 0; margin-bottom: 0.5rem;">Solicitar Información o Agendar Clase</h2>
-                <p style="color: #718096; margin-bottom: 1.5rem;">Completa el formulario y te responderemos por nuestro canal interno a la brevedad.</p>
+                <button type="submit" id="btn-enviar" style="width: 100%; background: #184168; color: white; padding: 0.8rem; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 1rem;">
+                    🚀 Enviar Consulta
+                </button>
+            </form>
+        </div>
 
-                <% if (user) { %>
-                    <form id="form-consulta-particular" style="display: flex; flex-direction: column; gap: 1.2rem;">
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
-                            <div>
-                                <label style="display: block; color: #0b2238; font-weight: bold; margin-bottom: 0.4rem;">Modalidad Preferida:</label>
-                                <select id="modalidad" name="modalidad" style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 1rem; box-sizing: border-box;" required>
-                                    <option value="Online">Online</option>
-                                    <option value="Presencial">Presencial</option>
-                                    <option value="A Domicilio">A Domicilio</option>
-                                </select>
-                            </div>
+        <!-- LISTA DE CONSULTAS Y CHAT CON EL PROFESOR -->
+        <div class="card-box">
+            <h2>💬 Mis Consultas y Respuestas</h2>
 
-                            <div>
-                                <label style="display: block; color: #0b2238; font-weight: bold; margin-bottom: 0.4rem;">Objetivo Principal:</label>
-                                <select id="objetivo" name="objetivo" style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 1rem; box-sizing: border-box;" required>
-                                    <option value="Conversación y Fluidez">Conversación y Fluidez</option>
-                                    <option value="Preparación de Examen">Preparación de Examen</option>
-                                    <option value="Inglés desde Cero">Inglés desde Cero</option>
-                                    <option value="Inglés Laboral / Entrevistas">Inglés Laboral / Entrevistas</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label style="display: block; color: #0b2238; font-weight: bold; margin-bottom: 0.4rem;">Mensaje o Consulta:</label>
-                            <textarea id="mensaje" name="mensaje" rows="4" required placeholder="Cuéntame sobre tu disponibilidad horaria, barrio o dudas particulares..." style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 1rem; box-sizing: border-box;"></textarea>
-                        </div>
-
-                        <button type="submit" id="btn-submit" style="background: #0b2238; color: white; border: none; padding: 0.9rem 2rem; border-radius: 6px; font-size: 1rem; cursor: pointer; align-self: flex-start;">
-                            Enviar Consulta
-                        </button>
-                    </form>
-                <% } else { %>
-                    <div style="background: #fffaf0; border: 1px solid #feebc8; padding: 1.5rem; border-radius: 8px; text-align: center;">
-                        <p style="margin: 0; color: #c05621; font-weight: bold;">Debes iniciar sesión para enviar una consulta sobre clases particulares.</p>
-                        <a href="/auth/login" style="display: inline-block; margin-top: 0.8rem; background: #0b2238; color: white; padding: 0.6rem 1.2rem; border-radius: 6px; text-decoration: none; font-size: 0.9rem;">Iniciar Sesión</a>
-                    </div>
-                <% } %>
-            </div>
-
-            <!-- Bandeja de Consultas Realizadas por el Alumno -->
-            <% if (user && typeof misConsultas !== 'undefined' && misConsultas.length > 0) { %>
-                <div style="border-top: 2px solid #e3edf5; margin-top: 3rem; padding-top: 2rem;">
-                    <h2 style="color: #0b2238; font-size: 1.5rem; margin-bottom: 1.5rem;">Mis Consultas de Clases Particulares</h2>
-                    <div style="display: flex; flex-direction: column; gap: 1.2rem;">
-                        <% misConsultas.forEach(c => { %>
-                            <div style="background: #f8fafc; border: 1px solid #cbd5e0; border-radius: 8px; padding: 1.2rem;">
-                                <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: #718096; margin-bottom: 0.5rem;">
-                                    <span><strong>Modalidad:</strong> <%= c.modalidad %> | <strong>Objetivo:</strong> <%= c.objetivo %></span>
-                                    <span><%= new Date(c.fecha_consulta).toLocaleDateString('es-AR') %></span>
+            <% if (typeof misConsultas !== 'undefined' && misConsultas.length > 0) { %>
+                <div style="max-height: 520px; overflow-y: auto; padding-right: 0.3rem;">
+                    <% misConsultas.forEach(c => { %>
+                        <div class="chat-card">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.3rem;">
+                                <div>
+                                    <span class="badge-tag"><%= c.modalidad %></span>
+                                    <span class="badge-obj"><%= c.objetivo %></span>
                                 </div>
-                                <p style="margin: 0.5rem 0; color: #2d3748; font-style: italic;">"<%= c.mensaje_alumno %>"</p>
-
-                                <% if (c.respuesta_profesor) { %>
-                                    <div style="background: #ebf8ff; border-left: 4px solid #3182ce; padding: 0.8rem 1rem; margin-top: 0.8rem; border-radius: 0 6px 6px 0;">
-                                        <span style="display: block; font-weight: bold; color: #2b6cb0; font-size: 0.85rem; margin-bottom: 0.2rem;">Respuesta del Profesor:</span>
-                                        <p style="margin: 0; color: #2d3748; white-space: pre-wrap;"><%= c.respuesta_profesor %></p>
+                                <span style="font-size: 0.8rem; color: #718096;"><%= new Date(c.fecha_consulta).toLocaleDateString('es-AR') %></span>
+                            </div>
+                            
+                            <!-- HILO DE CONVERSACIÓN DE LA CONSULTA -->
+                            <div class="chat-thread">
+                                <!-- Mensaje original del alumno -->
+                                <div class="chat-msg chat-msg-alumno">
+                                    <div class="chat-msg-header">
+                                        <span>Tú</span>
                                     </div>
-                                <% } else { %>
-                                    <span style="display: inline-block; margin-top: 0.5rem; font-size: 0.8rem; color: #d69e2e; background: #fefcbf; padding: 0.2rem 0.6rem; border-radius: 4px;">Pendiente de respuesta</span>
+                                    <%= c.mensaje_alumno %>
+                                </div>
+
+                                <!-- Historial de respuestas (si existen mensajes persistidos) -->
+                                <% if (c.mensajesChat && c.mensajesChat.length > 0) { %>
+                                    <% c.mensajesChat.forEach(m => { %>
+                                        <div class="chat-msg <%= m.emisor === 'PROFESOR' ? 'chat-msg-profesor' : 'chat-msg-alumno' %>">
+                                            <div class="chat-msg-header">
+                                                <span><%= m.emisor === 'PROFESOR' ? '👨‍🏫 Profesor' : 'Tú' %></span>
+                                                <span style="opacity: 0.7; font-weight: normal;"><%= new Date(m.fecha).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }) %></span>
+                                            </div>
+                                            <%= m.mensaje %>
+                                        </div>
+                                    <% }) %>
+                                <% } else if (c.respuesta_profesor) { %>
+                                    <!-- Fallback para compatibilidad previa -->
+                                    <div class="chat-msg chat-msg-profesor">
+                                        <div class="chat-msg-header">
+                                            <span>👨‍🏫 Profesor</span>
+                                        </div>
+                                        <%= c.respuesta_profesor %>
+                                    </div>
                                 <% } %>
                             </div>
-                        <% }) %>
-                    </div>
+
+                            <% if (!c.respuesta_profesor && (!c.mensajesChat || c.mensajesChat.length === 0)) { %>
+                                <div style="background: #fffaf0; border: 1px solid #fbd38d; color: #c05621; padding: 0.6rem; border-radius: 4px; font-size: 0.85rem; margin-top: 0.5rem;">
+                                    ⏳ <em>Consulta recibida. El profesor te responderá a la brevedad.</em>
+                                </div>
+                            <% } %>
+
+                            <!-- INPUT PARA RESPONDER DENTRO DEL CHAT -->
+                            <form class="form-responder-chat reply-box" data-consulta-id="<%= c.id %>">
+                                <textarea name="mensaje" class="reply-input" placeholder="Escribe un mensaje..." required></textarea>
+                                <button type="submit" class="reply-btn">Enviar 📩</button>
+                            </form>
+                        </div>
+                    <% }) %>
+                </div>
+            <% } else { %>
+                <div style="text-align: center; padding: 3rem 1rem; color: #a0aec0;">
+                    <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">💬</div>
+                    <p style="margin: 0;">Aún no has realizado consultas de clases particulares.</p>
+                    <small>Completa el formulario para enviar tu solicitud al profesor.</small>
                 </div>
             <% } %>
-
         </div>
-    </main>
+
+    </div>
 
     <%- include('partials/footer') %>
 
     <script>
+        // Formulario principal de nueva solicitud
         const form = document.getElementById('form-consulta-particular');
         if (form) {
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const btn = document.getElementById('btn-submit');
-                const modalidad = document.getElementById('modalidad').value;
-                const objetivo = document.getElementById('objetivo').value;
-                const mensaje = document.getElementById('mensaje').value;
-
+                const btn = document.getElementById('btn-enviar');
                 btn.disabled = true;
                 btn.innerText = 'Enviando...';
 
+                const formData = new FormData(form);
+                const data = Object.fromEntries(formData.entries());
+
                 try {
-                    const res = await fetch('/particulares/consulta', {
+                    const res = await fetch('/clases-particulares/enviar', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ modalidad, objetivo, mensaje })
+                        body: JSON.stringify(data)
                     });
 
-                    const data = await res.json();
+                    const resData = await res.json();
 
-                    if (data.success) {
-                        alert(data.message);
+                    if (resData.success) {
+                        alert(resData.message);
                         window.location.reload();
                     } else {
-                        alert(data.message || 'Error al enviar la consulta.');
+                        alert(resData.message || 'Error al enviar la consulta.');
                         btn.disabled = false;
-                        btn.innerText = 'Enviar Consulta';
+                        btn.innerText = '🚀 Enviar Consulta';
                     }
                 } catch (err) {
                     console.error(err);
                     alert('Error de conexión al enviar la consulta.');
                     btn.disabled = false;
-                    btn.innerText = 'Enviar Consulta';
+                    btn.innerText = '🚀 Enviar Consulta';
                 }
             });
         }
+
+        // Formularios de respuestas continuas en el chat
+        document.querySelectorAll('.form-responder-chat').forEach(f => {
+            f.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const consultaId = f.getAttribute('data-consulta-id');
+                const textarea = f.querySelector('textarea');
+                const btn = f.querySelector('button');
+                const mensaje = textarea.value.trim();
+
+                if (!mensaje) return;
+
+                btn.disabled = true;
+
+                try {
+                    const res = await fetch('/clases-particulares/enviar-mensaje', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ consultaId, mensaje })
+                    });
+
+                    const resData = await res.json();
+
+                    if (resData.success) {
+                        window.location.reload();
+                    } else {
+                        alert(resData.message || 'Error al enviar mensaje.');
+                        btn.disabled = false;
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert('Error de conexión.');
+                    btn.disabled = false;
+                }
+            });
+        });
     </script>
 </body>
 </html>

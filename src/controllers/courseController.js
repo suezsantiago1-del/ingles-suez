@@ -529,12 +529,11 @@ export const descargarCertificado = async (req, res) => {
             const firmaBytes = fs.readFileSync(firmaPath);
             const firmaImage = await pdfDoc.embedJpg(firmaBytes);
 
-            // Coordenadas base para ubicar la firma sobre "PROF. SANTIAGO SUEZ"
             firstPage.drawImage(firmaImage, {
-                x: 637,       // Ajustá según necesites mover hacia izq/der
-                y: 110,       // Ajustá según necesites mover hacia arriba/abajo
-                width: 95,    // Ancho de la imagen de la firma
-                height: 70    // Alto de la imagen de la firma
+                x: 637,
+                y: 110,
+                width: 95,
+                height: 70
             });
         }
 
@@ -556,7 +555,7 @@ export const descargarCertificado = async (req, res) => {
 
 /**
  * Renderiza la página de Clases Particulares para el alumno,
- * cargando el historial de sus consultas previas si está autenticado.
+ * cargando el historial de sus consultas previas e incluyendo el hilo de mensajes interactivo.
  */
 export const renderPrivateClasses = async (req, res) => {
     let misConsultas = [];
@@ -568,6 +567,19 @@ export const renderPrivateClasses = async (req, res) => {
                 WHERE usuario_id = ? 
                 ORDER BY fecha_consulta DESC
             `, [req.session.user.id]);
+
+            // Cargar el historial extendido del chat para cada consulta
+            for (let c of misConsultas) {
+                try {
+                    c.mensajesChat = await db.all(`
+                        SELECT * FROM chat_mensajes_particulares 
+                        WHERE consulta_id = ? 
+                        ORDER BY fecha ASC
+                    `, [c.id]);
+                } catch (err) {
+                    c.mensajesChat = [];
+                }
+            }
         } catch (error) {
             console.error('Error al obtener consultas particulares del alumno:', error);
         }
@@ -645,6 +657,19 @@ export const renderPanelParticularesProfesor = async (req, res) => {
             ORDER BY mp.fecha_consulta DESC
         `);
 
+        // Cargar el historial de chat para la vista del profesor
+        for (let c of consultas) {
+            try {
+                c.mensajesChat = await db.all(`
+                    SELECT * FROM chat_mensajes_particulares 
+                    WHERE consulta_id = ? 
+                    ORDER BY fecha ASC
+                `, [c.id]);
+            } catch (err) {
+                c.mensajesChat = [];
+            }
+        }
+
         return res.render('teacher-particulares-panel', { consultas: consultas || [] });
     } catch (error) {
         console.error('Error al obtener consultas de clases particulares:', error);
@@ -674,11 +699,25 @@ export const guardarRespuestaParticular = async (req, res) => {
     try {
         const db = await dbPromise;
 
+        const consulta = await db.get('SELECT usuario_id FROM mensajes_particulares WHERE id = ?', [consultaId]);
+        if (!consulta) {
+            return res.status(404).json({ success: false, message: 'Consulta no encontrada.' });
+        }
+
         await db.run(`
             UPDATE mensajes_particulares
             SET respuesta_profesor = ?, fecha_respuesta = CURRENT_TIMESTAMP
             WHERE id = ?
         `, [respuesta.trim(), consultaId]);
+
+        try {
+            await db.run(`
+                INSERT INTO chat_mensajes_particulares (consulta_id, usuario_id, emisor, mensaje)
+                VALUES (?, ?, 'PROFESOR', ?)
+            `, [consultaId, consulta.usuario_id, respuesta.trim()]);
+        } catch (e) {
+            console.log('Error insertando en el chat del profesor:', e.message);
+        }
 
         return res.json({ success: true, message: 'Respuesta guardada correctamente.' });
     } catch (error) {
