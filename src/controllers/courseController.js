@@ -72,7 +72,10 @@ export const processCheckout = async (req, res) => {
         const baseUrl = `${req.protocol}://${req.get('host')}`;
 
         try {
-            const preference = await Preference.create({
+            console.log('processCheckout: start - userId=', usuarioId, 'courseId=', curso.id);
+
+            const prefClient = new Preference(client);
+            const body = {
                 items: [
                     {
                         title: curso.titulo,
@@ -86,10 +89,14 @@ export const processCheckout = async (req, res) => {
                 },
                 external_reference: `${curso.id}:${usuarioId}`,
                 auto_return: 'approved'
-            });
+            };
 
-            // Try multiple possible locations for init_point
-            const initPoint = preference?.response?.init_point || preference?.body?.init_point || preference?.init_point;
+            console.log('processCheckout: creating MercadoPago preference with body:', JSON.stringify(body));
+            const preference = await prefClient.create({ body });
+            console.log('processCheckout: preference created:', JSON.stringify(preference));
+
+            const initPoint = preference && (preference.init_point || preference.body?.init_point || preference?.response?.init_point);
+            console.log('processCheckout: resolved initPoint=', initPoint);
             if (initPoint) {
                 return res.redirect(initPoint);
             }
