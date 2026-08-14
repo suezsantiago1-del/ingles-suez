@@ -111,9 +111,24 @@ const dbPromise = (async () => {
         );
     `);
 
-    // Asegurar columnas requeridas en tablas previamente existentes
+    // Asegurar columnas y tablas requeridas independientemente del estado previo
     await adapter.pgPool.query(`ALTER TABLE cursos ADD COLUMN IF NOT EXISTS imagen_url VARCHAR(255);`);
     await adapter.pgPool.query(`ALTER TABLE devoluciones ADD COLUMN IF NOT EXISTS nota INTEGER DEFAULT NULL;`);
+    
+    // Forzado explícito de creación de mensajes_particulares
+    await adapter.pgPool.query(`
+        CREATE TABLE IF NOT EXISTS mensajes_particulares (
+            id SERIAL PRIMARY KEY,
+            usuario_id INTEGER NOT NULL,
+            modalidad VARCHAR(255) NOT NULL,
+            objetivo VARCHAR(255) NOT NULL,
+            mensaje_alumno TEXT NOT NULL,
+            respuesta_profesor TEXT DEFAULT NULL,
+            fecha_consulta TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            fecha_respuesta TIMESTAMP DEFAULT NULL,
+            FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+        );
+    `);
 
     // Cursos iniciales (solo si la tabla está vacía)
     const countRes = await adapter.pgPool.query("SELECT COUNT(*) FROM cursos");
