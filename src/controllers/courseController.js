@@ -343,7 +343,7 @@ export const renderPanelProfesor = async (req, res) => {
             ORDER BY e.fecha ASC
         `);
 
-        return res.render('teacher-panel', { entregas });
+        return res.render('teacher-panel', { entregas: entregas || [] });
     } catch (error) {
         console.error('Error al obtener las entregas:', error);
         return res.redirect('/');
@@ -555,6 +555,27 @@ export const descargarCertificado = async (req, res) => {
 // ==========================================
 
 /**
+ * Renderiza la página de Clases Particulares para el alumno,
+ * cargando el historial de sus consultas previas si está autenticado.
+ */
+export const renderPrivateClasses = async (req, res) => {
+    let misConsultas = [];
+    if (req.session.user) {
+        try {
+            const db = await dbPromise;
+            misConsultas = await db.all(`
+                SELECT * FROM mensajes_particulares 
+                WHERE usuario_id = ? 
+                ORDER BY fecha_consulta DESC
+            `, [req.session.user.id]);
+        } catch (error) {
+            console.error('Error al obtener consultas particulares del alumno:', error);
+        }
+    }
+    return res.render('privateClasses', { misConsultas });
+};
+
+/**
  * Guarda la consulta/solicitud enviada por el alumno para Clases Particulares
  */
 export const guardarConsultaParticulares = async (req, res) => {
@@ -624,7 +645,7 @@ export const renderPanelParticularesProfesor = async (req, res) => {
             ORDER BY mp.fecha_consulta DESC
         `);
 
-        return res.render('teacher-particulares-panel', { consultas });
+        return res.render('teacher-particulares-panel', { consultas: consultas || [] });
     } catch (error) {
         console.error('Error al obtener consultas de clases particulares:', error);
         return res.redirect('/');
