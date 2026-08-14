@@ -19,6 +19,7 @@ import {
     descargarCertificado,
     renderPrivateClasses,
     guardarConsultaParticulares,
+    enviarMensajeAlumnoChat,
     renderPanelParticularesProfesor,
     guardarRespuestaParticular
 } from './src/controllers/courseController.js';
@@ -98,11 +99,10 @@ app.get('/about', (req, res) => {
     res.render('about');
 });
 
-// Ruta de vista pública e historial de Clases Particulares
+// Rutas de Clases Particulares (vista y envíos del alumno)
 app.get('/clases-particulares', renderPrivateClasses);
-
-// Ruta para guardar la consulta de clase particular enviada por el alumno
-app.post('/particulares/consulta', guardarConsultaParticulares);
+app.post('/clases-particulares/enviar', guardarConsultaParticulares);
+app.post('/clases-particulares/enviar-mensaje', enviarMensajeAlumnoChat);
 
 // Rutas del panel del profesor para Clases Particulares
 app.get('/profesor/particulares', renderPanelParticularesProfesor);

@@ -130,6 +130,19 @@ const dbPromise = (async () => {
         );
     `);
 
+    await adapter.pgPool.query(`
+        CREATE TABLE IF NOT EXISTS chat_mensajes_particulares (
+            id SERIAL PRIMARY KEY,
+            consulta_id INTEGER NOT NULL,
+            usuario_id INTEGER NOT NULL,
+            emisor VARCHAR(20) NOT NULL,
+            mensaje TEXT NOT NULL,
+            fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (consulta_id) REFERENCES mensajes_particulares(id),
+            FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+        );
+    `);
+
     // Cursos iniciales (solo si la tabla está vacía)
     const countRes = await adapter.pgPool.query("SELECT COUNT(*) FROM cursos");
     if (parseInt(countRes.rows[0].count) === 0) {
