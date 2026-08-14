@@ -506,7 +506,7 @@ export const descargarCertificado = async (req, res) => {
 
         // Día (Alineado tras "Dado a los")
         firstPage.drawText(dia, {
-            x: 338,
+            x: 333,
             y: 172,
             size: 11,
             font: fontBold,
@@ -515,7 +515,7 @@ export const descargarCertificado = async (req, res) => {
 
         // Mes (Alineado tras "del mes de")
         firstPage.drawText(mes, {
-            x: 475,
+            x: 470,
             y: 172,
             size: 11,
             font: fontBold,
