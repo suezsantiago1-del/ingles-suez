@@ -214,34 +214,46 @@ export const handleMpWebhook = async (req, res) => {
 };
 
 export const paymentSuccess = async (req, res) => {
-    if (!req.session.user) {
-        return res.redirect('/auth/login');
+    const { cursoId } = req.query;
+    const usuarioId = req.session && req.session.user ? req.session.user.id : null;
+
+    console.log('paymentSuccess: invoked. cursoId=', cursoId, 'sessionUserId=', usuarioId);
+
+    if (!cursoId) {
+        console.warn('paymentSuccess: no cursoId provided in query. Nothing to register.');
+        return res.redirect('/mis-cursos');
     }
 
-    const { cursoId } = req.query;
-    const usuarioId = req.session.user.id;
+    if (!usuarioId) {
+        // The user may not have returned in the same session; rely on webhook to record the purchase.
+        console.warn('paymentSuccess: no logged-in user in session. Webhook should handle async registration.');
+        return res.redirect('/mis-cursos');
+    }
 
     try {
-        if (cursoId) {
-            const db = await dbPromise;
-            const curso = await db.get('SELECT * FROM cursos WHERE id = ?', [cursoId]);
-            if (curso) {
-                const compraExistente = await db.get(
-                    'SELECT id FROM compras WHERE usuario_id = ? AND curso_id = ?',
-                    [usuarioId, curso.id]
-                );
+        const db = await dbPromise;
+        const curso = await db.get('SELECT * FROM cursos WHERE id = ?', [cursoId]);
 
-                if (!compraExistente) {
-                    await db.run(`
-                        INSERT INTO compras (usuario_id, curso_id)
-                        VALUES (?, ?)
-                    `, [usuarioId, curso.id]);
-                }
-            }
+        if (!curso) {
+            console.error('paymentSuccess: curso not found for id=', cursoId);
+            return res.redirect('/mis-cursos');
         }
+
+        try {
+            const compraExistente = await db.get('SELECT id FROM compras WHERE usuario_id = ? AND curso_id = ?', [usuarioId, curso.id]);
+            if (!compraExistente) {
+                const result = await db.run('INSERT INTO compras (usuario_id, curso_id) VALUES (?, ?)', [usuarioId, curso.id]);
+                console.log('paymentSuccess: compra inserted result=', result);
+            } else {
+                console.log('paymentSuccess: compra already exists for user=', usuarioId, 'course=', curso.id);
+            }
+        } catch (sqlErr) {
+            console.error('paymentSuccess: SQL error when inserting compra:', sqlErr);
+        }
+
         return res.redirect('/mis-cursos');
     } catch (error) {
-        console.error('Error al registrar la compra:', error);
+        console.error('paymentSuccess: unexpected error:', error);
         return res.redirect('/mis-cursos');
     }
 };
