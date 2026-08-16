@@ -17,6 +17,9 @@ const EMAIL_PROFESOR = 'suezsantiago1@gmail.com';
 export const renderCourseDetail = async (req, res) => {
     const { id } = req.params;
     try {
+        console.log('uploadLessonVideo: session user=', req.session && req.session.user ? req.session.user.email : null);
+        console.log('uploadLessonVideo: req.body=', req.body);
+        console.log('uploadLessonVideo: req.file=', req.file);
         const db = await dbPromise;
         const curso = await db.get('SELECT * FROM cursos WHERE id = ?', [id]);
         
@@ -965,6 +968,21 @@ export const uploadLessonVideo = async (req, res) => {
 
         // If a file was uploaded (middleware should populate req.file)
         if (req.file && req.file.filename) {
+            // Verify the file was saved to disk
+            const savedPath = path.join(__dirname, '../../public/videos', req.file.filename);
+            const exists = fs.existsSync(savedPath);
+            console.log('uploadLessonVideo: expected savedPath=', savedPath, 'exists=', exists);
+
+            if (!exists) {
+                // If multer didn't save where we expected, try using req.file.path
+                if (req.file.path && fs.existsSync(req.file.path)) {
+                    console.log('uploadLessonVideo: found file at req.file.path=', req.file.path);
+                } else {
+                    console.error('uploadLessonVideo: uploaded file not found on disk. req.file:', req.file);
+                    return res.status(500).json({ success: false, message: 'Archivo subido no encontrado en el servidor' });
+                }
+            }
+
             // Serve from /videos/ on the public folder
             finalUrl = `/videos/${req.file.filename}`;
         } else if (videoUrl && videoUrl.trim() !== '') {
