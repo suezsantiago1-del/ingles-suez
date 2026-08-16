@@ -2,6 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import session from 'express-session';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import dbPromise from './src/config/database.js';
 import authRoutes from './src/routes/authRoutes.js';
@@ -51,8 +52,9 @@ app.set('views', path.join(__dirname, 'src/views'));
 // Servir archivos estáticos desde public
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+// Increase payload limits for non-multipart parsers (safe default for this app)
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+app.use(express.json({ limit: '50mb' }));
 
 app.use(session({
     secret: process.env.SESSION_SECRET || 'clave_secreta_suez',
@@ -152,6 +154,14 @@ app.post('/entregas', guardarEntrega);
 app.get('/profesor/entregas', renderPanelProfesor);
 app.post('/profesor/devolucion', guardarDevolucion);
 
+// Ensure uploads directory exists for lesson videos
+const videosDir = path.join(__dirname, 'public', 'videos');
+try {
+    if (!fs.existsSync(videosDir)) fs.mkdirSync(videosDir, { recursive: true });
+} catch (e) {
+    console.error('Could not ensure videos directory exists:', e);
+}
+
 // Multer setup for lesson video uploads (stored in public/videos)
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -163,20 +173,53 @@ const storage = multer.diskStorage({
     }
 });
 
-const upload = multer({ storage, limits: { fileSize: 1024 * 1024 * 1024 } }); // up to ~1GB
+// Increase Multer upload limit to 2GB to support large lesson videos
+const upload = multer({ storage, limits: { fileSize: 2 * 1024 * 1024 * 1024 } }); // up to ~2GB
+
+// Middleware to detect aborted uploads and log request info
+function uploadRequestLogger(req, res, next) {
+    req.on('aborted', () => {
+        console.warn('Upload request aborted by the client. url=', req.originalUrl, 'content-length=', req.headers['content-length']);
+    });
+    req.on('error', (err) => {
+        console.error('Request stream error during upload:', err && err.stack ? err.stack : err);
+    });
+    next();
+}
 
 // Endpoint for professor to upload a lesson video or set a video URL
-app.post('/profesor/leccion/video', upload.single('videoFile'), uploadLessonVideo);
+app.post('/profesor/leccion/video', uploadRequestLogger, upload.single('videoFile'), uploadLessonVideo);
 
 // Bandeja de entrada de devoluciones para los alumnos (exclusivo cursos)
 app.get('/mis-mensajes', renderMensajesAlumno);
 
-// Manejo de error 404
+// Global error handler (catches Multer and body-parser errors and returns JSON)
+app.use((err, req, res, next) => {
+    console.error('Global error handler:', err && err.stack ? err.stack : err);
+
+    // Multer errors
+    if (err && (err instanceof multer.MulterError || err.name === 'MulterError')) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+            return res.status(413).json({ success: false, message: 'El archivo excede el tamaño máximo permitido' });
+        }
+        return res.status(400).json({ success: false, message: err.message || 'Error en la subida de archivo' });
+    }
+
+    // body-parser / express errors for entity too large
+    if (err && (err.type === 'entity.too.large' || err.message && err.message.includes('request entity too large'))) {
+        return res.status(413).json({ success: false, message: 'Payload demasiado grande' });
+    }
+
+    if (res.headersSent) return next(err);
+    return res.status(500).json({ success: false, message: 'Error interno del servidor' });
+});
+
+// Manejo de error 404 (colocado después del handler de errores)
 app.use((req, res) => {
     res.status(404).send('<h1>404 - Página no encontrada</h1>');
 });
 
-app.listen(PORT, async () => {
+const server = app.listen(PORT, async () => {
     try {
         await dbPromise;
         console.log("Base de datos conectada correctamente");
@@ -185,3 +228,10 @@ app.listen(PORT, async () => {
     }
     console.log(`Servidor listo en: http://localhost:${PORT}`);
 });
+
+// Disable default Node timeout so large uploads aren't cut off mid-transfer
+try {
+    server.timeout = 0; // 0 = no timeout
+} catch (e) {
+    console.warn('Could not set server timeout:', e);
+}

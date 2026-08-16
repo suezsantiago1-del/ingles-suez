@@ -2,6 +2,7 @@ import dbPromise from '../config/database.js';
 import { MercadoPagoConfig, Preference } from 'mercadopago';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import fs from 'fs';
+import multer from 'multer';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -956,6 +957,10 @@ export const uploadLessonVideo = async (req, res) => {
     }
 
     try {
+        console.log('uploadLessonVideo: start. session user=', req.session && req.session.user ? req.session.user.email : null);
+        console.log('uploadLessonVideo: headers.content-length=', req.headers && req.headers['content-length']);
+        console.log('uploadLessonVideo: req.body=', req.body);
+        console.log('uploadLessonVideo: req.file=', req.file);
         const db = await dbPromise;
 
         const { leccionId, videoUrl } = req.body;
@@ -1016,7 +1021,18 @@ export const uploadLessonVideo = async (req, res) => {
 
         return res.json({ success: true, message: 'Video de la lección guardado correctamente', video_url: finalUrl });
     } catch (error) {
-        console.error('Error al subir/guardar video de la lección:', error);
+        // Log full stack for debugging upload-related failures (including Multer)
+        console.error('Error al subir/guardar video de la lección:', error && error.stack ? error.stack : error);
+
+        // If the error is a Multer error, return a clearer JSON status
+        if (error && (error instanceof multer.MulterError || error.name === 'MulterError')) {
+            if (error.code === 'LIMIT_FILE_SIZE') {
+                return res.status(413).json({ success: false, message: 'El archivo excede el tamaño máximo permitido' });
+            }
+            return res.status(400).json({ success: false, message: error.message || 'Error en la subida de archivo' });
+        }
+
+        // Generic fallback
         return res.status(500).json({ success: false, message: 'Error interno al procesar el video' });
     }
 };
