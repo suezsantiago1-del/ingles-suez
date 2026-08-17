@@ -136,7 +136,7 @@
         
         <!-- FORMULARIO DE SOLICITUD -->
         <div class="card-box">
-            <h2>🎯 Solicitar Clase Particular</h2>
+            <h2>Solicitar Clase Particular</h2>
             <form id="form-consulta-particular">
                 <div style="margin-bottom: 1rem;">
                     <label style="display: block; font-weight: bold; margin-bottom: 0.3rem;">Modalidad preferida:</label>
@@ -163,14 +163,14 @@
                 </div>
 
                 <button type="submit" id="btn-enviar" style="width: 100%; background: #184168; color: white; padding: 0.8rem; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 1rem;">
-                    🚀 Enviar Consulta
+                    Enviar Consulta
                 </button>
             </form>
         </div>
 
         <!-- LISTA DE CONSULTAS Y CHAT CON EL PROFESOR -->
         <div class="card-box">
-            <h2>💬 Mis Consultas y Respuestas</h2>
+            <h2>Mis Consultas y Respuestas</h2>
 
             <% if (typeof misConsultas !== 'undefined' && misConsultas.length > 0) { %>
                 <div style="max-height: 520px; overflow-y: auto; padding-right: 0.3rem;">
@@ -199,7 +199,7 @@
                                     <% c.mensajesChat.forEach(m => { %>
                                         <div class="chat-msg <%= m.emisor === 'PROFESOR' ? 'chat-msg-profesor' : 'chat-msg-alumno' %>">
                                             <div class="chat-msg-header">
-                                                <span><%= m.emisor === 'PROFESOR' ? '👨‍🏫 Profesor' : 'Tú' %></span>
+                                                <span><%= m.emisor === 'PROFESOR' ? 'Profesor' : 'Tú' %></span>
                                                 <span style="opacity: 0.7; font-weight: normal;"><%= new Date(m.fecha).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }) %></span>
                                             </div>
                                             <%= m.mensaje %>
@@ -209,7 +209,7 @@
                                     <!-- Fallback para compatibilidad previa -->
                                     <div class="chat-msg chat-msg-profesor">
                                         <div class="chat-msg-header">
-                                            <span>👨‍🏫 Profesor</span>
+                                            <span>Profesor</span>
                                         </div>
                                         <%= c.respuesta_profesor %>
                                     </div>
@@ -218,21 +218,21 @@
 
                             <% if (!c.respuesta_profesor && (!c.mensajesChat || c.mensajesChat.length === 0)) { %>
                                 <div style="background: #fffaf0; border: 1px solid #fbd38d; color: #c05621; padding: 0.6rem; border-radius: 4px; font-size: 0.85rem; margin-top: 0.5rem;">
-                                    ⏳ <em>Consulta recibida. El profesor te responderá a la brevedad.</em>
+                                    <em>Consulta recibida. El profesor te responderá a la brevedad.</em>
                                 </div>
                             <% } %>
 
                             <!-- INPUT PARA RESPONDER DENTRO DEL CHAT -->
                             <form class="form-responder-chat reply-box" data-consulta-id="<%= c.id %>">
                                 <textarea name="mensaje" class="reply-input" placeholder="Escribe un mensaje..." required></textarea>
-                                <button type="submit" class="reply-btn">Enviar 📩</button>
+                                <button type="submit" class="reply-btn">Enviar</button>
                             </form>
                         </div>
                     <% }) %>
                 </div>
             <% } else { %>
                 <div style="text-align: center; padding: 3rem 1rem; color: #a0aec0;">
-                    <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">💬</div>
+                    <div style="font-size: 2.5rem; margin-bottom: 0.5rem;"> </div>
                     <p style="margin: 0;">Aún no has realizado consultas de clases particulares.</p>
                     <small>Completa el formulario para enviar tu solicitud al profesor.</small>
                 </div>
@@ -271,13 +271,13 @@
                     } else {
                         alert(resData.message || 'Error al enviar la consulta.');
                         btn.disabled = false;
-                        btn.innerText = '🚀 Enviar Consulta';
+                        btn.innerText = 'Enviar Consulta';
                     }
                 } catch (err) {
                     console.error(err);
                     alert('Error de conexión al enviar la consulta.');
                     btn.disabled = false;
-                    btn.innerText = '🚀 Enviar Consulta';
+                    btn.innerText = 'Enviar Consulta';
                 }
             });
         }

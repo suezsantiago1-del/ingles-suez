@@ -119,7 +119,6 @@
 
     <!-- Notificación Toast Floater -->
     <div id="toast-notification" class="toast-notification">
-        <span style="font-size: 1.2rem;">✅</span>
         <div>
             <strong style="display: block; font-size: 0.95rem;">¡Entregable Registrado!</strong>
             <span style="font-size: 0.85rem; color: #a4c4de;">Procesando información...</span>
@@ -137,15 +136,15 @@
                     <% const fullLabel = `Clase ${l.orden}: ${l.titulo}`; %>
                     <% if (l.desbloqueada) { %>
                         <a href="/classroom/<%= curso.id %>?leccion=<%= l.id %>" class="lesson-item <%= (leccionActiva && leccionActiva.id == l.id) ? 'active' : '' %>" title="<%= fullLabel %>" aria-label="<%= fullLabel %>">
-                            <span>📖 Clase <%= l.orden %></span>
+                            <span>Clase <%= l.orden %></span>
                             <% if (l.completada) { %> 
-                                <span title="Clase completada">✅</span> 
+                                <span title="Clase completada" class="badge" style="margin-left:0.5rem; font-size:0.75rem;">Completada</span>
                             <% } %>
                         </a>
                     <% } else { %>
                         <div class="lesson-item disabled" title="<%= l.orden === 10 ? 'Requiere aprobación del profesor en todas las entregas previas' : 'Completa la entrega de la clase anterior para desbloquear' %>">
-                            <div>
-                                <span>🔒 Clase <%= l.orden %></span>
+                                <div>
+                                <span>Clase <%= l.orden %> (Bloqueada)</span>
                                 <% if (l.orden === 10) { %>
                                     <small style="display: block; font-size: 0.72rem; color: #a0aec0; margin-top: 0.2rem;">(Requiere aprobación de clases 1-9)</small>
                                 <% } %>
@@ -162,8 +161,8 @@
 
             <!-- Course Announcement (visible to all students of the course) -->
             <% if (anuncios && anuncios.length > 0) { %>
-                <div style="background:#fff7ed; border:1px solid #fbd38d; padding:1rem; border-radius:8px; margin-bottom:1rem; color:#663c00;">
-                    <strong style="display:block; color:#92400e; margin-bottom:0.4rem;">📣 Anuncio del Curso</strong>
+                    <div style="background:#fff7ed; border:1px solid #fbd38d; padding:1rem; border-radius:8px; margin-bottom:1rem; color:#663c00;">
+                    <strong style="display:block; color:#92400e; margin-bottom:0.4rem;">Anuncio del Curso</strong>
                     <p style="margin:0; white-space:pre-wrap;"><%= anuncios[0].mensaje %></p>
                 </div>
             <% } %>
@@ -171,12 +170,12 @@
             <!-- Banner de Descarga de Certificado (Visible solo al aprobar la Clase 10) -->
             <% if (leccionActiva && leccionActiva.orden === 10 && leccionActiva.nota !== null && leccionActiva.nota !== undefined && leccionActiva.nota >= 6) { %>
                 <div class="certificado-banner">
-                    <h2 style="color: #0b2238; margin-top: 0; font-size: 1.4rem;">🎓 ¡Felicitaciones por completar el curso!</h2>
+                    <h2 style="color: #0b2238; margin-top: 0; font-size: 1.4rem;">¡Felicitaciones por completar el curso!</h2>
                     <p style="color: #2d3748; margin-bottom: 0.5rem;">
                         Has finalizado y aprobado la evaluación con una nota de <strong><%= leccionActiva.nota %>/10</strong>.
                     </p>
                     <a href="/classroom/<%= curso.id %>/certificado" class="btn-certificado">
-                        🏆 Descargar mi Certificado Oficial (PDF)
+                        Descargar mi Certificado Oficial (PDF)
                     </a>
                 </div>
             <% } %>
@@ -188,14 +187,12 @@
                         <% if (leccionActiva.nota >= 6) { %>
                             <!-- CASO 1: APROBADO -->
                             <div style="background: #f0fff4; border: 1px solid #c6f6d5; padding: 1.2rem; border-radius: 8px; text-align: center;">
-                                <span style="font-size: 1.8rem;">🎉</span>
                                 <h3 style="color: #22543d; margin: 0.3rem 0;">¡Entregable Aprobado!</h3>
                                 <p style="color: #2f855a; margin: 0;">Tu calificación en esta clase es <strong><%= leccionActiva.nota %>/10</strong>. Ya has completado los requerimientos de esta lección.</p>
                             </div>
                         <% } else { %>
                             <!-- CASO 2: REPROBADO / REHACER -->
                             <div style="background: #fff5f5; border: 1px solid #feb2b2; padding: 1.2rem; border-radius: 8px; margin-bottom: 1rem;">
-                                <span style="font-size: 1.5rem;">⚠️</span>
                                 <h3 style="color: #9b2c2c; margin: 0.3rem 0;">Debes Rehacer el Entregable</h3>
                                 <p style="color: #c53030; margin-bottom: 0.5rem;">Tu nota actual es <strong><%= leccionActiva.nota %>/10</strong>. Revisa las observaciones del profesor en tu sección de <strong><a href="/mis-mensajes" style="color: #2b6cb0; font-weight: bold;">Mis Mensajes</a></strong> y vuelve a enviar tu respuesta abajo.</p>
                             </div>
@@ -203,7 +200,6 @@
                     <% } else if (leccionActiva.completada) { %>
                         <!-- CASO 3: ENVIADO Y EN ESPERA DE CORRECCIÓN -->
                         <div style="background: #feefc3; border: 1px solid #f6e05e; padding: 1rem; border-radius: 8px; text-align: center;">
-                            <span style="font-size: 1.5rem;">⏳</span>
                             <h4 style="color: #744210; margin: 0.2rem 0;">Entregable Enviado — En Revisión</h4>
                             <p style="color: #975a16; margin: 0; font-size: 0.9rem;">Tu respuesta fue recibida y está siendo revisada por el profesor.</p>
                         </div>
@@ -243,7 +239,6 @@
                     <% } %>
                 <% } else { %>
                     <div class="video-placeholder">
-                        <div style="font-size: 3rem; margin-bottom: 0.5rem;">🎬</div>
                         <h3>Video Explicativo de la Clase</h3>
                         <p style="font-size: 0.9rem;">(Próximamente disponible en esta lección)</p>
                     </div>
@@ -374,9 +369,9 @@
                     t.style.backgroundColor = "#edf2f7";
                 });
 
-                btnEnviars.forEach(btn => {
+                    btnEnviars.forEach(btn => {
                     btn.disabled = true;
-                    btn.innerText = nota >= 6 ? '✔ APROBADO' : '⏳ EN REVISIÓN';
+                    btn.innerText = nota >= 6 ? 'APROBADO' : 'EN REVISIÓN';
                     btn.style.background = nota >= 6 ? '#38a169' : '#718096';
                     btn.style.cursor = 'not-allowed';
                 });
@@ -384,7 +379,7 @@
                 // Si REPROBÓ (< 6), habilitar botón como "REHACER ENTREGABLE"
                 const btnEnviars = document.querySelectorAll('.leccion-body button');
                 btnEnviars.forEach(btn => {
-                    btn.innerText = '🔄 REHACER Y ENVIAR ENTREGABLE';
+                    btn.innerText = 'REHACER Y ENVIAR ENTREGABLE';
                     btn.style.background = '#e53e3e';
                 });
             }
