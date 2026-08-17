@@ -10,9 +10,9 @@
 
     <%- include('partials/header') %>
 
-    <div class="h-screen" style="display:flex; height: calc(100vh - 120px); overflow:hidden;">
+    <div id="messages-container" class="h-screen flex flex-col md:flex-row" data-active="<%= !!activeLessonId %>" style="height: calc(100vh - 120px); overflow:hidden;">
         <!-- Sidebar -->
-        <aside style="width:25%; background:#f8fafc; padding:1.25rem; overflow:auto; border-right:1px solid #e6eef6;">
+        <aside id="messages-sidebar" class="w-full md:w-1/4" style="background:#f8fafc; padding:1.25rem; overflow:auto; border-right:1px solid #e6eef6;">
             <h2 style="color:var(--primary-navy); font-weight:900; margin-bottom:1rem;"> <%= course.titulo %> </h2>
             <nav>
                 <div style="display:block;">
@@ -42,7 +42,9 @@
         </aside>
 
         <!-- Content -->
-        <section style="width:75%; padding:2rem; overflow:auto; background:white;">
+        <section id="messages-content" class="w-full md:w-3/4" style="padding:2rem; overflow:auto; background:white;">
+            <!-- Mobile back button -->
+            <button id="back-to-list-btn" class="block md:hidden" style="background:none; border:none; color:#002244; font-weight:700; margin-bottom:1rem;">← Volver a la lista</button>
             <% if (!activeLessonId) { %>
                 <div style="text-align:center; color:var(--text-muted); margin-top:4rem;">
                     <h3 style="color:var(--primary-navy);">Selecciona una clase para ver la devolución</h3>
@@ -82,5 +84,51 @@
     </div>
 
     <%- include('partials/footer') %>
+    <script>
+        (function(){
+            const container = document.getElementById('messages-container');
+            const sidebar = document.getElementById('messages-sidebar');
+            const content = document.getElementById('messages-content');
+            const backBtn = document.getElementById('back-to-list-btn');
+            const hasActive = container && container.dataset && container.dataset.active === 'true';
+
+            function isMobile() { return window.innerWidth < 768; }
+
+            function applyResponsive() {
+                if (!sidebar || !content) return;
+                if (isMobile()) {
+                    if (hasActive) {
+                        sidebar.style.display = 'none';
+                        content.style.display = 'block';
+                    } else {
+                        sidebar.style.display = 'block';
+                        content.style.display = 'none';
+                    }
+                } else {
+                    sidebar.style.display = '';
+                    content.style.display = '';
+                }
+            }
+
+            window.addEventListener('resize', applyResponsive);
+            document.addEventListener('DOMContentLoaded', applyResponsive);
+
+            if (backBtn) {
+                backBtn.addEventListener('click', function(e){
+                    e.preventDefault();
+                    // show sidebar and hide content on mobile
+                    if (isMobile()) {
+                        sidebar.style.display = 'block';
+                        content.style.display = 'none';
+                        // remove lessonId from URL without reload
+                        history.pushState(null, '', '/messages/<%= course.id %>');
+                    } else {
+                        // on desktop just focus sidebar
+                        sidebar.scrollIntoView({ behavior: 'smooth' });
+                    }
+                });
+            }
+        })();
+    </script>
 </body>
 </html>
