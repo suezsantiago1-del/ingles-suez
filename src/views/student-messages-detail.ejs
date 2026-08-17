@@ -10,9 +10,9 @@
 
     <%- include('partials/header') %>
 
-    <div id="messages-container" class="min-h-screen flex flex-col md:flex-row" data-active="<%= !!activeLessonId %>" style="height: calc(100vh - 120px); overflow:hidden;">
-        <!-- Sidebar -->
-        <aside id="messages-sidebar" class="w-full md:w-80 bg-white md:border-r border-slate-200" style="padding:1.5rem; overflow:auto;">
+    <div id="messages-container" class="flex flex-col md:flex-row min-h-screen w-full" data-active="<%= !!activeLessonId %>" style="height: calc(100vh - 120px); overflow:hidden;">
+        <!-- Sidebar (always present on desktop) -->
+        <aside id="messages-sidebar" class="w-full md:w-80 border-r border-slate-200 bg-white flex-shrink-0" style="padding:1.5rem; overflow:auto;">
             <h2 style="color:var(--primary-navy); font-weight:900; margin-bottom:1rem;"> <%= course.titulo %> </h2>
             <nav>
                 <div style="display:block;">
@@ -43,9 +43,9 @@
         </aside>
 
         <!-- Content -->
-        <section id="messages-content" class="w-full md:flex-1 p-8" style="overflow:auto; background:white;">
+        <section id="messages-content" class="flex-1 p-6 md:p-8 bg-transparent" style="overflow:auto; background:white;">
             <!-- Mobile back button (visible only on mobile) -->
-            <button id="back-to-list-btn" class="hidden md:hidden" style="background:none; border:none; color:#002244; font-weight:700; margin-bottom:1rem;">← Volver a la lista</button>
+            <button id="back-to-list-btn" class="block md:hidden" style="background:none; border:none; color:#002244; font-weight:700; margin-bottom:1rem;">← Volver a la lista</button>
             <% if (!activeLessonId) { %>
                 <div style="text-align:center; color:var(--text-muted); margin-top:4rem;">
                     <h3 style="color:var(--primary-navy);">Selecciona una clase para ver la devolución</h3>
