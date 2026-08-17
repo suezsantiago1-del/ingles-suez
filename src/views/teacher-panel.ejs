@@ -69,7 +69,7 @@
         }
     </style>
 </head>
-<body>
+<body class="bg-neutral">
 
     <%- include('partials/header') %>
 
@@ -81,7 +81,7 @@
 
     <div class="teacher-layout">
         <!-- Sidebar: Lista Agrupada por Alumno -->
-        <aside class="sidebar-alumnos">
+        <aside class="sidebar-alumnos bg-primary-navy text-white">
             <div class="sidebar-header">
                 <h2>Chats por Alumno (Cursos)</h2>
             </div>
@@ -104,37 +104,37 @@
                 </div>
 
                 <!-- SECTION: Video Management for Lessons (Visible to Professor) -->
-                <div id="video-management" style="padding: 1rem 2rem; border: 1px dashed #cbd5e0; margin: 1rem; border-radius: 8px; background: #fff;">
-                    <h3 style="margin-top: 0; color: #184168;">Gestionar Videos de Lecciones</h3>
-                    <p style="color: #718096; margin-top: 0.2rem;">Seleccioná la lección, pega una URL de YouTube/directa o subí un archivo MP4.</p>
+                <div id="video-management" class="card" style="margin-bottom: 2rem;">
+                    <h3 style="margin-top: 0; color: var(--primary-navy);">Gestionar Videos de Lecciones</h3>
+                    <p style="color: var(--text-muted); margin-top: 0.2rem;">Seleccioná la lección, pega una URL de YouTube/directa o subí un archivo MP4.</p>
 
                     <div style="display:flex; gap:1rem; align-items:flex-start; flex-wrap:wrap;">
-                        <select id="select-leccion" style="padding: 0.5rem; border-radius:6px; border:1px solid #cbd5e0; min-width: 320px;">
+                        <select id="select-leccion" class="form-control" style="min-width:320px;">
                             <option value="">-- Selecciona una lección --</option>
                         </select>
 
-                        <input id="input-video-url" type="text" placeholder="https://youtube.com/watch?v=... o URL directa .mp4" style="flex:1; padding:0.5rem; border-radius:6px; border:1px solid #cbd5e0; min-width: 300px;" />
+                        <input id="input-video-url" class="form-control" type="text" placeholder="https://youtube.com/watch?v=... o URL directa .mp4" style="flex:1; min-width:300px;" />
 
-                        <input id="input-video-file" type="file" accept="video/mp4,video/*" style="padding:0.3rem;" />
+                        <input id="input-video-file" class="form-control" type="file" accept="video/mp4,video/*" style="padding:0.3rem; max-width:220px;" />
 
-                        <button id="btn-upload-video" style="background:#184168; color:white; border:none; padding:0.6rem 1rem; border-radius:6px; cursor:pointer;">Guardar Video</button>
+                        <button id="btn-upload-video" class="btn-primary">Guardar Video</button>
                     </div>
 
                     <div id="video-management-feedback" style="margin-top:0.8rem;color:#22543d;display:none;"></div>
                 </div>
 
                 <!-- SECTION: Course Announcements Management -->
-                <div id="announcements-management" style="padding: 1rem 2rem; border: 1px dashed #cbd5e0; margin: 1rem; border-radius: 8px; background: #fff;">
-                    <h3 style="margin-top: 0; color: #184168;">Anuncios del Curso</h3>
-                    <p style="color: #718096; margin-top: 0.2rem;">Seleccioná un curso y publicá un anuncio que verán todos los estudiantes del curso.</p>
+                <div id="announcements-management" class="card" style="margin-bottom: 2rem;">
+                    <h3 style="margin-top: 0; color: var(--primary-navy);">Anuncios del Curso</h3>
+                    <p style="color: var(--text-muted); margin-top: 0.2rem;">Seleccioná un curso y publicá un anuncio que verán todos los estudiantes del curso.</p>
 
                     <div style="display:flex; gap:1rem; align-items:flex-start; flex-wrap:wrap; margin-top:0.6rem;">
-                        <select id="select-course-ann" style="padding:0.5rem; border-radius:6px; border:1px solid #cbd5e0; min-width: 320px;"></select>
+                        <select id="select-course-ann" class="form-control" style="min-width:320px;"></select>
                         <div style="flex:1; min-width:300px;">
-                            <textarea id="announcement-text" placeholder="Escribe el anuncio público para este curso..." style="width:100%; height:100px; padding:0.6rem; border-radius:6px; border:1px solid #cbd5e0;"></textarea>
+                            <textarea id="announcement-text" class="form-control" placeholder="Escribe el anuncio público para este curso..." style="height:100px;"></textarea>
                             <div style="margin-top:0.6rem; display:flex; gap:0.6rem;">
-                                <button id="btn-save-ann" style="background:#2b6cb0; color:white; border:none; padding:0.6rem 1rem; border-radius:6px; cursor:pointer; font-weight:bold;">Guardar Anuncio</button>
-                                <button id="btn-delete-ann" style="background:#e53e3e; color:white; border:none; padding:0.6rem 1rem; border-radius:6px; cursor:pointer; font-weight:bold;">Eliminar Anuncio</button>
+                                <button id="btn-save-ann" class="btn-primary" style="font-weight:bold;">Guardar Anuncio</button>
+                                <button id="btn-delete-ann" class="btn-outline-danger" style="font-weight:bold;">Eliminar Anuncio</button>
                             </div>
                         </div>
                     </div>
@@ -142,16 +142,16 @@
                 </div>
 
                 <!-- SECTION: Per-Lesson Teacher Notes -->
-                <div id="lesson-note-management" style="padding: 1rem 2rem; border: 1px dashed #cbd5e0; margin: 1rem; border-radius: 8px; background: #fff;">
-                    <h3 style="margin-top: 0; color: #184168;">Notas por Lección</h3>
-                    <p style="color: #718096; margin-top: 0.2rem;">Seleccioná una lección y escribí una nota que verán los alumnos dentro de esa lección.</p>
+                <div id="lesson-note-management" class="card" style="margin-bottom: 2rem;">
+                    <h3 style="margin-top: 0; color: var(--primary-navy);">Notas por Lección</h3>
+                    <p style="color: var(--text-muted); margin-top: 0.2rem;">Seleccioná una lección y escribí una nota que verán los alumnos dentro de esa lección.</p>
 
                     <div style="display:flex; gap:1rem; align-items:flex-start; flex-wrap:wrap; margin-top:0.6rem;">
-                        <select id="select-lesson-note" style="padding:0.5rem; border-radius:6px; border:1px solid #cbd5e0; min-width: 320px;"></select>
+                        <select id="select-lesson-note" class="form-control" style="min-width:320px;"></select>
                         <div style="flex:1; min-width:300px;">
-                            <textarea id="lesson-teacher-note" placeholder="Escribe la nota para la lección seleccionada..." style="width:100%; height:100px; padding:0.6rem; border-radius:6px; border:1px solid #cbd5e0;"></textarea>
+                            <textarea id="lesson-teacher-note" class="form-control" placeholder="Escribe la nota para la lección seleccionada..." style="height:100px;"></textarea>
                             <div style="margin-top:0.6rem; display:flex; gap:0.6rem;">
-                                <button id="btn-save-lesson-note" style="background:#2b6cb0; color:white; border:none; padding:0.6rem 1rem; border-radius:6px; cursor:pointer; font-weight:bold;">Guardar Nota de Lección</button>
+                                <button id="btn-save-lesson-note" class="btn-primary" style="font-weight:bold;">Guardar Nota de Lección</button>
                             </div>
                         </div>
                     </div>

@@ -11,6 +11,10 @@
   --text-primary: #0A2540;
   --text-muted: #4A607A;
   --border: #C2D5E6;
+  /* Brand overrides */
+  --primary-navy: #002244;
+  --accent-blue: #0077b6;
+  --bg-neutral: #f8fafc;
   --radius: 4px;
   --max-width: 1200px;
   --shadow-subtle: 0 8px 30px rgba(10, 37, 64, 0.08);
@@ -166,16 +170,37 @@ body::after {
 }
 
 .btn-primary {
-  background-color: var(--blue-dark);
+  background-color: var(--primary-navy);
   color: #FFFFFF !important;
-  box-shadow: 0 4px 14px rgba(10, 37, 64, 0.25);
+  box-shadow: 0 4px 14px rgba(0, 34, 68, 0.12);
 }
 
 .btn-primary:hover {
-  background-color: var(--blue-mid);
+  background-color: var(--accent-blue);
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(10, 37, 64, 0.35);
+  box-shadow: 0 8px 20px rgba(0, 34, 68, 0.18);
 }
+
+/* Card utility */
+.card {
+  background: #ffffff;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  padding: 1.5rem;
+}
+
+/* Background and text utilities */
+.bg-neutral { background: var(--bg-neutral) !important; }
+.bg-primary-navy { background: var(--primary-navy) !important; }
+.text-white { color: #ffffff !important; }
+
+/* Form controls */
+.form-control { padding: 0.5rem; border-radius: 6px; border: 1px solid #e2e8f0; font-family: inherit; }
+.form-control:focus { outline: 2px solid var(--accent-blue); box-shadow: none; }
+
+/* Outline danger button */
+.btn-outline-danger { border: 1px solid #ef4444; color: #ef4444; background: transparent; padding: 0.6rem 1rem; border-radius: 6px; cursor: pointer; }
+.btn-outline-danger:hover { background: rgba(239,68,68,0.08); }
 
 .btn-secondary {
   background-color: #FFFFFF;
