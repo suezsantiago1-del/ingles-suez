@@ -240,6 +240,20 @@ const server = app.listen(PORT, async () => {
     } catch (e) {
         console.error("Error al conectar la base de datos:", e);
     }
+    // Log uploads serving info
+    try {
+        const publicDir = path.join(__dirname, 'public');
+        let serveRoot = '/videos';
+        if (videosDir.startsWith(publicDir)) {
+            serveRoot = '/' + path.relative(publicDir, videosDir).replace(/\\/g, '/');
+        } else {
+            serveRoot = '/uploads';
+        }
+        console.log(`Uploads directory: ${videosDir} (served at ${serveRoot})`);
+    } catch (e) {
+        console.warn('Could not compute uploads serving info:', e);
+    }
+
     console.log(`Servidor listo en: http://localhost:${PORT}`);
 });
 

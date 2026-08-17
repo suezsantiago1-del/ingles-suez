@@ -399,8 +399,44 @@ export const renderClassroom = async (req, res) => {
 
         // Debug: log active lesson and video URLs to help trace missing video issues
         try {
-            console.log('renderClassroom: leccionActiva id=', leccionActiva && leccionActiva.id, 'video_url=', leccionActiva && leccionActiva.video_url);
+            const activeUrl = leccionActiva && leccionActiva.video_url;
+            console.log('renderClassroom: leccionActiva id=', leccionActiva && leccionActiva.id, 'video_url=', activeUrl);
             console.log('renderClassroom: lecciones with video_url:', leccionesConEstado.map(l => ({ id: l.id, orden: l.orden, video_url: l.video_url })));
+
+            // If the active lesson has a local-looking URL, check for file existence on disk.
+            if (activeUrl && typeof activeUrl === 'string' && !activeUrl.startsWith('http')) {
+                const candidates = [];
+                // Candidate under public (e.g. /videos/xxx.mp4)
+                try { candidates.push(path.join(__dirname, '../../public', activeUrl.replace(/^[\\/]+/, ''))); } catch(e){}
+                // Candidate if exposed at /uploads -> map to project root + activeUrl
+                try { candidates.push(path.join(process.cwd(), activeUrl.replace(/^[\\/]+/, ''))); } catch(e){}
+                // Candidate directly using value if it's an absolute path
+                try { candidates.push(activeUrl); } catch(e){}
+
+                let found = false;
+                for (const c of candidates) {
+                    try {
+                        if (c && fs.existsSync(c)) {
+                            console.log('renderClassroom: video file exists on disk at:', c);
+                            found = true;
+                            break;
+                        } else {
+                            console.log('renderClassroom: video candidate not found:', c);
+                        }
+                    } catch (ex) {
+                        console.warn('renderClassroom: error checking file candidate', c, ex && ex.stack ? ex.stack : ex);
+                    }
+                }
+
+                if (!found) {
+                    // Detect suspicious DB-stored absolute/temp paths
+                    if (activeUrl.includes('tmp') || activeUrl.includes('temp') || /[A-Za-z]:[\\/]/.test(activeUrl) || activeUrl.startsWith('/tmp') ) {
+                        console.warn('renderClassroom: video_url appears to be a temporary or absolute filesystem path. Consider storing a relative public URL (/videos/...) or using persistent storage. video_url=', activeUrl);
+                    } else {
+                        console.warn('renderClassroom: video_url does not map to an existing file on disk. video_url=', activeUrl);
+                    }
+                }
+            }
         } catch (dbgErr) {
             console.error('renderClassroom: debug log error', dbgErr);
         }
