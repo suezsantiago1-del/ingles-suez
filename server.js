@@ -55,6 +55,21 @@ app.set('views', path.join(__dirname, 'src/views'));
 // Servir archivos estáticos desde public
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Configure uploads directory (allow overriding with env var for persistent mounts)
+const configuredUploadsDir = process.env.UPLOADS_DIR ? path.resolve(process.env.UPLOADS_DIR) : path.join(__dirname, 'public', 'videos');
+const videosDir = configuredUploadsDir;
+try {
+    if (!fs.existsSync(videosDir)) fs.mkdirSync(videosDir, { recursive: true });
+} catch (e) {
+    console.error('Could not ensure videos directory exists:', e);
+}
+
+// If uploads directory is outside public, expose it at /uploads so files are reachable
+const publicDir = path.join(__dirname, 'public');
+if (!videosDir.startsWith(publicDir)) {
+    app.use('/uploads', express.static(videosDir));
+}
+
 // Increase payload limits for non-multipart parsers (safe default for this app)
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(express.json({ limit: '50mb' }));
@@ -161,21 +176,13 @@ app.post('/profesor/anuncio', express.json(), createOrUpdateAnnouncement);
 app.delete('/profesor/anuncio', express.json(), deleteAnnouncement);
 app.post('/profesor/leccion/nota', express.json(), updateLessonTeacherNote);
 
-// Ensure uploads directory exists for lesson videos
-const videosDir = path.join(__dirname, 'public', 'videos');
-try {
-    if (!fs.existsSync(videosDir)) fs.mkdirSync(videosDir, { recursive: true });
-} catch (e) {
-    console.error('Could not ensure videos directory exists:', e);
-}
-
-// Multer setup for lesson video uploads (stored in public/videos)
+// Multer setup for lesson video uploads
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, path.join(__dirname, 'public', 'videos'));
+        cb(null, videosDir);
     },
     filename: function (req, file, cb) {
-        const safeName = file.originalname.replace(/[^a-z0-9\.\-\_]/gi, '_');
+        const safeName = file.originalname.replace(/[^a-z0-9\.-\_]/gi, '_');
         cb(null, Date.now() + '-' + safeName);
     }
 });

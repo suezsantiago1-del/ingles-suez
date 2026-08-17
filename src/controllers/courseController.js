@@ -1019,7 +1019,7 @@ export const uploadLessonVideo = async (req, res) => {
         // If a file was uploaded (middleware should populate req.file)
         if (req.file && req.file.filename) {
             // Verify the file was saved to disk
-            const savedPath = path.join(__dirname, '../../public/videos', req.file.filename);
+            const savedPath = req.file.path || path.join(__dirname, '../../public/videos', req.file.filename);
             const exists = fs.existsSync(savedPath);
             console.log('uploadLessonVideo: expected savedPath=', savedPath, 'exists=', exists);
 
@@ -1033,8 +1033,23 @@ export const uploadLessonVideo = async (req, res) => {
                 }
             }
 
-            // Serve from /videos/ on the public folder
-            finalUrl = `/videos/${req.file.filename}`;
+            // Determine URL base for served uploads. If we store under public/, use that relative path.
+            const uploadsPublicRoot = path.join(__dirname, '../../public');
+            let urlBase = '/videos';
+            try {
+                const uploadsDirResolved = path.dirname(savedPath);
+                if (uploadsDirResolved.startsWith(uploadsPublicRoot)) {
+                    urlBase = '/' + path.relative(uploadsPublicRoot, uploadsDirResolved).replace(/\\/g, '/');
+                } else {
+                    // If uploads stored outside public, we expose them under /uploads via server.js
+                    urlBase = '/uploads';
+                }
+            } catch (e) {
+                console.warn('uploadLessonVideo: could not compute urlBase for uploads, defaulting to /videos', e);
+                urlBase = '/videos';
+            }
+
+            finalUrl = `${urlBase}/${req.file.filename}`;
         } else if (videoUrl && videoUrl.trim() !== '') {
             let candidate = videoUrl.trim();
 
