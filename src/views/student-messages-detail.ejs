@@ -10,7 +10,7 @@
 
     <%- include('partials/header') %>
 
-    <div id="messages-container" class="flex flex-col md:flex-row min-h-screen w-full" data-active="<%= !!activeLessonId %>" style="height: calc(100vh - 120px); overflow:hidden;">
+    <div id="messages-container" class="flex flex-col md:flex-row min-h-[calc(100vh-80px)] w-full" data-active="<%= !!activeLessonId %>">
         <!-- Sidebar (always present on desktop) -->
         <aside id="messages-sidebar" class="w-full md:w-80 bg-white border-r border-slate-200 flex-shrink-0" style="padding:1.5rem; overflow:auto;">
             <h2 style="color:var(--primary-navy); font-weight:900; margin-bottom:1rem;"> <%= course.titulo %> </h2>
@@ -42,7 +42,7 @@
         </aside>
 
         <!-- Content -->
-        <section id="messages-content" class="flex-1 p-6 md:p-8 bg-slate-100" style="overflow:auto;">
+        <section id="messages-content" class="flex-1 p-6 md:p-8 overflow-y-auto">
             <!-- Mobile back button (visible only on mobile) -->
             <button id="back-to-list-btn" class="block md:hidden" style="background:none; border:none; color:#002244; font-weight:700; margin-bottom:1rem;">← Volver a la lista</button>
             <% if (!activeLessonId) { %>
