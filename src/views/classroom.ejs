@@ -200,6 +200,12 @@
                         </div>
                     <% } %>
                 </div>
+                <% if (leccionActiva.teacher_notes) { %>
+                    <div style="background:#f7f9fb; border:1px solid #cbd5e0; padding:1rem; border-radius:8px; margin-bottom:1rem; color:#1a202c;">
+                        <h4 style="margin:0 0 0.4rem 0; color:#184168;">Nota del Profesor</h4>
+                        <p style="margin:0; white-space:pre-wrap;"><%= leccionActiva.teacher_notes %></p>
+                    </div>
+                <% } %>
             <% } %>
 
             <!-- Reproductor de Video -->

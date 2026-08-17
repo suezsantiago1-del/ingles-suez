@@ -329,7 +329,7 @@ export const renderClassroom = async (req, res) => {
         }
 
         const entregasAlumno = await db.all(`
-            SELECT e.leccion_id, d.nota, e.id as entrega_id
+            SELECT e.leccion_id, d.nota, e.id as entrega_id, e.teacher_notes
             FROM entregas e
             LEFT JOIN devoluciones d ON d.entrega_id = e.id
             WHERE e.usuario_id = ? AND e.curso_id = ?
@@ -343,20 +343,23 @@ export const renderClassroom = async (req, res) => {
 
         const mapaEntregas = new Map();
         entregasAlumno.forEach(e => {
-            mapaEntregas.set(e.leccion_id, e.nota);
+            mapaEntregas.set(e.leccion_id, { nota: e.nota, entrega_id: e.entrega_id, teacher_notes: e.teacher_notes });
         });
 
         const leccionesPreviasExamen = lecciones.filter(l => l.orden < 10);
         const todasPreviasAprobadas = leccionesPreviasExamen.length > 0 && leccionesPreviasExamen.every(l => {
-            if (!mapaEntregas.has(l.id)) return false; 
-            const nota = mapaEntregas.get(l.id);
-            return nota !== null && nota !== undefined && parseInt(nota, 10) >= 6;
+            if (!mapaEntregas.has(l.id)) return false;
+            const entregaInfo = mapaEntregas.get(l.id) || {};
+            const notaVal = entregaInfo.nota;
+            return notaVal !== null && notaVal !== undefined && parseInt(notaVal, 10) >= 6;
         });
 
         let leccionAnteriorEntregada = true;
         const leccionesConEstado = lecciones.map((leccion, index) => {
             const entregada = mapaEntregas.has(leccion.id);
-            const nota = mapaEntregas.get(leccion.id);
+            const entregaInfo = mapaEntregas.get(leccion.id) || {};
+            const nota = entregaInfo.nota;
+            const teacher_notes = entregaInfo.teacher_notes || null;
             let desbloqueada = false;
 
             if (leccion.orden === 10) {
@@ -373,6 +376,7 @@ export const renderClassroom = async (req, res) => {
                 ...leccion,
                 completada: entregada,
                 nota: nota,
+                teacher_notes,
                 desbloqueada
             };
         });
@@ -489,6 +493,7 @@ export const renderPanelProfesor = async (req, res) => {
             SELECT 
                 e.id,
                 e.usuario_id,
+                e.teacher_notes,
                 e.contenido,
                 e.fecha,
                 u.nombre AS usuario_nombre,
@@ -562,6 +567,30 @@ export const guardarDevolucion = async (req, res) => {
     } catch (error) {
         console.error('Error al guardar devolución:', error);
         return res.status(500).json({ success: false, message: 'Error en el servidor al guardar la devolución' });
+    }
+};
+
+// Save or update a teacher note for a specific entrega
+export const saveTeacherNote = async (req, res) => {
+    if (!req.session.user) {
+        return res.status(401).json({ success: false, message: 'No autenticado' });
+    }
+
+    const EMAIL_PROFESOR = 'suezsantiago1@gmail.com';
+    if (req.session.user.email !== EMAIL_PROFESOR) {
+        return res.status(403).json({ success: false, message: 'Acceso no autorizado' });
+    }
+
+    const { entregaId, note } = req.body;
+    if (!entregaId) return res.status(400).json({ success: false, message: 'Falta entregaId' });
+
+    try {
+        const db = await dbPromise;
+        await db.run('UPDATE entregas SET teacher_notes = ? WHERE id = ?', [note || null, entregaId]);
+        return res.json({ success: true, message: 'Nota del profesor guardada correctamente' });
+    } catch (error) {
+        console.error('Error guardando nota del profesor:', error);
+        return res.status(500).json({ success: false, message: 'Error al guardar nota del profesor' });
     }
 };
 

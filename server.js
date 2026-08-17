@@ -16,6 +16,7 @@ import {
     guardarEntrega,
     renderPanelProfesor,
     guardarDevolucion,
+    saveTeacherNote,
     uploadLessonVideo,
     handleMpWebhook,
     renderMensajesAlumno,
@@ -153,6 +154,7 @@ app.post('/mercadopago/webhook', express.json(), handleMpWebhook);
 app.post('/entregas', guardarEntrega);
 app.get('/profesor/entregas', renderPanelProfesor);
 app.post('/profesor/devolucion', guardarDevolucion);
+app.post('/profesor/nota', express.json(), saveTeacherNote);
 
 // Ensure uploads directory exists for lesson videos
 const videosDir = path.join(__dirname, 'public', 'videos');

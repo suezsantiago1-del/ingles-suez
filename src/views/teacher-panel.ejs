@@ -243,6 +243,14 @@
                         <button type="button" onclick="enviarDevolucion(${e.id}, ${e.usuario_id}, this)" style="background: #184168; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 6px; font-weight: bold; cursor: pointer;">
                             ${tieneDevolucion ? 'Actualizar Devolución' : 'Enviar Devolución'}
                         </button>
+
+                        <hr style="margin:1rem 0; border:none; border-top:1px dashed #e2e8f0;" />
+
+                        <label for="teacher-note-${e.id}" style="display:block; font-weight:bold; color:#184168; margin-bottom:0.4rem;">Nota del Profesor (visible al alumno):</label>
+                        <textarea id="teacher-note-${e.id}" placeholder="Escribe una nota, consejo o advertencia para el alumno..." style="width: 100%; height: 80px; padding: 0.7rem; border: 1px solid #cbd5e0; border-radius: 6px; font-family: inherit; font-size: 0.95rem; margin-top:0.2rem;">${e.teacher_notes || ''}</textarea>
+                        <div style="margin-top:0.6rem; display:flex; gap:0.6rem;">
+                            <button type="button" onclick="enviarNotaProfesor(${e.id}, this)" style="background:#2b6cb0; color:white; border:none; padding:0.5rem 0.9rem; border-radius:6px; cursor:pointer; font-weight:bold;">Guardar Nota</button>
+                        </div>
                     </div>
                 `;
 
@@ -292,6 +300,42 @@
                 console.error(err);
                 alert('Error de conexión al enviar la devolución.');
                 btn.innerText = textoOriginal;
+                btn.disabled = false;
+            }
+        }
+
+        // Save teacher note for an entrega
+        async function enviarNotaProfesor(entregaId, btn) {
+            const textarea = document.getElementById(`teacher-note-${entregaId}`);
+            if (!textarea) return;
+
+            const note = textarea.value.trim();
+
+            const originalText = btn.innerText;
+            btn.innerText = 'Guardando...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/profesor/nota', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ entregaId, note })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    alert('Nota del profesor guardada correctamente.');
+                    btn.innerText = 'Guardado';
+                    setTimeout(() => { btn.innerText = originalText; }, 1200);
+                } else {
+                    alert(data.message || 'Error al guardar la nota del profesor.');
+                    btn.innerText = originalText;
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Error de conexión al guardar la nota del profesor.');
+                btn.innerText = originalText;
+            } finally {
                 btn.disabled = false;
             }
         }
