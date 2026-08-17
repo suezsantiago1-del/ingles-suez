@@ -3,71 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mis Mensajes - Inglés Suez</title>
+    <title>Mis Mensajes - <%= course.titulo %></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="/css/styles.css">
 </head>
-<body class="bg-slate-100 min-h-screen flex flex-col m-0">
+<body class="bg-slate-100 min-h-screen m-0">
 
-    <!-- Navbar -->
     <%- include('partials/navbar') %>
 
-    <!-- CONTENEDOR MAESTRO FIJO (Dos columnas lado a lado) -->
-    <div class="flex flex-row w-full min-h-screen">
-        
-        <!-- BARRA LATERAL IZQUIERDA -->
-        <aside class="w-80 bg-white border-r border-slate-200 flex-shrink-0 min-h-screen">
+    <div class="flex flex-col md:flex-row min-h-screen w-full bg-slate-100">
+
+        <!-- Sidebar -->
+        <aside class="w-full md:w-80 bg-white border-r border-slate-200 flex-shrink-0 min-h-screen">
             <div class="p-4 border-b border-slate-200 bg-slate-50">
-                <h2 class="font-bold text-[#002244] text-lg truncate"><%= course.title %></h2>
+                <h2 class="font-bold text-[#002244] text-lg truncate"><%= course.titulo %></h2>
                 <p class="text-xs text-slate-500">Selecciona una clase</p>
             </div>
-            
+
             <div class="divide-y divide-slate-100">
                 <% lessons.forEach(lesson => { %>
-                    <% const isActive = (selectedLesson && selectedLesson.id === lesson.id); %>
+                    <% const isActive = (lesson.id == activeLessonId); %>
                     <% if (lesson.isLocked) { %>
                         <div class="p-4 opacity-50 cursor-not-allowed flex items-center justify-between bg-slate-50">
                             <span class="text-sm font-medium text-slate-400">
-                                <strong><%= lesson.number %>.</strong> <%= lesson.title %>
+                                <strong><%= lesson.orden %>.</strong> <%= lesson.titulo %>
                             </span>
                             <span class="text-xs">🔒</span>
                         </div>
                     <% } else { %>
-                        <a href="/messages/<%= course.id %>?lessonId=<%= lesson.id %>" 
+                        <a href="/messages/<%= course.id %>?lessonId=<%= lesson.id %>"
                            class="block transition-colors duration-150 p-4 text-sm font-medium <%= isActive ? 'bg-[#002244] text-white rounded-lg mx-2 my-2 shadow-sm' : 'text-slate-700 hover:bg-slate-50' %>">
-                            <strong><%= lesson.number %>.</strong> <%= lesson.title %>
+                            <strong><%= lesson.orden %>.</strong> <%= lesson.titulo %>
                         </a>
                     <% } %>
                 <% }) %>
             </div>
         </aside>
 
-        <!-- DISPLAY DERECHO -->
-        <main class="flex-1 p-8 bg-slate-100 min-h-screen">
+        <!-- Content -->
+        <main class="flex-1 p-6 md:p-8 bg-slate-100 min-h-screen overflow-y-auto">
             <div class="max-w-4xl mx-auto">
                 <h1 class="text-2xl font-bold text-[#002244] mb-6">Devoluciones - Clase seleccionada</h1>
 
-                <% if (selectedLesson) { %>
-                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
-                        <div class="flex justify-between items-center mb-4 border-b pb-3">
-                            <span class="text-sm text-slate-500">Enviado: <%= submission ? submission.date : 'Pendiente' %></span>
-                            <% if (submission && submission.grade) { %>
-                                <span class="bg-[#002244] text-white text-xs px-3 py-1 rounded-md font-bold">Calif: <%= submission.grade %></span>
-                            <% } %>
-                        </div>
+                <% if (activeLessonId) { %>
+                    <% if (messages && messages.length > 0) { %>
+                        <% messages.forEach(m => { %>
+                            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
+                                <div class="flex justify-between items-center mb-4 border-b pb-3">
+                                    <span class="text-sm text-slate-500">Enviado: <%= new Date(m.fecha).toLocaleString('es-AR') %></span>
+                                    <% if (m.nota !== null && m.nota !== undefined) { %>
+                                        <span class="bg-[#002244] text-white text-xs px-3 py-1 rounded-md font-bold">Calif: <%= m.nota %></span>
+                                    <% } %>
+                                </div>
 
-                        <!-- Tu entrega -->
-                        <div class="mb-6 bg-slate-50 p-4 rounded-xl border border-slate-100">
-                            <h3 class="font-bold text-slate-800 mb-2 text-sm uppercase tracking-wider">Tu entrega enviada</h3>
-                            <p class="text-slate-600 whitespace-pre-line"><%= submission ? submission.content : 'No hay entrega registrada para esta clase.' %></p>
-                        </div>
+                                <div class="mb-6 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                    <h3 class="font-bold text-slate-800 mb-2 text-sm uppercase tracking-wider">Tu entrega enviada</h3>
+                                    <p class="text-slate-600 whitespace-pre-line"><%= m.entrega_alumno %></p>
+                                </div>
 
-                        <!-- Devolución del profesor -->
-                        <div class="bg-blue-50/40 p-4 rounded-xl border-l-4 border-[#002244]">
-                            <h3 class="font-bold text-[#002244] mb-2 text-sm uppercase tracking-wider">Devolución del Profesor</h3>
-                            <p class="text-slate-700 whitespace-pre-line"><%= feedback ? feedback.content : 'El profesor aún no ha enviado una devolución para esta clase.' %></p>
+                                <div class="bg-blue-50/40 p-4 rounded-xl border-l-4 border-[#002244]">
+                                    <h3 class="font-bold text-[#002244] mb-2 text-sm uppercase tracking-wider">Devolución del Profesor</h3>
+                                    <p class="text-slate-700 whitespace-pre-line"><%= m.mensaje %></p>
+                                </div>
+                            </div>
+                        <% }) %>
+                    <% } else { %>
+                        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-12 text-center">
+                            <p class="text-slate-500 text-lg">No hay devoluciones registradas para esta clase.</p>
                         </div>
-                    </div>
+                    <% } %>
                 <% } else { %>
                     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-12 text-center">
                         <p class="text-slate-500 text-lg">Selecciona una clase en el panel de la izquierda para ver el contenido.</p>
@@ -75,6 +79,7 @@
                 <% } %>
             </div>
         </main>
+
     </div>
 
 </body>
