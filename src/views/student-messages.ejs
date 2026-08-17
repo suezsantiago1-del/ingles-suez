@@ -22,32 +22,35 @@
 
         <% if (mensajes && mensajes.length > 0) { %>
             <% mensajes.forEach(m => { %>
-                <div class="mensaje-card">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
-                        <span class="badge"><%= m.curso_titulo %></span>
-                        <div style="display: flex; align-items: center;">
+                <div class="msg-card">
+                    <div class="msg-header">
+                        <div style="display:flex; align-items:center; gap:0.75rem;">
+                            <span class="course-badge"><%= m.curso_titulo %></span>
+                        </div>
+
+                        <div class="nota-timestamp">
                             <% if (m.nota !== null && m.nota !== undefined) { %>
-                                <span class="badge-nota">⭐ Calificación: <%= m.nota %>/10</span>
+                                <span class="nota-badge">Calif: <%= m.nota %>/10</span>
                             <% } %>
-                            <span style="color: #718096; font-size: 0.85rem;"><%= new Date(m.fecha).toLocaleString('es-AR') %></span>
+                            <span><%= new Date(m.fecha).toLocaleString('es-AR') %></span>
                         </div>
                     </div>
 
-                    <h3 style="color: #0b2238; margin: 0.5rem 0;"><%= m.leccion_titulo %></h3>
+                    <div class="lesson-title"><%= m.leccion_titulo %></div>
 
-                    <div style="background: #f7fafc; padding: 0.8rem 1rem; border-radius: 6px; font-size: 0.9rem; color: #4a5568; margin-bottom: 1rem;">
-                        <strong>Tu entrega enviada:</strong><br><%= m.entrega_alumno %>
+                    <div class="bubble-student">
+                        <strong style="display:block; color:#0b2238; margin-bottom:0.35rem;">Tu entrega enviada</strong>
+                        <div style="color:#334155; font-size:0.95rem;"><%= m.entrega_alumno %></div>
                     </div>
 
-                    <div style="background: #ebf8ff; border-left: 4px solid #3182ce; padding: 1rem; border-radius: 4px; color: #2d3748; white-space: pre-wrap;">
-                        <strong style="color: #2b6cb0;">Devolución del Profesor:</strong><br><%= m.mensaje %>
+                    <div class="bubble-teacher">
+                        <strong style="display:block; color:var(--accent-blue); margin-bottom:0.35rem;">Devolución del Profesor</strong>
+                        <div style="color:#0f172a; font-size:0.95rem;"><%= m.mensaje %></div>
                     </div>
                 </div>
             <% }); %>
         <% } else { %>
-            <p style="color: #718096; background: white; padding: 2rem; border-radius: 8px; text-align: center; border: 1px solid #e2e8f0;">
-                Aún no tienes mensajes o devoluciones del profesor.
-            </p>
+            <div class="messages-empty">Aún no tienes mensajes o devoluciones del profesor.</div>
         <% } %>
     </main>
 

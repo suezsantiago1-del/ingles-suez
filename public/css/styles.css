@@ -189,6 +189,63 @@ body::after {
   padding: 1.5rem;
 }
 
+/* Messages / Devoluciones styles */
+.msg-card {
+  background: #ffffff;
+  border-radius: 1rem;
+  box-shadow: 0 8px 24px rgba(10,37,64,0.06);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid #e6eef6;
+}
+
+.msg-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.course-badge {
+  display: inline-block;
+  background: var(--primary-navy);
+  color: #ffffff;
+  padding: 0.35rem 0.9rem;
+  border-radius: 6px;
+  font-weight: 800;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.nota-timestamp { display: flex; align-items: center; gap: 0.6rem; color: var(--text-muted); font-size: 0.9rem; }
+.nota-badge { background: #2b6cb0; color: white; padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: 800; font-size: 0.85rem; }
+
+.lesson-title { color: var(--primary-navy); font-weight: 800; font-size: 1.15rem; margin: 0.4rem 0 0.8rem 0; }
+
+.bubble-student {
+  background: #f7fafc;
+  padding: 0.9rem 1rem;
+  border-radius: 8px;
+  color: #334155;
+  margin-bottom: 1rem;
+  border-left: 3px solid #cbd5e0;
+  white-space: pre-wrap;
+}
+
+.bubble-teacher {
+  background: #ffffff;
+  padding: 1rem 1rem;
+  border-radius: 8px;
+  color: #1f2937;
+  border-left: 4px solid var(--accent-blue);
+  box-shadow: 0 2px 10px rgba(11,34,56,0.04);
+  white-space: pre-wrap;
+}
+
+.messages-empty { background: white; padding: 2rem; border-radius: 8px; text-align: center; border: 1px solid #e2e8f0; color: var(--text-muted); }
+
 /* Background and text utilities */
 .bg-neutral { background: var(--bg-neutral) !important; }
 .bg-primary-navy { background: var(--primary-navy) !important; }
