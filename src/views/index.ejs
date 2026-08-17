@@ -208,6 +208,11 @@
                         </div>
 
                         <div style="padding: 1.5rem; display: flex; flex-direction: column; flex-grow: 1;">
+                            <% if (curso && curso.titulo === 'Ingles Intensivo Desde Cero') { %>
+                                <div class="mb-2">
+                                    <span class="inline-block bg-[#002244] text-white text-xs font-bold py-1 px-3 rounded-md shadow-sm">CERTIFICADO A1</span>
+                                </div>
+                            <% } %>
                             <h3 style="color: var(--dark-blue); font-size: 1.25rem; margin-top: 0; margin-bottom: 0.75rem;"><%= curso.titulo %></h3>
                             <p style="color: #4a5568; font-size: 0.95rem; line-height: 1.6; flex-grow: 1; margin-bottom: 1.5rem;"><%= curso.descripcion %></p>
                             
