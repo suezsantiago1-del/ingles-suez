@@ -56,12 +56,17 @@
                         </div>
 
                         <div style="padding: 2rem; display: flex; flex-direction: column; flex-grow: 1;">
-                            <% if (curso && curso.titulo === 'Ingles Intensivo Desde Cero') { %>
-                                <div class="mb-2">
-                                    <span class="inline-block bg-[#002244] text-white text-xs font-bold py-1 px-3 rounded-md shadow-sm">CERTIFICADO A1</span>
-                                </div>
+                            <% if (curso && (curso.titulo === 'Inglés Intensivo Desde Cero' || curso.titulo === 'Ingles Intensivo Desde Cero')) { %>
+                                <!-- Temporary test text to verify this file is used: -->
+                                <!-- Render test text first (can be removed after verifying) -->
+                                <h2 style="color: #0b2238; font-size: 1.4rem; margin-top: 0; margin-bottom: 0.8rem;">Inglés Intensivo Desde Cero - PROBANDO CAMBIOS</h2>
+
+                                <!-- Final requested badge + title -->
+                                <div style="background-color: #002244; color: white; display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 10px; margin-bottom: 5px;">CERTIFICADO A1</div>
+                                <h3 class="course-title" style="color: #0b2238; font-size: 1.4rem; margin: 0.25rem 0 0.8rem 0;">Inglés Intensivo Desde Cero</h3>
+                            <% } else { %>
+                                <h2 style="color: #0b2238; font-size: 1.4rem; margin-top: 0; margin-bottom: 0.8rem;"><%= curso.titulo %></h2>
                             <% } %>
-                            <h2 style="color: #0b2238; font-size: 1.4rem; margin-top: 0; margin-bottom: 0.8rem;"><%= curso.titulo %></h2>
                             <p style="color: #4a5568; font-size: 1rem; line-height: 1.6; margin-bottom: 1.5rem; flex-grow: 1;"><%= curso.descripcion %></p>
                             
                             <div style="background: #f0f6fa; padding: 1rem; border-radius: 6px; margin-bottom: 1.5rem; font-size: 0.95rem; color: #184168;">
