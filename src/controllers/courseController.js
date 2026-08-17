@@ -397,6 +397,14 @@ export const renderClassroom = async (req, res) => {
         // Load announcements for this course
         const anuncios = await db.all('SELECT id, mensaje, created_at FROM curso_anuncios WHERE curso_id = ? ORDER BY created_at DESC', [cursoId]);
 
+        // Debug: log active lesson and video URLs to help trace missing video issues
+        try {
+            console.log('renderClassroom: leccionActiva id=', leccionActiva && leccionActiva.id, 'video_url=', leccionActiva && leccionActiva.video_url);
+            console.log('renderClassroom: lecciones with video_url:', leccionesConEstado.map(l => ({ id: l.id, orden: l.orden, video_url: l.video_url })));
+        } catch (dbgErr) {
+            console.error('renderClassroom: debug log error', dbgErr);
+        }
+
         return res.render('classroom', { 
             curso, 
             lecciones: leccionesConEstado, 
