@@ -48,7 +48,10 @@
                 <% cursos.forEach(curso => { %>
                     <div style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 12px 30px rgba(11, 34, 56, 0.12), 0 4px 8px rgba(0, 0, 0, 0.04); border: 1px solid #c0d4e5; display: flex; flex-direction: column;">
                         
-                        <div class="card-header-logo">
+                        <div class="card-header-logo" style="position: relative;">
+                            <% if (curso && curso.titulo === 'Ingles Intensivo Desde Cero') { %>
+                                <div class="ribbon">CERTIFICADO A1</div>
+                            <% } %>
                             <img src="<%= (curso.id == 1 || curso.titulo.toLowerCase().includes('intensivo')) ? '/img/logo_2.png?v=2' : '/img/logo_3.png?v=2' %>" alt="<%= curso.titulo %>">
                         </div>
 
