@@ -21,6 +21,8 @@ import {
     uploadLessonVideo,
     handleMpWebhook,
     renderMensajesAlumno,
+    renderMessagesList,
+    renderMessagesCourse,
     descargarCertificado,
     renderPrivateClasses,
     guardarConsultaParticulares,
@@ -230,6 +232,10 @@ app.post('/profesor/leccion/video', uploadRequestLogger, uploadDebugLogger, uplo
 
 // Bandeja de entrada de devoluciones para los alumnos (exclusivo cursos)
 app.get('/mis-mensajes', renderMensajesAlumno);
+
+// Messages master list and detail per course
+app.get('/messages', renderMessagesList);
+app.get('/messages/:courseId', renderMessagesCourse);
 
 // Global error handler (catches Multer and body-parser errors and returns JSON)
 app.use((err, req, res, next) => {

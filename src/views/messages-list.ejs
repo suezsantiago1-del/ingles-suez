@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Cursos - Mensajes</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+
+    <%- include('partials/header') %>
+
+    <main style="max-width:900px; margin:3rem auto; padding:0 1.5rem;">
+        <h1 style="color:var(--primary-navy);">Mis Cursos</h1>
+        <p style="color:var(--text-muted);">Selecciona un curso para ver las devoluciones por clase.</p>
+
+        <div style="margin-top:1.5rem; display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:1rem;">
+            <% if (cursos && cursos.length > 0) { %>
+                <% cursos.forEach(c => { %>
+                    <a href="/messages/<%= c.id %>" class="card" style="text-decoration:none; color:inherit;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div style="font-weight:800; color:var(--primary-navy);"><%= c.titulo %></div>
+                            <div style="color:var(--text-muted);">Ver devoluciones →</div>
+                        </div>
+                    </a>
+                <% }) %>
+            <% } else { %>
+                <div class="messages-empty">No tienes cursos asociados.</div>
+            <% } %>
+        </div>
+
+    </main>
+
+    <%- include('partials/footer') %>
+</body>
+</html>

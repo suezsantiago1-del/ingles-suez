@@ -1252,3 +1252,88 @@ export const updateLessonTeacherNote = async (req, res) => {
         return res.status(500).json({ success: false, message: 'Error al guardar nota de la lección' });
     }
 };
+
+export const renderMessagesList = async (req, res) => {
+    if (!req.session.user) return res.redirect('/auth/login');
+    const usuarioId = req.session.user.id;
+    try {
+        const db = await dbPromise;
+        // List courses the student purchased
+        const cursos = await db.all(`
+            SELECT c.id, c.titulo
+            FROM cursos c
+            JOIN compras co ON co.curso_id = c.id
+            WHERE co.usuario_id = ?
+            ORDER BY c.titulo
+        `, [usuarioId]);
+
+        return res.render('messages-list', { cursos });
+    } catch (error) {
+        console.error('Error rendering messages list:', error);
+        return res.redirect('/');
+    }
+};
+
+export const renderMessagesCourse = async (req, res) => {
+    if (!req.session.user) return res.redirect('/auth/login');
+    const usuarioId = req.session.user.id;
+    const cursoId = req.params.courseId;
+    const selectedLessonId = req.query.lessonId ? parseInt(req.query.lessonId, 10) : null;
+
+    try {
+        const db = await dbPromise;
+        const course = await db.get('SELECT id, titulo FROM cursos WHERE id = ?', [cursoId]);
+        if (!course) return res.status(404).send('Curso no encontrado');
+
+        // Get first 10 lessons for the course
+        const lessons = await db.all('SELECT id, titulo, orden FROM lecciones WHERE curso_id = ? ORDER BY orden LIMIT 10', [cursoId]);
+
+        // Compute user's progress: max completed lesson order
+        const row = await db.get(`
+            SELECT MAX(l.orden) as maxOrden
+            FROM entregas e
+            JOIN lecciones l ON e.leccion_id = l.id
+            WHERE e.usuario_id = ? AND e.curso_id = ?
+        `, [usuarioId, cursoId]);
+        const maxCompleted = row && row.maxOrden ? row.maxOrden : 0;
+
+        // Build lessons with isLocked flag (allow access up to maxCompleted + 1)
+        const lessonsWithLock = lessons.map(l => ({
+            id: l.id,
+            titulo: l.titulo,
+            orden: l.orden,
+            isLocked: l.orden > (maxCompleted + 1)
+        }));
+
+        // Determine active lesson
+        let activeLessonId = selectedLessonId;
+        if (!activeLessonId) {
+            // pick first unlocked lesson
+            const unlocked = lessonsWithLock.find(l => !l.isLocked);
+            activeLessonId = unlocked ? unlocked.id : (lessonsWithLock[0] ? lessonsWithLock[0].id : null);
+        }
+
+        // Fetch messages/devoluciones for the active lesson
+        let messages = [];
+        if (activeLessonId) {
+            messages = await db.all(`
+                SELECT d.id AS devolucion_id, d.mensaje, d.nota, d.fecha, e.contenido AS entrega_alumno
+                FROM devoluciones d
+                JOIN entregas e ON d.entrega_id = e.id
+                JOIN lecciones l ON e.leccion_id = l.id
+                WHERE e.usuario_id = ? AND e.curso_id = ? AND l.id = ?
+                ORDER BY d.fecha DESC
+            `, [usuarioId, cursoId, activeLessonId]);
+        }
+
+        return res.render('student-messages-detail', {
+            course,
+            lessons: lessonsWithLock,
+            activeLessonId,
+            messages
+        });
+    } catch (error) {
+        console.error('Error rendering messages for course:', error);
+        return res.redirect('/mis-mensajes');
+    }
+};
