@@ -68,6 +68,30 @@ try {
 const publicDir = path.join(__dirname, 'public');
 if (!videosDir.startsWith(publicDir)) {
     app.use('/uploads', express.static(videosDir));
+} else {
+    // If uploads are inside public, expose them explicitly at their relative path
+    const rel = path.relative(publicDir, videosDir).replace(/\\/g, '/');
+    const mountPoint = '/' + rel;
+    app.use(mountPoint, express.static(videosDir));
+    // Also expose at /videos for backward compatibility when folder is videos
+    if (rel.endsWith('videos')) {
+        app.use('/videos', express.static(videosDir));
+    }
+}
+
+// Middleware to log request headers for upload routes (diagnostic)
+function uploadDebugLogger(req, res, next) {
+    try {
+        console.log('uploadDebugLogger: incoming', req.method, req.originalUrl, 'at', new Date().toISOString());
+        console.log('uploadDebugLogger: headers:', {
+            'content-length': req.headers['content-length'],
+            'content-type': req.headers['content-type'],
+            host: req.headers.host
+        });
+    } catch (e) {
+        console.warn('uploadDebugLogger: error logging headers', e);
+    }
+    next();
 }
 
 // Increase payload limits for non-multipart parsers (safe default for this app)
@@ -202,7 +226,7 @@ function uploadRequestLogger(req, res, next) {
 }
 
 // Endpoint for professor to upload a lesson video or set a video URL
-app.post('/profesor/leccion/video', uploadRequestLogger, upload.single('videoFile'), uploadLessonVideo);
+app.post('/profesor/leccion/video', uploadRequestLogger, uploadDebugLogger, upload.single('videoFile'), uploadLessonVideo);
 
 // Bandeja de entrada de devoluciones para los alumnos (exclusivo cursos)
 app.get('/mis-mensajes', renderMensajesAlumno);

@@ -1059,6 +1059,23 @@ export const uploadLessonVideo = async (req, res) => {
             const exists = fs.existsSync(savedPath);
             console.log('uploadLessonVideo: expected savedPath=', savedPath, 'exists=', exists);
 
+            if (exists) {
+                try {
+                    const stats = fs.statSync(savedPath);
+                    console.log('uploadLessonVideo: saved file stats:', { size: stats.size, mtime: stats.mtime });
+                } catch (sErr) {
+                    console.warn('uploadLessonVideo: could not stat saved file', sErr);
+                }
+
+                try {
+                    const dir = path.dirname(savedPath);
+                    const files = fs.readdirSync(dir).slice(-20);
+                    console.log('uploadLessonVideo: recent files in upload dir:', files);
+                } catch (rErr) {
+                    console.warn('uploadLessonVideo: could not read upload dir', rErr);
+                }
+            }
+
             if (!exists) {
                 // If multer didn't save where we expected, try using req.file.path
                 if (req.file.path && fs.existsSync(req.file.path)) {
@@ -1086,6 +1103,7 @@ export const uploadLessonVideo = async (req, res) => {
             }
 
             finalUrl = `${urlBase}/${req.file.filename}`;
+            console.log('uploadLessonVideo: computed finalUrl=', finalUrl);
         } else if (videoUrl && videoUrl.trim() !== '') {
             let candidate = videoUrl.trim();
 
@@ -1113,9 +1131,14 @@ export const uploadLessonVideo = async (req, res) => {
             return res.status(400).json({ success: false, message: 'No se proporcionó archivo ni URL de video' });
         }
 
-        await db.run('UPDATE lecciones SET video_url = ? WHERE id = ?', [finalUrl, leccionId]);
-
-        return res.json({ success: true, message: 'Video de la lección guardado correctamente', video_url: finalUrl });
+        try {
+            await db.run('UPDATE lecciones SET video_url = ? WHERE id = ?', [finalUrl, leccionId]);
+            console.log('uploadLessonVideo: DB updated leccionId=', leccionId, 'with video_url=', finalUrl);
+            return res.json({ success: true, message: 'Video de la lección guardado correctamente', video_url: finalUrl });
+        } catch (dbErr) {
+            console.error('uploadLessonVideo: error updating DB with video_url', dbErr);
+            return res.status(500).json({ success: false, message: 'Error guardando la referencia del video en la base de datos' });
+        }
     } catch (error) {
         // Log full stack for debugging upload-related failures (including Multer)
         console.error('Error al subir/guardar video de la lección:', error && error.stack ? error.stack : error);

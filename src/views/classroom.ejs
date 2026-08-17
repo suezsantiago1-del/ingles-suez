@@ -354,9 +354,9 @@
             });
 
             // Lógica de deshabilitado dinámico
-            const notaRaw = "<%= (leccionActiva && leccionActiva.nota !== null && leccionActiva.nota !== undefined) ? leccionActiva.nota : '' %>";
+            const notaRaw = <%= JSON.stringify((leccionActiva && leccionActiva.nota !== null && leccionActiva.nota !== undefined) ? leccionActiva.nota : '') %>;
             const nota = notaRaw !== "" ? parseInt(notaRaw, 10) : -1;
-            const estaEnviadaSinNota = <%= (leccionActiva && leccionActiva.completada && (leccionActiva.nota === null || leccionActiva.nota === undefined)) ? 'true' : 'false' %>;
+            const estaEnviadaSinNota = <%= JSON.stringify((leccionActiva && leccionActiva.completada && (leccionActiva.nota === null || leccionActiva.nota === undefined)) ? true : false) %>;
 
             // Bloquear formulario únicamente si APROBÓ (nota >= 6) o si está EN REVISIÓN (enviado sin nota)
             if (nota >= 6 || estaEnviadaSinNota) {
