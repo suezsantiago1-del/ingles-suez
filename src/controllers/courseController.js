@@ -1277,8 +1277,13 @@ export const renderMessagesList = async (req, res) => {
 export const renderMessagesCourse = async (req, res) => {
     if (!req.session.user) return res.redirect('/auth/login');
     const usuarioId = req.session.user.id;
-    const cursoId = req.params.courseId;
+    const cursoIdRaw = req.params.courseId;
+    const cursoId = parseInt(cursoIdRaw, 10);
     const selectedLessonId = req.query.lessonId ? parseInt(req.query.lessonId, 10) : null;
+    if (!cursoId || Number.isNaN(cursoId)) {
+        console.error('renderMessagesCourse: invalid courseId param', { cursoIdRaw });
+        return res.status(400).send('Invalid course id');
+    }
 
     try {
         const db = await dbPromise;
@@ -1334,7 +1339,8 @@ export const renderMessagesCourse = async (req, res) => {
 
         // Fetch messages/devoluciones for the active lesson
         let messages = [];
-        if (activeLessonId) {
+        const activeLessonIdNum = activeLessonId ? parseInt(activeLessonId, 10) : null;
+        if (activeLessonIdNum) {
             messages = await db.all(`
                 SELECT d.id AS devolucion_id, d.mensaje, d.nota, d.fecha, e.contenido AS entrega_alumno
                 FROM devoluciones d
@@ -1342,17 +1348,17 @@ export const renderMessagesCourse = async (req, res) => {
                 JOIN lecciones l ON e.leccion_id = l.id
                 WHERE e.usuario_id = ? AND e.curso_id = ? AND l.id = ?
                 ORDER BY d.fecha DESC
-            `, [usuarioId, cursoId, activeLessonId]);
+            `, [usuarioId, cursoId, activeLessonIdNum]);
         }
 
         return res.render('student-messages-detail', {
             course,
             lessons: lessonsWithLock,
-            activeLessonId,
+            activeLessonId: activeLessonIdNum,
             messages
         });
     } catch (error) {
-        console.error('Error rendering messages for course:', error);
-        return res.redirect('/messages');
+        console.error('Error rendering messages for course:', error && error.stack ? error.stack : error);
+        return res.status(500).send('Error interno del servidor');
     }
 };
