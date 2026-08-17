@@ -1295,15 +1295,34 @@ export const renderMessagesCourse = async (req, res) => {
             JOIN lecciones l ON e.leccion_id = l.id
             WHERE e.usuario_id = ? AND e.curso_id = ?
         `, [usuarioId, cursoId]);
-        const maxCompleted = row && row.maxOrden ? row.maxOrden : 0;
+        const rawMax = row && (row.maxorden ?? row.maxOrden);
+        const maxCompleted = rawMax ? parseInt(rawMax, 10) : 0;
 
-        // Build lessons with isLocked flag (allow access up to maxCompleted + 1)
-        const lessonsWithLock = lessons.map(l => ({
-            id: l.id,
-            titulo: l.titulo,
-            orden: l.orden,
-            isLocked: l.orden > (maxCompleted + 1)
-        }));
+        // Check if user has a purchase (full access) for this course
+        const compra = await db.get('SELECT id FROM compras WHERE usuario_id = ? AND curso_id = ?', [usuarioId, cursoId]);
+        const hasPurchase = !!compra;
+
+        // Determine highest lesson order in the fetched lessons
+        const maxLessonOrden = lessons.length ? Math.max(...lessons.map(x => parseInt(x.orden, 10))) : 0;
+
+        // If the user purchased the course or has completed up to the last lesson, unlock all
+        const unlockAll = hasPurchase || (maxCompleted >= maxLessonOrden);
+
+        // Build lessons with isLocked flag (allow access up to maxCompleted + 1 when not unlocked)
+        const lessonsWithLock = lessons.map(l => {
+            const ordenNum = parseInt(l.orden, 10);
+            const isLocked = !unlockAll && (ordenNum > (maxCompleted + 1));
+            return {
+                id: parseInt(l.id, 10),
+                titulo: l.titulo,
+                orden: ordenNum,
+                isLocked
+            };
+        });
+
+        // Debug logging for progress and lesson lock state
+        console.log(`renderMessagesCourse: usuarioId=${usuarioId}, cursoId=${cursoId}, maxCompleted=${maxCompleted}, hasPurchase=${hasPurchase}, maxLessonOrden=${maxLessonOrden}, unlockAll=${unlockAll}`);
+        lessonsWithLock.forEach(ll => console.log(`Lesson: id=${ll.id}, orden=${ll.orden}, isLocked=${ll.isLocked}`));
 
         // Determine active lesson
         let activeLessonId = selectedLessonId;
