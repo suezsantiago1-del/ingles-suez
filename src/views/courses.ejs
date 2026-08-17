@@ -63,13 +63,17 @@
                             </div>
 
                             <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e2ebd5; padding-top: 1.2rem;">
-                                <div>
-                                    <span style="font-size: 0.75rem; color: #718096; text-transform: uppercase; display: block;">Precio Final</span>
-                                    <span style="color: #0b2238; font-size: 1.4rem; font-weight: bold; font-family: 'Tenor Sans', sans-serif;">$<%= curso.precio %> ARS</span>
-                                </div>
-                                <a href="/course/<%= curso.id %>" style="background: #0b2238; color: white; padding: 0.75rem 1.4rem; border-radius: 6px; text-decoration: none; font-size: 0.9rem; font-family: 'Tenor Sans', sans-serif;">
-                                    Ver Detalle →
-                                </a>
+                                <% if (curso && curso.titulo === 'Conversación y Fluidez Real') { %>
+                                    <div class="badge-coming-soon">Próximamente</div>
+                                <% } else { %>
+                                    <div>
+                                        <span style="font-size: 0.75rem; color: #718096; text-transform: uppercase; display: block;">Precio Final</span>
+                                        <span style="color: #0b2238; font-size: 1.4rem; font-weight: bold; font-family: 'Tenor Sans', sans-serif;">$<%= curso.precio %> ARS</span>
+                                    </div>
+                                    <a href="/course/<%= curso.id %>" style="background: #0b2238; color: white; padding: 0.75rem 1.4rem; border-radius: 6px; text-decoration: none; font-size: 0.9rem; font-family: 'Tenor Sans', sans-serif;">
+                                        Ver Detalle →
+                                    </a>
+                                <% } %>
                             </div>
                         </div>
 

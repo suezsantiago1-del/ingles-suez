@@ -202,6 +202,18 @@ body::after {
 .btn-outline-danger { border: 1px solid #ef4444; color: #ef4444; background: transparent; padding: 0.6rem 1rem; border-radius: 6px; cursor: pointer; }
 .btn-outline-danger:hover { background: rgba(239,68,68,0.08); }
 
+/* Coming soon badge for courses */
+.badge-coming-soon {
+  display: inline-block;
+  background: var(--bg-neutral);
+  color: var(--primary-navy);
+  border: 1px solid #e2e8f0;
+  padding: 0.45rem 0.8rem;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
 .btn-secondary {
   background-color: #FFFFFF;
   color: var(--blue-dark);
