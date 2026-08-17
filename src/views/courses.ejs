@@ -46,11 +46,11 @@
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2.5rem;">
             <% if (cursos && cursos.length > 0) { %>
                 <% cursos.forEach(curso => { %>
-                    <div style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 12px 30px rgba(11, 34, 56, 0.12), 0 4px 8px rgba(0, 0, 0, 0.04); border: 1px solid #c0d4e5; display: flex; flex-direction: column;">
+                    <div style="position: relative; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 12px 30px rgba(11, 34, 56, 0.12), 0 4px 8px rgba(0, 0, 0, 0.04); border: 1px solid #c0d4e5; display: flex; flex-direction: column;">
                         
                         <div class="card-header-logo" style="position: relative;">
                             <% if (curso && curso.titulo === 'Ingles Intensivo Desde Cero') { %>
-                                <div class="ribbon">CERTIFICADO A1</div>
+                                <div class="absolute top-4 left-0 bg-[#002244] text-white text-xs font-semibold py-1 px-3 shadow-md rounded-r-md z-10">CERTIFICADO A1</div>
                             <% } %>
                             <img src="<%= (curso.id == 1 || curso.titulo.toLowerCase().includes('intensivo')) ? '/img/logo_2.png?v=2' : '/img/logo_3.png?v=2' %>" alt="<%= curso.titulo %>">
                         </div>
