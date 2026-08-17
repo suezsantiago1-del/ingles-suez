@@ -142,6 +142,23 @@
                     <div id="ann-feedback" style="margin-top:0.6rem; color:#22543d; display:none;"></div>
                 </div>
 
+                <!-- SECTION: Per-Lesson Teacher Notes -->
+                <div id="lesson-note-management" style="padding: 1rem 2rem; border: 1px dashed #cbd5e0; margin: 1rem; border-radius: 8px; background: #fff;">
+                    <h3 style="margin-top: 0; color: #184168;">📝 Notas por Lección</h3>
+                    <p style="color: #718096; margin-top: 0.2rem;">Seleccioná una lección y escribí una nota que verán los alumnos dentro de esa lección.</p>
+
+                    <div style="display:flex; gap:1rem; align-items:flex-start; flex-wrap:wrap; margin-top:0.6rem;">
+                        <select id="select-lesson-note" style="padding:0.5rem; border-radius:6px; border:1px solid #cbd5e0; min-width: 320px;"></select>
+                        <div style="flex:1; min-width:300px;">
+                            <textarea id="lesson-teacher-note" placeholder="Escribe la nota para la lección seleccionada..." style="width:100%; height:100px; padding:0.6rem; border-radius:6px; border:1px solid #cbd5e0;"></textarea>
+                            <div style="margin-top:0.6rem; display:flex; gap:0.6rem;">
+                                <button id="btn-save-lesson-note" style="background:#2b6cb0; color:white; border:none; padding:0.6rem 1rem; border-radius:6px; cursor:pointer; font-weight:bold;">Guardar Nota de Lección</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="lesson-note-feedback" style="margin-top:0.6rem; color:#22543d; display:none;"></div>
+                </div>
+
                 <div id="contenedor-entregas-alumno" style="display: none;"></div>
             </div>
         </main>
@@ -489,6 +506,59 @@
                     const data = await resp.json();
                     if (data.success) { window.location.reload(); } else { alert(data.message || 'Error al eliminar anuncio'); }
                 } catch (err) { console.error(err); alert('Error de conexión al eliminar anuncio'); }
+            });
+        })();
+
+        // --- Per-lesson notes management logic ---
+        (function initLessonNotes(){
+            const select = document.getElementById('select-lesson-note');
+            const textarea = document.getElementById('lesson-teacher-note');
+            const btnSave = document.getElementById('btn-save-lesson-note');
+            const fb = document.getElementById('lesson-note-feedback');
+
+            if (!select || !textarea || !btnSave) return;
+
+            leccionesGlobal.forEach(l => {
+                const opt = document.createElement('option');
+                opt.value = l.leccion_id;
+                opt.text = `Clase ${l.orden} — ${l.leccion_titulo}`;
+                opt.dataset.courseId = l.curso_id;
+                select.appendChild(opt);
+            });
+
+            function loadSelected() {
+                const sel = select.value;
+                const found = leccionesGlobal.find(x => String(x.leccion_id) === String(sel));
+                if (found) {
+                    textarea.value = found.teacher_note || '';
+                } else {
+                    textarea.value = '';
+                }
+            }
+
+            select.addEventListener('change', loadSelected);
+            if (select.options.length > 0) loadSelected();
+
+            btnSave.addEventListener('click', async () => {
+                const leccionId = select.value;
+                const note = textarea.value.trim();
+                if (!leccionId) { alert('Selecciona una lección'); return; }
+                btnSave.disabled = true; btnSave.innerText = 'Guardando...';
+
+                try {
+                    const resp = await fetch('/profesor/leccion/nota', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ leccionId, note }) });
+                    const data = await resp.json();
+                    if (data.success) {
+                        fb.style.display = 'block'; fb.innerText = data.message || 'Nota guardada';
+                        setTimeout(()=>{ fb.style.display='none'; }, 1500);
+                        // update local cache
+                        const found = leccionesGlobal.find(x => String(x.leccion_id) === String(leccionId));
+                        if (found) found.teacher_note = note;
+                    } else {
+                        alert(data.message || 'Error al guardar la nota de la lección');
+                    }
+                } catch (err) { console.error(err); alert('Error de conexión al guardar la nota'); }
+                finally { btnSave.disabled = false; btnSave.innerText = 'Guardar Nota de Lección'; }
             });
         })();
     </script>

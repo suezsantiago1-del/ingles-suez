@@ -17,6 +17,7 @@ import {
     renderPanelProfesor,
     guardarDevolucion,
     saveTeacherNote,
+    updateLessonTeacherNote,
     uploadLessonVideo,
     handleMpWebhook,
     renderMensajesAlumno,
@@ -158,6 +159,7 @@ app.post('/profesor/devolucion', guardarDevolucion);
 app.post('/profesor/nota', express.json(), saveTeacherNote);
 app.post('/profesor/anuncio', express.json(), createOrUpdateAnnouncement);
 app.delete('/profesor/anuncio', express.json(), deleteAnnouncement);
+app.post('/profesor/leccion/nota', express.json(), updateLessonTeacherNote);
 
 // Ensure uploads directory exists for lesson videos
 const videosDir = path.join(__dirname, 'public', 'videos');

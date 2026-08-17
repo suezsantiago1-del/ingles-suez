@@ -134,9 +134,10 @@
             
             <div style="margin-top: 1.5rem;">
                 <% lecciones.forEach(l => { %>
+                    <% const fullLabel = `Clase ${l.orden}: ${l.titulo}`; %>
                     <% if (l.desbloqueada) { %>
-                        <a href="/classroom/<%= curso.id %>?leccion=<%= l.id %>" class="lesson-item <%= (leccionActiva && leccionActiva.id == l.id) ? 'active' : '' %>">
-                            <span>📖 <%= l.titulo %></span>
+                        <a href="/classroom/<%= curso.id %>?leccion=<%= l.id %>" class="lesson-item <%= (leccionActiva && leccionActiva.id == l.id) ? 'active' : '' %>" title="<%= fullLabel %>" aria-label="<%= fullLabel %>">
+                            <span>📖 Clase <%= l.orden %></span>
                             <% if (l.completada) { %> 
                                 <span title="Clase completada">✅</span> 
                             <% } %>
@@ -144,7 +145,7 @@
                     <% } else { %>
                         <div class="lesson-item disabled" title="<%= l.orden === 10 ? 'Requiere aprobación del profesor en todas las entregas previas' : 'Completa la entrega de la clase anterior para desbloquear' %>">
                             <div>
-                                <span>🔒 <%= l.titulo %></span>
+                                <span>🔒 Clase <%= l.orden %></span>
                                 <% if (l.orden === 10) { %>
                                     <small style="display: block; font-size: 0.72rem; color: #a0aec0; margin-top: 0.2rem;">(Requiere aprobación de clases 1-9)</small>
                                 <% } %>
@@ -212,6 +213,12 @@
                     <div style="background:#f7f9fb; border:1px solid #cbd5e0; padding:1rem; border-radius:8px; margin-bottom:1rem; color:#1a202c;">
                         <h4 style="margin:0 0 0.4rem 0; color:#184168;">Nota del Profesor</h4>
                         <p style="margin:0; white-space:pre-wrap;"><%= leccionActiva.teacher_notes %></p>
+                    </div>
+                <% } %>
+                <% if (leccionActiva.teacher_note) { %>
+                    <div style="background:#ebf8ff; border:1px solid #bee3f8; padding:1rem; border-radius:8px; margin-bottom:1rem; color:#012a4a;">
+                        <h4 style="margin:0 0 0.4rem 0; color:#184168;">Mensaje del Profesor sobre la Lección</h4>
+                        <p style="margin:0; white-space:pre-wrap; font-weight:600;"><%= leccionActiva.teacher_note %></p>
                     </div>
                 <% } %>
             <% } %>

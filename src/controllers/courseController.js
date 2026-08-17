@@ -377,6 +377,7 @@ export const renderClassroom = async (req, res) => {
                 completada: entregada,
                 nota: nota,
                 teacher_notes,
+                teacher_note: leccion.teacher_note || null,
                 desbloqueada
             };
         });
@@ -518,7 +519,7 @@ export const renderPanelProfesor = async (req, res) => {
 
         // Also load lecciones for management (course + lesson info)
         const lecciones = await db.all(`
-            SELECT l.id as leccion_id, l.titulo as leccion_titulo, l.curso_id, l.orden, l.video_url, c.titulo as curso_titulo
+            SELECT l.id as leccion_id, l.titulo as leccion_titulo, l.curso_id, l.orden, l.video_url, l.teacher_note, c.titulo as curso_titulo
             FROM lecciones l
             JOIN cursos c ON l.curso_id = c.id
             ORDER BY c.id, l.orden ASC
@@ -1113,5 +1114,24 @@ export const deleteAnnouncement = async (req, res) => {
     } catch (error) {
         console.error('Error eliminando anuncio:', error);
         return res.status(500).json({ success: false, message: 'Error en el servidor' });
+    }
+};
+
+// Update per-lesson teacher note
+export const updateLessonTeacherNote = async (req, res) => {
+    if (!req.session.user) return res.status(401).json({ success: false, message: 'No autenticado' });
+    const EMAIL_PROFESOR = 'suezsantiago1@gmail.com';
+    if (req.session.user.email !== EMAIL_PROFESOR) return res.status(403).json({ success: false, message: 'Acceso no autorizado' });
+
+    const { leccionId, note } = req.body;
+    if (!leccionId) return res.status(400).json({ success: false, message: 'Falta leccionId' });
+
+    try {
+        const db = await dbPromise;
+        await db.run('UPDATE lecciones SET teacher_note = ? WHERE id = ?', [note || null, leccionId]);
+        return res.json({ success: true, message: 'Nota de la lección guardada correctamente' });
+    } catch (error) {
+        console.error('Error guardando nota de la lección:', error);
+        return res.status(500).json({ success: false, message: 'Error al guardar nota de la lección' });
     }
 };
