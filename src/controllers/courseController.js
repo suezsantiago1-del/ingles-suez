@@ -656,14 +656,16 @@ export const renderMensajesAlumno = async (req, res) => {
     try {
         const db = await dbPromise;
 
-        const mensajes = await db.all(`
+        const rows = await db.all(`
             SELECT 
-                d.id,
+                d.id AS devolucion_id,
                 d.mensaje,
                 d.nota,
                 d.fecha,
                 d.leida,
+                l.id AS leccion_id,
                 l.titulo AS leccion_titulo,
+                c.id AS curso_id,
                 c.titulo AS curso_titulo,
                 e.contenido AS entrega_alumno
             FROM devoluciones d
@@ -671,12 +673,45 @@ export const renderMensajesAlumno = async (req, res) => {
             JOIN lecciones l ON e.leccion_id = l.id
             JOIN cursos c ON e.curso_id = c.id
             WHERE d.usuario_id = ?
-            ORDER BY d.fecha DESC
+            ORDER BY c.titulo, l.orden, d.fecha DESC
         `, [usuarioId]);
 
+        // Mark as read
         await db.run('UPDATE devoluciones SET leida = TRUE WHERE usuario_id = ?', [usuarioId]);
 
-        return res.render('student-messages', { mensajes });
+        // Group by course then by lesson
+        const cursosMap = new Map();
+        for (const r of rows) {
+            const cursoId = r.curso_id;
+            if (!cursosMap.has(cursoId)) {
+                cursosMap.set(cursoId, { curso_id: cursoId, curso_titulo: r.curso_titulo, leccionesMap: new Map() });
+            }
+
+            const cursoEntry = cursosMap.get(cursoId);
+            const leccionId = r.leccion_id;
+            if (!cursoEntry.leccionesMap.has(leccionId)) {
+                cursoEntry.leccionesMap.set(leccionId, { leccion_id: leccionId, leccion_titulo: r.leccion_titulo, mensajes: [] });
+            }
+
+            const leccionEntry = cursoEntry.leccionesMap.get(leccionId);
+            leccionEntry.mensajes.push({
+                devolucion_id: r.devolucion_id,
+                mensaje: r.mensaje,
+                nota: r.nota,
+                fecha: r.fecha,
+                leida: r.leida,
+                entrega_alumno: r.entrega_alumno
+            });
+        }
+
+        // Convert maps to arrays and tidy structure
+        const cursos = Array.from(cursosMap.values()).map(c => ({
+            curso_id: c.curso_id,
+            curso_titulo: c.curso_titulo,
+            lecciones: Array.from(c.leccionesMap.values())
+        }));
+
+        return res.render('student-messages', { cursos });
     } catch (error) {
         console.error('Error al obtener mensajes del alumno:', error);
         return res.redirect('/');

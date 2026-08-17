@@ -20,32 +20,46 @@
         <h1 style="color: #0b2238;">Mis Mensajes y Devoluciones</h1>
         <p style="color: #4a5568;">Aquí encontrarás las correcciones y observaciones enviadas por el profesor sobre tus tareas:</p>
 
-        <% if (mensajes && mensajes.length > 0) { %>
-            <% mensajes.forEach(m => { %>
-                <div class="msg-card">
-                    <div class="msg-header">
-                        <div style="display:flex; align-items:center; gap:0.75rem;">
-                            <span class="course-badge"><%= m.curso_titulo %></span>
-                        </div>
-
-                        <div class="nota-timestamp">
-                            <% if (m.nota !== null && m.nota !== undefined) { %>
-                                <span class="nota-badge">Calif: <%= m.nota %>/10</span>
-                            <% } %>
-                            <span><%= new Date(m.fecha).toLocaleString('es-AR') %></span>
+        <% if (cursos && cursos.length > 0) { %>
+            <% cursos.forEach(curso => { %>
+                <div class="card" style="margin-bottom: 1.25rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:0.65rem; border-bottom:1px solid #eef4fb;">
+                        <div style="display:flex; gap:0.75rem; align-items:center;">
+                            <span class="course-badge"><%= curso.curso_titulo %></span>
+                            <span style="color:var(--text-muted); font-size:0.95rem;">(<%= curso.lecciones.length %> clases)</span>
                         </div>
                     </div>
 
-                    <div class="lesson-title"><%= m.leccion_titulo %></div>
+                    <div style="margin-top:1rem;">
+                        <% curso.lecciones.forEach(leccion => { %>
+                            <details open style="margin-bottom: 1rem;">
+                                <summary style="cursor: pointer; font-weight: 800; color: var(--primary-navy); padding: 0.5rem 0; list-style: none;"> <%= leccion.leccion_titulo %> </summary>
 
-                    <div class="bubble-student">
-                        <strong style="display:block; color:#0b2238; margin-bottom:0.35rem;">Tu entrega enviada</strong>
-                        <div style="color:#334155; font-size:0.95rem;"><%= m.entrega_alumno %></div>
-                    </div>
+                                <% leccion.mensajes.forEach(m => { %>
+                                    <div class="msg-card" style="margin-top:0.6rem;">
+                                        <div class="msg-header" style="margin-bottom:0.6rem;">
+                                            <div></div>
+                                            <div class="nota-timestamp">
+                                                <% if (m.nota !== null && m.nota !== undefined) { %>
+                                                    <span class="nota-badge">Calif: <%= m.nota %>/10</span>
+                                                <% } %>
+                                                <span><%= new Date(m.fecha).toLocaleString('es-AR') %></span>
+                                            </div>
+                                        </div>
 
-                    <div class="bubble-teacher">
-                        <strong style="display:block; color:var(--accent-blue); margin-bottom:0.35rem;">Devolución del Profesor</strong>
-                        <div style="color:#0f172a; font-size:0.95rem;"><%= m.mensaje %></div>
+                                        <div class="bubble-student">
+                                            <strong style="display:block; color:#0b2238; margin-bottom:0.35rem;">Tu entrega enviada</strong>
+                                            <div style="color:#334155; font-size:0.95rem;"><%= m.entrega_alumno %></div>
+                                        </div>
+
+                                        <div class="bubble-teacher">
+                                            <strong style="display:block; color:var(--accent-blue); margin-bottom:0.35rem;">Devolución del Profesor</strong>
+                                            <div style="color:#0f172a; font-size:0.95rem;"><%= m.mensaje %></div>
+                                        </div>
+                                    </div>
+                                <% }); %>
+                            </details>
+                        <% }); %>
                     </div>
                 </div>
             <% }); %>
