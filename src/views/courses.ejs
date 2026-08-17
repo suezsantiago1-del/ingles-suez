@@ -46,9 +46,9 @@
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2.5rem;">
             <% if (cursos && cursos.length > 0) { %>
                 <% cursos.forEach(curso => { %>
-                    <div style="position: relative; background: white; border-radius: 12px; overflow: visible; box-shadow: 0 12px 30px rgba(11, 34, 56, 0.12), 0 4px 8px rgba(0, 0, 0, 0.04); border: 1px solid #c0d4e5; display: flex; flex-direction: column;">
+                    <div class="rounded-xl overflow-hidden" style="position: relative; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 12px 30px rgba(11, 34, 56, 0.12), 0 4px 8px rgba(0, 0, 0, 0.04); border: 1px solid #c0d4e5; display: flex; flex-direction: column;">
                         
-                        <div class="card-header-logo" style="position: relative; overflow: visible;">
+                        <div class="card-header-logo" style="position: relative; overflow: hidden;">
                             <% if (curso && curso.titulo === 'Ingles Intensivo Desde Cero') { %>
                                 <div class="absolute top-4 left-[-8px] bg-[#002244] text-white text-xs font-bold py-1.5 px-4 shadow-lg rounded-r-md z-20 border-l-4 border-[#0055a5]">CERTIFICADO A1</div>
                             <% } %>
