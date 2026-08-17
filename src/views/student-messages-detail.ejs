@@ -12,28 +12,27 @@
 
     <div id="messages-container" class="flex flex-col md:flex-row min-h-screen w-full" data-active="<%= !!activeLessonId %>" style="height: calc(100vh - 120px); overflow:hidden;">
         <!-- Sidebar (always present on desktop) -->
-        <aside id="messages-sidebar" class="w-full md:w-80 border-r border-slate-200 bg-white flex-shrink-0" style="padding:1.5rem; overflow:auto;">
+        <aside id="messages-sidebar" class="w-full md:w-80 bg-white border-r border-slate-200 flex-shrink-0" style="padding:1.5rem; overflow:auto;">
             <h2 style="color:var(--primary-navy); font-weight:900; margin-bottom:1rem;"> <%= course.titulo %> </h2>
             <nav>
                 <div style="display:block;">
                 <% lessons.forEach(lesson => { %>
                     <% const isActive = (lesson.id == activeLessonId); %>
+                    <% const activePill = isActive ? 'rounded-lg mx-2 my-2 bg-[#002244] text-white px-4 py-2' : ''; %>
+                    <% const separatorClass = isActive ? '' : 'border-b border-slate-200'; %>
+
                     <% if (lesson.isLocked) { %>
-                        <% const lockedStyle = isActive ? 'background:#002244; color:#fff; border-radius:8px; margin:0.25rem 0.5rem; padding:0.5rem 1rem;' : '' %>
-                        <div class="opacity-50" style="display:flex; align-items:center; gap:0.6rem; <%= lockedStyle %>">
+                        <div class="opacity-50 <%= activePill %> <%= separatorClass %>" style="display:flex; align-items:center; gap:0.6rem;">
                             <span style="font-weight:700; color:<%= isActive ? '#fff' : '#94a3b8' %>;">🔒</span>
                             <span style="color:<%= isActive ? '#fff' : '#94a3b8' %>;"> <%= lesson.orden %>. <%= lesson.titulo %></span>
                         </div>
                     <% } else { %>
-                        <% const activeStyle = isActive ? 'background:#002244; color:#fff; border-radius:8px; margin:0.25rem 0.5rem; padding:0.5rem 1rem;' : '' %>
-                        <% const separator = isActive ? '' : 'border-bottom:1px solid #e6eef6;' %>
-                        <a href="?lessonId=<%= lesson.id %>" style="display:block; text-decoration:none; color:inherit; <%= separator %> <%= activeStyle %>">
-                            <div style="display:flex; align-items:center; justify-content:space-between;">
+                        <a href="?lessonId=<%= lesson.id %>" class="block text-inherit <%= activePill %> <%= separatorClass %>" style="text-decoration:none;">
+                            <div style="display:flex; align-items:center; justify-content:space-between; padding:0.5rem 0;">
                                 <div style="display:flex; gap:0.6rem; align-items:center;">
                                     <span style="font-weight:700; color:<%= isActive ? '#fff' : 'var(--primary-navy)' %>;"><%= lesson.orden %>.</span>
                                     <span style="color:<%= isActive ? '#fff' : 'inherit' %>"><%= lesson.titulo %></span>
                                 </div>
-                                <% /* left border indicator not needed when using pill style */ %>
                             </div>
                         </a>
                     <% } %>
@@ -43,7 +42,7 @@
         </aside>
 
         <!-- Content -->
-        <section id="messages-content" class="flex-1 p-6 md:p-8 bg-transparent" style="overflow:auto; background:white;">
+        <section id="messages-content" class="flex-1 p-6 md:p-8 bg-slate-100" style="overflow:auto;">
             <!-- Mobile back button (visible only on mobile) -->
             <button id="back-to-list-btn" class="block md:hidden" style="background:none; border:none; color:#002244; font-weight:700; margin-bottom:1rem;">← Volver a la lista</button>
             <% if (!activeLessonId) { %>
