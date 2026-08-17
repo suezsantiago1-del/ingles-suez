@@ -159,6 +159,14 @@
         <main class="main-content">
             <h1 style="font-family: 'Tenor Sans', sans-serif; color: #0b2238;"><%= leccionActiva ? leccionActiva.titulo : '' %></h1>
 
+            <!-- Course Announcement (visible to all students of the course) -->
+            <% if (anuncios && anuncios.length > 0) { %>
+                <div style="background:#fff7ed; border:1px solid #fbd38d; padding:1rem; border-radius:8px; margin-bottom:1rem; color:#663c00;">
+                    <strong style="display:block; color:#92400e; margin-bottom:0.4rem;">📣 Anuncio del Curso</strong>
+                    <p style="margin:0; white-space:pre-wrap;"><%= anuncios[0].mensaje %></p>
+                </div>
+            <% } %>
+
             <!-- Banner de Descarga de Certificado (Visible solo al aprobar la Clase 10) -->
             <% if (leccionActiva && leccionActiva.orden === 10 && leccionActiva.nota !== null && leccionActiva.nota !== undefined && leccionActiva.nota >= 6) { %>
                 <div class="certificado-banner">

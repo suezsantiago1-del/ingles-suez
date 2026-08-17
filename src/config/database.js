@@ -146,6 +146,17 @@ const dbPromise = (async () => {
         );
     `);
 
+    // Table for course announcements by instructor
+    await adapter.pgPool.query(`
+        CREATE TABLE IF NOT EXISTS curso_anuncios (
+            id SERIAL PRIMARY KEY,
+            curso_id INTEGER NOT NULL,
+            mensaje TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+    `);
+
     // Cursos iniciales (solo si la tabla está vacía)
     const countRes = await adapter.pgPool.query("SELECT COUNT(*) FROM cursos");
     if (parseInt(countRes.rows[0].count) === 0) {

@@ -393,10 +393,14 @@ export const renderClassroom = async (req, res) => {
             }
         }
 
+        // Load announcements for this course
+        const anuncios = await db.all('SELECT id, mensaje, created_at FROM curso_anuncios WHERE curso_id = ? ORDER BY created_at DESC', [cursoId]);
+
         return res.render('classroom', { 
             curso, 
             lecciones: leccionesConEstado, 
-            leccionActiva 
+            leccionActiva,
+            anuncios: anuncios || []
         });
 
     } catch (error) {
@@ -520,7 +524,10 @@ export const renderPanelProfesor = async (req, res) => {
             ORDER BY c.id, l.orden ASC
         `);
 
-        return res.render('teacher-panel', { entregas: entregas || [], lecciones: lecciones || [] });
+        // Load course announcements
+        const anuncios = await db.all(`SELECT id, curso_id, mensaje, created_at, updated_at FROM curso_anuncios ORDER BY created_at DESC`);
+
+        return res.render('teacher-panel', { entregas: entregas || [], lecciones: lecciones || [], anuncios: anuncios || [] });
     } catch (error) {
         console.error('Error al obtener las entregas:', error);
         return res.redirect('/');
@@ -1063,5 +1070,48 @@ export const uploadLessonVideo = async (req, res) => {
 
         // Generic fallback
         return res.status(500).json({ success: false, message: 'Error interno al procesar el video' });
+    }
+};
+
+// Create or update a course announcement
+export const createOrUpdateAnnouncement = async (req, res) => {
+    if (!req.session.user) return res.status(401).json({ success: false, message: 'No autenticado' });
+    const EMAIL_PROFESOR = 'suezsantiago1@gmail.com';
+    if (req.session.user.email !== EMAIL_PROFESOR) return res.status(403).json({ success: false, message: 'Acceso no autorizado' });
+
+    const { id, curso_id, mensaje } = req.body;
+    if (!curso_id || !mensaje || mensaje.trim() === '') return res.status(400).json({ success: false, message: 'Faltan campos requeridos' });
+
+    try {
+        const db = await dbPromise;
+        if (id) {
+            await db.run('UPDATE curso_anuncios SET mensaje = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [mensaje.trim(), id]);
+            return res.json({ success: true, message: 'Anuncio actualizado' });
+        } else {
+            const result = await db.run('INSERT INTO curso_anuncios (curso_id, mensaje) VALUES (?, ?) RETURNING id', [curso_id, mensaje.trim()]);
+            return res.json({ success: true, message: 'Anuncio creado', id: result.lastID });
+        }
+    } catch (error) {
+        console.error('Error creando/actualizando anuncio:', error);
+        return res.status(500).json({ success: false, message: 'Error en el servidor' });
+    }
+};
+
+// Delete a course announcement
+export const deleteAnnouncement = async (req, res) => {
+    if (!req.session.user) return res.status(401).json({ success: false, message: 'No autenticado' });
+    const EMAIL_PROFESOR = 'suezsantiago1@gmail.com';
+    if (req.session.user.email !== EMAIL_PROFESOR) return res.status(403).json({ success: false, message: 'Acceso no autorizado' });
+
+    const { id } = req.body;
+    if (!id) return res.status(400).json({ success: false, message: 'Falta id del anuncio' });
+
+    try {
+        const db = await dbPromise;
+        await db.run('DELETE FROM curso_anuncios WHERE id = ?', [id]);
+        return res.json({ success: true, message: 'Anuncio eliminado' });
+    } catch (error) {
+        console.error('Error eliminando anuncio:', error);
+        return res.status(500).json({ success: false, message: 'Error en el servidor' });
     }
 };

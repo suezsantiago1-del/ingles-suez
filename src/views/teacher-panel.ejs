@@ -124,6 +124,24 @@
                     <div id="video-management-feedback" style="margin-top:0.8rem;color:#22543d;display:none;"></div>
                 </div>
 
+                <!-- SECTION: Course Announcements Management -->
+                <div id="announcements-management" style="padding: 1rem 2rem; border: 1px dashed #cbd5e0; margin: 1rem; border-radius: 8px; background: #fff;">
+                    <h3 style="margin-top: 0; color: #184168;">📣 Anuncios del Curso</h3>
+                    <p style="color: #718096; margin-top: 0.2rem;">Seleccioná un curso y publicá un anuncio que verán todos los estudiantes del curso.</p>
+
+                    <div style="display:flex; gap:1rem; align-items:flex-start; flex-wrap:wrap; margin-top:0.6rem;">
+                        <select id="select-course-ann" style="padding:0.5rem; border-radius:6px; border:1px solid #cbd5e0; min-width: 320px;"></select>
+                        <div style="flex:1; min-width:300px;">
+                            <textarea id="announcement-text" placeholder="Escribe el anuncio público para este curso..." style="width:100%; height:100px; padding:0.6rem; border-radius:6px; border:1px solid #cbd5e0;"></textarea>
+                            <div style="margin-top:0.6rem; display:flex; gap:0.6rem;">
+                                <button id="btn-save-ann" style="background:#2b6cb0; color:white; border:none; padding:0.6rem 1rem; border-radius:6px; cursor:pointer; font-weight:bold;">Guardar Anuncio</button>
+                                <button id="btn-delete-ann" style="background:#e53e3e; color:white; border:none; padding:0.6rem 1rem; border-radius:6px; cursor:pointer; font-weight:bold;">Eliminar Anuncio</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="ann-feedback" style="margin-top:0.6rem; color:#22543d; display:none;"></div>
+                </div>
+
                 <div id="contenedor-entregas-alumno" style="display: none;"></div>
             </div>
         </main>
@@ -342,6 +360,7 @@
 
         // --- Video management logic ---
         const leccionesGlobal = <%- JSON.stringify(typeof lecciones !== 'undefined' ? lecciones : []) %>;
+        const anunciosGlobal = <%- JSON.stringify(typeof anuncios !== 'undefined' ? anuncios : []) %>;
 
         (function initVideoManagement(){
             const select = document.getElementById('select-leccion');
@@ -390,6 +409,86 @@
                 } finally {
                     btn.disabled = false; btn.innerText = 'Guardar Video';
                 }
+            });
+        })();
+
+        // --- Announcements management logic ---
+        (function initAnnouncements(){
+            const select = document.getElementById('select-course-ann');
+            const textarea = document.getElementById('announcement-text');
+            const btnSave = document.getElementById('btn-save-ann');
+            const btnDelete = document.getElementById('btn-delete-ann');
+            const fb = document.getElementById('ann-feedback');
+
+            if (!select || !textarea || !btnSave || !btnDelete) return;
+
+            // Build unique course list from leccionesGlobal
+            const coursesMap = new Map();
+            leccionesGlobal.forEach(l => {
+                if (!coursesMap.has(l.curso_id)) coursesMap.set(l.curso_id, { id: l.curso_id, titulo: l.curso_titulo });
+            });
+
+            coursesMap.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.id;
+                opt.text = c.titulo;
+                select.appendChild(opt);
+            });
+
+            function loadForCourse(courseId) {
+                const found = anunciosGlobal.find(a => parseInt(a.curso_id, 10) === parseInt(courseId, 10));
+                if (found) {
+                    textarea.value = found.mensaje || '';
+                    textarea.dataset.annId = found.id;
+                    btnDelete.disabled = false;
+                } else {
+                    textarea.value = '';
+                    delete textarea.dataset.annId;
+                    btnDelete.disabled = true;
+                }
+            }
+
+            select.addEventListener('change', () => loadForCourse(select.value));
+            if (select.options.length > 0) loadForCourse(select.options[0].value);
+
+            btnSave.addEventListener('click', async () => {
+                const curso_id = select.value;
+                const mensaje = textarea.value.trim();
+                if (!curso_id) { alert('Selecciona un curso'); return; }
+                if (!mensaje) { alert('Escribe el anuncio antes de guardar'); return; }
+                btnSave.disabled = true; btnSave.innerText = 'Guardando...';
+
+                const payload = { curso_id, mensaje };
+                if (textarea.dataset.annId) payload.id = textarea.dataset.annId;
+
+                try {
+                    const resp = await fetch('/profesor/anuncio', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    const data = await resp.json();
+                    if (data.success) {
+                        fb.style.display = 'block'; fb.innerText = data.message || 'Anuncio guardado';
+                        setTimeout(()=>{ fb.style.display='none'; }, 2000);
+                        // reload page to reflect new anuncios list (simple approach)
+                        window.location.reload();
+                    } else {
+                        alert(data.message || 'Error al guardar anuncio');
+                    }
+                } catch (err) {
+                    console.error(err); alert('Error de conexión al guardar anuncio');
+                } finally {
+                    btnSave.disabled = false; btnSave.innerText = 'Guardar Anuncio';
+                }
+            });
+
+            btnDelete.addEventListener('click', async () => {
+                const annId = textarea.dataset.annId;
+                if (!annId) return; 
+                if (!confirm('¿Eliminar este anuncio?')) return;
+                btnDelete.disabled = true; btnDelete.innerText = 'Eliminando...';
+                try {
+                    const resp = await fetch('/profesor/anuncio', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: annId }) });
+                    const data = await resp.json();
+                    if (data.success) { window.location.reload(); } else { alert(data.message || 'Error al eliminar anuncio'); }
+                } catch (err) { console.error(err); alert('Error de conexión al eliminar anuncio'); }
             });
         })();
     </script>

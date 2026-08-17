@@ -27,6 +27,7 @@ import {
     renderPanelParticularesProfesor,
     guardarRespuestaParticular
 } from './src/controllers/courseController.js';
+import { createOrUpdateAnnouncement, deleteAnnouncement } from './src/controllers/courseController.js';
 import multer from 'multer';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -155,6 +156,8 @@ app.post('/entregas', guardarEntrega);
 app.get('/profesor/entregas', renderPanelProfesor);
 app.post('/profesor/devolucion', guardarDevolucion);
 app.post('/profesor/nota', express.json(), saveTeacherNote);
+app.post('/profesor/anuncio', express.json(), createOrUpdateAnnouncement);
+app.delete('/profesor/anuncio', express.json(), deleteAnnouncement);
 
 // Ensure uploads directory exists for lesson videos
 const videosDir = path.join(__dirname, 'public', 'videos');
