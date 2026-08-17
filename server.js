@@ -230,8 +230,10 @@ function uploadRequestLogger(req, res, next) {
 // Endpoint for professor to upload a lesson video or set a video URL
 app.post('/profesor/leccion/video', uploadRequestLogger, uploadDebugLogger, upload.single('videoFile'), uploadLessonVideo);
 
-// Bandeja de entrada de devoluciones para los alumnos (exclusivo cursos)
-app.get('/mis-mensajes', renderMensajesAlumno);
+// Legacy route: redirect old 'Mis Mensajes' to new messages master list
+app.get('/mis-mensajes', (req, res) => {
+    return res.redirect('/messages');
+});
 
 // Messages master list and detail per course
 app.get('/messages', renderMessagesList);

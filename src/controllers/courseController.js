@@ -1334,6 +1334,6 @@ export const renderMessagesCourse = async (req, res) => {
         });
     } catch (error) {
         console.error('Error rendering messages for course:', error);
-        return res.redirect('/mis-mensajes');
+        return res.redirect('/messages');
     }
 };
