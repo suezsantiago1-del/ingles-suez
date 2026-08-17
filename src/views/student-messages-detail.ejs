@@ -44,8 +44,8 @@
 
         <!-- Content -->
         <section id="messages-content" class="w-full md:flex-1 p-8" style="overflow:auto; background:white;">
-            <!-- Mobile back button -->
-            <button id="back-to-list-btn" class="block md:hidden" style="background:none; border:none; color:#002244; font-weight:700; margin-bottom:1rem;">← Volver a la lista</button>
+            <!-- Mobile back button (visible only on mobile) -->
+            <button id="back-to-list-btn" class="hidden md:hidden" style="background:none; border:none; color:#002244; font-weight:700; margin-bottom:1rem;">← Volver a la lista</button>
             <% if (!activeLessonId) { %>
                 <div style="text-align:center; color:var(--text-muted); margin-top:4rem;">
                     <h3 style="color:var(--primary-navy);">Selecciona una clase para ver la devolución</h3>
@@ -98,16 +98,21 @@
             function applyResponsive() {
                 if (!sidebar || !content) return;
                 if (isMobile()) {
+                    // Mobile: show either sidebar (list) or content (chat)
                     if (hasActive) {
-                        sidebar.style.display = 'none';
-                        content.style.display = 'block';
+                        sidebar.classList.add('hidden');
+                        content.classList.remove('hidden');
+                        if (backBtn) backBtn.classList.remove('hidden');
                     } else {
-                        sidebar.style.display = 'block';
-                        content.style.display = 'none';
+                        sidebar.classList.remove('hidden');
+                        content.classList.add('hidden');
+                        if (backBtn) backBtn.classList.add('hidden');
                     }
                 } else {
-                    sidebar.style.display = '';
-                    content.style.display = '';
+                    // Desktop: always show both columns
+                    sidebar.classList.remove('hidden');
+                    content.classList.remove('hidden');
+                    if (backBtn) backBtn.classList.add('hidden');
                 }
             }
 
@@ -119,9 +124,8 @@
                 backBtn.addEventListener('click', function(e){
                     e.preventDefault();
                     if (isMobile()) {
-                        sidebar.style.display = 'block';
-                        content.style.display = 'none';
-                        // remove lessonId from URL without reload
+                        sidebar.classList.remove('hidden');
+                        content.classList.add('hidden');
                         history.pushState(null, '', '/messages/<%= course.id %>');
                     } else {
                         sidebar.scrollIntoView({ behavior: 'smooth' });
