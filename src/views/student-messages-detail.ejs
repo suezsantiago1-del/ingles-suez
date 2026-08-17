@@ -10,9 +10,9 @@
 
     <%- include('partials/header') %>
 
-    <div id="messages-container" class="flex flex-col md:flex-row min-h-[calc(100vh-80px)] w-full" data-active="<%= !!activeLessonId %>">
-        <!-- Sidebar (always present on desktop) -->
-        <aside id="messages-sidebar" class="w-full md:w-80 bg-white border-r border-slate-200 flex-shrink-0" style="padding:1.5rem; overflow:auto;">
+    <div id="messages-container" class="flex flex-row w-full min-h-screen">
+        <!-- Sidebar (fixed) -->
+        <aside id="messages-sidebar" class="w-80 bg-white border-r border-slate-200 flex-shrink-0 min-h-screen" style="padding:1.5rem; overflow:auto;">
             <h2 style="color:var(--primary-navy); font-weight:900; margin-bottom:1rem;"> <%= course.titulo %> </h2>
             <nav>
                 <div style="display:block;">
@@ -22,7 +22,7 @@
                     <% const separatorClass = isActive ? '' : 'border-b border-slate-200'; %>
 
                     <% if (lesson.isLocked) { %>
-                        <div class="opacity-50 <%= activePill %> <%= separatorClass %>" style="display:flex; align-items:center; gap:0.6rem;">
+                        <div class="opacity-50 <%= activePill %> <%= separatorClass %>" style="display:flex; align-items:center; gap:0.6rem; padding:0.5rem 0;">
                             <span style="font-weight:700; color:<%= isActive ? '#fff' : '#94a3b8' %>;">🔒</span>
                             <span style="color:<%= isActive ? '#fff' : '#94a3b8' %>;"> <%= lesson.orden %>. <%= lesson.titulo %></span>
                         </div>
@@ -30,7 +30,7 @@
                         <a href="?lessonId=<%= lesson.id %>" class="block text-inherit <%= activePill %> <%= separatorClass %>" style="text-decoration:none;">
                             <div style="display:flex; align-items:center; justify-content:space-between; padding:0.5rem 0;">
                                 <div style="display:flex; gap:0.6rem; align-items:center;">
-                                    <span style="font-weight:700; color:<%= isActive ? '#fff' : 'var(--primary-navy)' %>;"><%= lesson.orden %>.</span>
+                                    <span style="font-weight:700; color:<%= isActive ? '#fff' : 'var(--primary-navy)' %>;"> <%= lesson.orden %>. </span>
                                     <span style="color:<%= isActive ? '#fff' : 'inherit' %>"><%= lesson.titulo %></span>
                                 </div>
                             </div>
@@ -42,9 +42,7 @@
         </aside>
 
         <!-- Content -->
-        <section id="messages-content" class="flex-1 p-6 md:p-8 overflow-y-auto">
-            <!-- Mobile back button (visible only on mobile) -->
-            <button id="back-to-list-btn" class="block md:hidden" style="background:none; border:none; color:#002244; font-weight:700; margin-bottom:1rem;">← Volver a la lista</button>
+        <section id="messages-content" class="flex-1 p-8 bg-slate-100 min-h-screen" style="overflow:auto;">
             <% if (!activeLessonId) { %>
                 <div style="text-align:center; color:var(--text-muted); margin-top:4rem;">
                     <h3 style="color:var(--primary-navy);">Selecciona una clase para ver la devolución</h3>
@@ -84,55 +82,5 @@
     </div>
 
     <%- include('partials/footer') %>
-    <script>
-        (function(){
-            const container = document.getElementById('messages-container');
-            const sidebar = document.getElementById('messages-sidebar');
-            const content = document.getElementById('messages-content');
-            const backBtn = document.getElementById('back-to-list-btn');
-            const hasActive = container && container.dataset && container.dataset.active === 'true';
-
-            function isMobile() { return window.innerWidth < 768; }
-
-            function applyResponsive() {
-                if (!sidebar || !content) return;
-                if (isMobile()) {
-                    // Mobile: show either sidebar (list) or content (chat)
-                    if (hasActive) {
-                        sidebar.classList.add('hidden');
-                        content.classList.remove('hidden');
-                        if (backBtn) backBtn.classList.remove('hidden');
-                    } else {
-                        sidebar.classList.remove('hidden');
-                        content.classList.add('hidden');
-                        if (backBtn) backBtn.classList.add('hidden');
-                    }
-                } else {
-                    // Desktop: always show both columns
-                    sidebar.classList.remove('hidden');
-                    content.classList.remove('hidden');
-                    if (backBtn) backBtn.classList.add('hidden');
-                }
-            }
-
-            window.addEventListener('resize', applyResponsive);
-            document.addEventListener('DOMContentLoaded', applyResponsive);
-            applyResponsive();
-
-            if (backBtn) {
-                backBtn.addEventListener('click', function(e){
-                    e.preventDefault();
-                    if (isMobile()) {
-                        sidebar.classList.remove('hidden');
-                        content.classList.add('hidden');
-                        history.pushState(null, '', '/messages/<%= course.id %>');
-                    } else {
-                        sidebar.scrollIntoView({ behavior: 'smooth' });
-                    }
-                });
-            }
-        })();
-    </script>
-
 </body>
 </html>
