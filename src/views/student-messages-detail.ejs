@@ -3,84 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Devoluciones - <%= course.titulo %></title>
+    <title>Mis Mensajes - Inglés Suez</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="/css/styles.css">
 </head>
-<body>
+<body class="bg-slate-100 min-h-screen flex flex-col m-0">
 
-    <%- include('partials/header') %>
+    <!-- Navbar -->
+    <%- include('partials/navbar') %>
 
-    <div id="messages-container" class="flex flex-row w-full min-h-screen">
-        <!-- Sidebar (fixed) -->
-        <aside id="messages-sidebar" class="w-80 bg-white border-r border-slate-200 flex-shrink-0 min-h-screen" style="padding:1.5rem; overflow:auto;">
-            <h2 style="color:var(--primary-navy); font-weight:900; margin-bottom:1rem;"> <%= course.titulo %> </h2>
-            <nav>
-                <div style="display:block;">
+    <!-- CONTENEDOR MAESTRO FIJO (Dos columnas lado a lado) -->
+    <div class="flex flex-row w-full min-h-screen">
+        
+        <!-- BARRA LATERAL IZQUIERDA -->
+        <aside class="w-80 bg-white border-r border-slate-200 flex-shrink-0 min-h-screen">
+            <div class="p-4 border-b border-slate-200 bg-slate-50">
+                <h2 class="font-bold text-[#002244] text-lg truncate"><%= course.title %></h2>
+                <p class="text-xs text-slate-500">Selecciona una clase</p>
+            </div>
+            
+            <div class="divide-y divide-slate-100">
                 <% lessons.forEach(lesson => { %>
-                    <% const isActive = (lesson.id == activeLessonId); %>
-                    <% const activePill = isActive ? 'rounded-lg mx-2 my-2 bg-[#002244] text-white px-4 py-2' : ''; %>
-                    <% const separatorClass = isActive ? '' : 'border-b border-slate-200'; %>
-
+                    <% const isActive = (selectedLesson && selectedLesson.id === lesson.id); %>
                     <% if (lesson.isLocked) { %>
-                        <div class="opacity-50 <%= activePill %> <%= separatorClass %>" style="display:flex; align-items:center; gap:0.6rem; padding:0.5rem 0;">
-                            <span style="font-weight:700; color:<%= isActive ? '#fff' : '#94a3b8' %>;">🔒</span>
-                            <span style="color:<%= isActive ? '#fff' : '#94a3b8' %>;"> <%= lesson.orden %>. <%= lesson.titulo %></span>
+                        <div class="p-4 opacity-50 cursor-not-allowed flex items-center justify-between bg-slate-50">
+                            <span class="text-sm font-medium text-slate-400">
+                                <strong><%= lesson.number %>.</strong> <%= lesson.title %>
+                            </span>
+                            <span class="text-xs">🔒</span>
                         </div>
                     <% } else { %>
-                        <a href="?lessonId=<%= lesson.id %>" class="block text-inherit <%= activePill %> <%= separatorClass %>" style="text-decoration:none;">
-                            <div style="display:flex; align-items:center; justify-content:space-between; padding:0.5rem 0;">
-                                <div style="display:flex; gap:0.6rem; align-items:center;">
-                                    <span style="font-weight:700; color:<%= isActive ? '#fff' : 'var(--primary-navy)' %>;"> <%= lesson.orden %>. </span>
-                                    <span style="color:<%= isActive ? '#fff' : 'inherit' %>"><%= lesson.titulo %></span>
-                                </div>
-                            </div>
+                        <a href="/messages/<%= course.id %>?lessonId=<%= lesson.id %>" 
+                           class="block transition-colors duration-150 p-4 text-sm font-medium <%= isActive ? 'bg-[#002244] text-white rounded-lg mx-2 my-2 shadow-sm' : 'text-slate-700 hover:bg-slate-50' %>">
+                            <strong><%= lesson.number %>.</strong> <%= lesson.title %>
                         </a>
                     <% } %>
                 <% }) %>
-                </div>
-            </nav>
+            </div>
         </aside>
 
-        <!-- Content -->
-        <section id="messages-content" class="flex-1 p-8 bg-slate-100 min-h-screen" style="overflow:auto;">
-            <% if (!activeLessonId) { %>
-                <div style="text-align:center; color:var(--text-muted); margin-top:4rem;">
-                    <h3 style="color:var(--primary-navy);">Selecciona una clase para ver la devolución</h3>
-                    <p>Elige una lección desbloqueada en la columna izquierda.</p>
-                </div>
-            <% } else { %>
-                <div style="max-width:900px; margin:0 auto;">
-                    <h2 style="color:var(--primary-navy); margin-bottom:0.5rem;">Devoluciones - Clase seleccionada</h2>
+        <!-- DISPLAY DERECHO -->
+        <main class="flex-1 p-8 bg-slate-100 min-h-screen">
+            <div class="max-w-4xl mx-auto">
+                <h1 class="text-2xl font-bold text-[#002244] mb-6">Devoluciones - Clase seleccionada</h1>
 
-                    <% if (messages && messages.length > 0) { %>
-                        <% messages.forEach(m => { %>
-                            <div class="msg-card" style="margin-bottom:1rem;">
-                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
-                                    <div style="color:var(--text-muted); font-size:0.9rem;">Enviado: <%= new Date(m.fecha).toLocaleString('es-AR') %></div>
-                                    <% if (m.nota !== null && m.nota !== undefined) { %>
-                                        <div class="nota-badge">Calif: <%= m.nota %>/10</div>
-                                    <% } %>
-                                </div>
+                <% if (selectedLesson) { %>
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
+                        <div class="flex justify-between items-center mb-4 border-b pb-3">
+                            <span class="text-sm text-slate-500">Enviado: <%= submission ? submission.date : 'Pendiente' %></span>
+                            <% if (submission && submission.grade) { %>
+                                <span class="bg-[#002244] text-white text-xs px-3 py-1 rounded-md font-bold">Calif: <%= submission.grade %></span>
+                            <% } %>
+                        </div>
 
-                                <div class="bubble-student">
-                                    <strong style="display:block; color:#0b2238; margin-bottom:0.35rem;">Tu entrega enviada</strong>
-                                    <div style="color:#334155;"><%= m.entrega_alumno %></div>
-                                </div>
+                        <!-- Tu entrega -->
+                        <div class="mb-6 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                            <h3 class="font-bold text-slate-800 mb-2 text-sm uppercase tracking-wider">Tu entrega enviada</h3>
+                            <p class="text-slate-600 whitespace-pre-line"><%= submission ? submission.content : 'No hay entrega registrada para esta clase.' %></p>
+                        </div>
 
-                                <div class="bubble-teacher" style="margin-top:0.75rem;">
-                                    <strong style="display:block; color:var(--accent-blue); margin-bottom:0.35rem;">Devolución del Profesor</strong>
-                                    <div style="color:#0f172a;"><%= m.mensaje %></div>
-                                </div>
-                            </div>
-                        <% }) %>
-                    <% } else { %>
-                        <div class="messages-empty">No hay devoluciones registradas para esta clase.</div>
-                    <% } %>
-                </div>
-            <% } %>
-        </section>
+                        <!-- Devolución del profesor -->
+                        <div class="bg-blue-50/40 p-4 rounded-xl border-l-4 border-[#002244]">
+                            <h3 class="font-bold text-[#002244] mb-2 text-sm uppercase tracking-wider">Devolución del Profesor</h3>
+                            <p class="text-slate-700 whitespace-pre-line"><%= feedback ? feedback.content : 'El profesor aún no ha enviado una devolución para esta clase.' %></p>
+                        </div>
+                    </div>
+                <% } else { %>
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-12 text-center">
+                        <p class="text-slate-500 text-lg">Selecciona una clase en el panel de la izquierda para ver el contenido.</p>
+                    </div>
+                <% } %>
+            </div>
+        </main>
     </div>
 
-    <%- include('partials/footer') %>
 </body>
 </html>
