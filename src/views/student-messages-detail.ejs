@@ -10,29 +10,30 @@
 
     <%- include('partials/header') %>
 
-    <div id="messages-container" class="h-screen flex flex-col md:flex-row" data-active="<%= !!activeLessonId %>" style="height: calc(100vh - 120px); overflow:hidden;">
+    <div id="messages-container" class="min-h-screen flex flex-col md:flex-row" data-active="<%= !!activeLessonId %>" style="height: calc(100vh - 120px); overflow:hidden;">
         <!-- Sidebar -->
-        <aside id="messages-sidebar" class="w-full md:w-1/4" style="background:#f8fafc; padding:1.25rem; overflow:auto; border-right:1px solid #e6eef6;">
+        <aside id="messages-sidebar" class="w-full md:w-80 bg-white md:border-r border-slate-200" style="padding:1.5rem; overflow:auto;">
             <h2 style="color:var(--primary-navy); font-weight:900; margin-bottom:1rem;"> <%= course.titulo %> </h2>
             <nav>
                 <div style="display:block;">
                 <% lessons.forEach(lesson => { %>
                     <% const isActive = (lesson.id == activeLessonId); %>
                     <% if (lesson.isLocked) { %>
-                        <div class="opacity-50" style="display:flex; align-items:center; gap:0.6rem; padding:0.75rem 0.75rem; border-bottom:1px solid #e6eef6; <%= isActive ? 'background:#002244; color:#fff;' : '' %>">
+                        <% const lockedStyle = isActive ? 'background:#002244; color:#fff; border-radius:8px; margin:0.25rem 0.5rem; padding:0.5rem 1rem;' : '' %>
+                        <div class="opacity-50" style="display:flex; align-items:center; gap:0.6rem; <%= lockedStyle %>">
                             <span style="font-weight:700; color:<%= isActive ? '#fff' : '#94a3b8' %>;">🔒</span>
                             <span style="color:<%= isActive ? '#fff' : '#94a3b8' %>;"> <%= lesson.orden %>. <%= lesson.titulo %></span>
                         </div>
                     <% } else { %>
-                        <a href="?lessonId=<%= lesson.id %>" style="display:block; text-decoration:none; color:inherit; padding:0.75rem 0.75rem; border-bottom:1px solid #e6eef6; <%= isActive ? 'background:#002244; color:#fff;' : '' %>">
+                        <% const activeStyle = isActive ? 'background:#002244; color:#fff; border-radius:8px; margin:0.25rem 0.5rem; padding:0.5rem 1rem;' : '' %>
+                        <% const separator = isActive ? '' : 'border-bottom:1px solid #e6eef6;' %>
+                        <a href="?lessonId=<%= lesson.id %>" style="display:block; text-decoration:none; color:inherit; <%= separator %> <%= activeStyle %>">
                             <div style="display:flex; align-items:center; justify-content:space-between;">
                                 <div style="display:flex; gap:0.6rem; align-items:center;">
                                     <span style="font-weight:700; color:<%= isActive ? '#fff' : 'var(--primary-navy)' %>;"><%= lesson.orden %>.</span>
                                     <span style="color:<%= isActive ? '#fff' : 'inherit' %>"><%= lesson.titulo %></span>
                                 </div>
-                                <% if (!isActive && lesson.id == activeLessonId) { %>
-                                    <div style="border-left:4px solid #002244; height:26px; margin-left:1rem;"></div>
-                                <% } %>
+                                <% /* left border indicator not needed when using pill style */ %>
                             </div>
                         </a>
                     <% } %>
@@ -42,7 +43,7 @@
         </aside>
 
         <!-- Content -->
-        <section id="messages-content" class="w-full md:w-3/4" style="padding:2rem; overflow:auto; background:white;">
+        <section id="messages-content" class="w-full md:flex-1 p-8" style="overflow:auto; background:white;">
             <!-- Mobile back button -->
             <button id="back-to-list-btn" class="block md:hidden" style="background:none; border:none; color:#002244; font-weight:700; margin-bottom:1rem;">← Volver a la lista</button>
             <% if (!activeLessonId) { %>
@@ -112,25 +113,23 @@
 
             window.addEventListener('resize', applyResponsive);
             document.addEventListener('DOMContentLoaded', applyResponsive);
-            // Ensure initial layout is applied immediately (script may run after DOMContentLoaded)
             applyResponsive();
 
             if (backBtn) {
                 backBtn.addEventListener('click', function(e){
                     e.preventDefault();
-                    // show sidebar and hide content on mobile
                     if (isMobile()) {
                         sidebar.style.display = 'block';
                         content.style.display = 'none';
                         // remove lessonId from URL without reload
                         history.pushState(null, '', '/messages/<%= course.id %>');
                     } else {
-                        // on desktop just focus sidebar
                         sidebar.scrollIntoView({ behavior: 'smooth' });
                     }
                 });
             }
         })();
     </script>
+
 </body>
 </html>
