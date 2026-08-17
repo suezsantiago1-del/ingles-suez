@@ -112,6 +112,8 @@
 
             window.addEventListener('resize', applyResponsive);
             document.addEventListener('DOMContentLoaded', applyResponsive);
+            // Ensure initial layout is applied immediately (script may run after DOMContentLoaded)
+            applyResponsive();
 
             if (backBtn) {
                 backBtn.addEventListener('click', function(e){
