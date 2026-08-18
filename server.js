@@ -257,6 +257,28 @@ app.use((err, req, res, next) => {
     }
 
     if (res.headersSent) return next(err);
+
+    // If the client accepts HTML, render a friendly page instead of JSON
+    try {
+        if (req && req.accepts && req.accepts('html')) {
+            // If the error occurred while accessing messages, render the messages detail fallback
+            if (req.originalUrl && req.originalUrl.startsWith('/messages')) {
+                return res.status(500).render('student-messages-detail', {
+                    course: { id: null, titulo: 'Mensajes (error)' },
+                    lessons: [],
+                    activeLessonId: null,
+                    messages: [],
+                    errorMessage: 'Error interno del servidor. Intente nuevamente más tarde.'
+                });
+            }
+
+            // Generic HTML fallback
+            return res.status(500).send('<h1>500 - Error interno del servidor</h1>');
+        }
+    } catch (renderErr) {
+        console.error('Error in global error renderer:', renderErr && renderErr.stack ? renderErr.stack : renderErr);
+    }
+
     return res.status(500).json({ success: false, message: 'Error interno del servidor' });
 });
 
