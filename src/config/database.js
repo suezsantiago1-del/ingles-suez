@@ -191,29 +191,29 @@ const dbPromise = (async () => {
     console.log('Todos los usuarios han sido desverificados');
 
     // Inscribir usuario lash05mc@gmail.com en el curso de inglés intensivo desde cero
-    const emailUsuario = 'lash05mc@gmail.com';
-    const nombreUsuario = 'Usuario de Prueba';
-    const passwordUsuario = 'password123'; // Contraseña temporal
+    const emailUsuario1 = 'lash05mc@gmail.com';
+    const nombreUsuario1 = 'Usuario de Prueba';
+    const passwordUsuario1 = 'password123'; // Contraseña temporal
     
     // Verificar si el usuario existe
-    const usuarioExistente = await adapter.pgPool.query(
+    const usuarioExistente1 = await adapter.pgPool.query(
         'SELECT id FROM usuarios WHERE LOWER(email) = LOWER($1)',
-        [emailUsuario]
+        [emailUsuario1]
     );
     
-    let usuarioId;
-    if (usuarioExistente.rows.length === 0) {
+    let usuarioId1;
+    if (usuarioExistente1.rows.length === 0) {
         // Crear usuario si no existe
-        const hashedPassword = await bcrypt.hash(passwordUsuario, 10);
-        const nuevoUsuario = await adapter.pgPool.query(
+        const hashedPassword1 = await bcrypt.hash(passwordUsuario1, 10);
+        const nuevoUsuario1 = await adapter.pgPool.query(
             'INSERT INTO usuarios (nombre, email, password, email_verificado) VALUES ($1, $2, $3, TRUE) RETURNING id',
-            [nombreUsuario, emailUsuario, hashedPassword]
+            [nombreUsuario1, emailUsuario1, hashedPassword1]
         );
-        usuarioId = nuevoUsuario.rows[0].id;
-        console.log(`Usuario ${emailUsuario} creado con ID: ${usuarioId}`);
+        usuarioId1 = nuevoUsuario1.rows[0].id;
+        console.log(`Usuario ${emailUsuario1} creado con ID: ${usuarioId1}`);
     } else {
-        usuarioId = usuarioExistente.rows[0].id;
-        console.log(`Usuario ${emailUsuario} ya existe con ID: ${usuarioId}`);
+        usuarioId1 = usuarioExistente1.rows[0].id;
+        console.log(`Usuario ${emailUsuario1} ya existe con ID: ${usuarioId1}`);
     }
     
     // Verificar si el curso "Inglés Intensivo Desde Cero" existe
@@ -227,20 +227,70 @@ const dbPromise = (async () => {
         const cursoId = cursoExistente.rows[0].id;
         
         // Verificar si ya está inscrito
-        const compraExistente = await adapter.pgPool.query(
+        const compraExistente1 = await adapter.pgPool.query(
             'SELECT id FROM compras WHERE usuario_id = $1 AND curso_id = $2',
-            [usuarioId, cursoId]
+            [usuarioId1, cursoId]
         );
         
-        if (compraExistente.rows.length === 0) {
+        if (compraExistente1.rows.length === 0) {
             // Crear la compra
             await adapter.pgPool.query(
                 'INSERT INTO compras (usuario_id, curso_id) VALUES ($1, $2)',
-                [usuarioId, cursoId]
+                [usuarioId1, cursoId]
             );
-            console.log(`Usuario ${emailUsuario} inscrito en el curso de inglés intensivo desde cero (ID: ${cursoId})`);
+            console.log(`Usuario ${emailUsuario1} inscrito en el curso de inglés intensivo desde cero (ID: ${cursoId})`);
         } else {
-            console.log(`Usuario ${emailUsuario} ya está inscrito en el curso de inglés intensivo desde cero`);
+            console.log(`Usuario ${emailUsuario1} ya está inscrito en el curso de inglés intensivo desde cero`);
+        }
+    }
+
+    // Inscribir usuario beltramemilena5@gmail.com en el curso de inglés intensivo desde cero
+    const emailUsuario2 = 'beltramemilena5@gmail.com';
+    const nombreUsuario2 = 'Milena Beltrame';
+    const passwordUsuario2 = 'password123'; // Contraseña temporal
+    
+    // Verificar si el usuario existe
+    const usuarioExistente2 = await adapter.pgPool.query(
+        'SELECT id FROM usuarios WHERE LOWER(email) = LOWER($1)',
+        [emailUsuario2]
+    );
+    
+    let usuarioId2;
+    if (usuarioExistente2.rows.length === 0) {
+        // Crear usuario si no existe
+        const hashedPassword2 = await bcrypt.hash(passwordUsuario2, 10);
+        const nuevoUsuario2 = await adapter.pgPool.query(
+            'INSERT INTO usuarios (nombre, email, password, email_verificado) VALUES ($1, $2, $3, TRUE) RETURNING id',
+            [nombreUsuario2, emailUsuario2, hashedPassword2]
+        );
+        usuarioId2 = nuevoUsuario2.rows[0].id;
+        console.log(`Usuario ${emailUsuario2} creado con ID: ${usuarioId2}`);
+    } else {
+        usuarioId2 = usuarioExistente2.rows[0].id;
+        console.log(`Usuario ${emailUsuario2} ya existe con ID: ${usuarioId2}`);
+    }
+    
+    // Verificar si el curso "Inglés Intensivo Desde Cero" existe
+    if (cursoExistente.rows.length === 0) {
+        console.log('El curso "Inglés Intensivo Desde Cero" no existe');
+    } else {
+        const cursoId = cursoExistente.rows[0].id;
+        
+        // Verificar si ya está inscrito
+        const compraExistente2 = await adapter.pgPool.query(
+            'SELECT id FROM compras WHERE usuario_id = $1 AND curso_id = $2',
+            [usuarioId2, cursoId]
+        );
+        
+        if (compraExistente2.rows.length === 0) {
+            // Crear la compra
+            await adapter.pgPool.query(
+                'INSERT INTO compras (usuario_id, curso_id) VALUES ($1, $2)',
+                [usuarioId2, cursoId]
+            );
+            console.log(`Usuario ${emailUsuario2} inscrito en el curso de inglés intensivo desde cero (ID: ${cursoId})`);
+        } else {
+            console.log(`Usuario ${emailUsuario2} ya está inscrito en el curso de inglés intensivo desde cero`);
         }
     }
 
