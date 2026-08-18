@@ -155,10 +155,11 @@ export const sendEmail = async (to, subject, html) => {
             };
         }
         
-        const senderEmail = getSenderEmail();
-        
         const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
-        sendSmtpEmail.sender = { email: senderEmail, name: 'INGLÉS SUEZ' };
+        sendSmtpEmail.sender = { 
+            email: 'suezsantiago1@gmail.com', 
+            name: 'INGLÉS SUEZ' 
+        };
         sendSmtpEmail.to = [{ email: to }];
         sendSmtpEmail.subject = subject;
         sendSmtpEmail.htmlContent = html;
