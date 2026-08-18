@@ -166,6 +166,19 @@ const dbPromise = (async () => {
         );
     `);
 
+    // Eliminar usuarios de prueba recientes (para pruebas de email)
+    await adapter.pgPool.query(`
+        DELETE FROM usuarios 
+        WHERE email IN (
+            'suezsanti6@gmail.com',
+            'santisuez9@gmail.com',
+            'sutrakario32@gmail.com',
+            'finopolo21@gmail.com',
+            'milerkarion@gmail.com'
+        );
+    `);
+    console.log('Usuarios de prueba eliminados');
+
     // Cursos iniciales (solo si la tabla está vacía)
     const countRes = await adapter.pgPool.query("SELECT COUNT(*) FROM cursos");
     if (parseInt(countRes.rows[0].count) === 0) {
