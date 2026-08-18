@@ -66,20 +66,20 @@
         .chat-thread {
             display: flex;
             flex-direction: column;
-            gap: 0.35rem;
-            margin: 0.8rem 0;
-            max-height: 520px;
+            gap: 0.5rem;
+            margin: 1rem 0;
+            max-height: 600px;
             overflow-y: auto;
-            padding-right: 0.4rem;
+            padding-right: 0.6rem;
         }
         .chat-msg {
-            padding: 0.35rem 0.7rem;
-            border-radius: 12px;
-            font-size: 0.85rem;
-            max-width: 82%;
+            padding: 0.6rem 1rem;
+            border-radius: 14px;
+            font-size: 0.95rem;
+            max-width: 80%;
             white-space: pre-wrap;
-            line-height: 1.3;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            line-height: 1.4;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.06);
         }
         .chat-msg-alumno {
             background: linear-gradient(135deg, #e8f0fe 0%, #d2e3fc 100%);
@@ -93,44 +93,44 @@
             color: #0b2238;
             align-self: flex-start;
             border-bottom-left-radius: 4px;
-            border-left: 2px solid #4a7c59;
+            border-left: 3px solid #4a7c59;
             border: 1px solid #c8e6c9;
         }
         .chat-msg-header {
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             font-weight: 600;
-            margin-bottom: 0.12rem;
+            margin-bottom: 0.15rem;
             display: flex;
             justify-content: space-between;
-            gap: 0.4rem;
-            opacity: 0.8;
+            gap: 0.5rem;
+            opacity: 0.85;
         }
 
         .reply-box {
             display: flex;
-            gap: 0.5rem;
-            margin-top: 0.6rem;
+            gap: 0.6rem;
+            margin-top: 0.8rem;
             border-top: 1px solid #edf2f7;
-            padding-top: 0.6rem;
+            padding-top: 0.8rem;
         }
         .reply-input {
             flex: 1;
-            padding: 0.4rem 0.7rem;
+            padding: 0.6rem 1rem;
             border: 1px solid #cbd5e0;
             border-radius: 8px;
             font-family: inherit;
-            font-size: 0.85rem;
+            font-size: 0.95rem;
             resize: none;
-            height: 38px;
+            height: 48px;
         }
         .reply-btn {
             background: #184168;
             color: white;
             border: none;
             border-radius: 8px;
-            padding: 0 0.8rem;
+            padding: 0 1.2rem;
             font-weight: 600;
-            font-size: 0.85rem;
+            font-size: 0.95rem;
             cursor: pointer;
             white-space: nowrap;
             transition: background 0.2s ease;
@@ -141,19 +141,40 @@
 
         @media (max-width: 850px) {
             .particulares-container { grid-template-columns: 1fr; }
-            .chat-msg { max-width: 90%; }
-            .chat-thread { max-height: 420px; }
-            .reply-input { height: 42px; }
+            .chat-msg { 
+                max-width: 88%; 
+                padding: 0.5rem 0.8rem;
+                font-size: 0.9rem;
+            }
+            .chat-thread { 
+                max-height: 450px; 
+                gap: 0.4rem;
+            }
+            .reply-input { 
+                height: 42px; 
+                padding: 0.5rem 0.8rem;
+                font-size: 0.9rem;
+            }
+            .chat-msg-header { font-size: 0.7rem; }
         }
         
         @media (max-width: 480px) {
             .chat-msg { 
                 max-width: 95%; 
-                font-size: 0.8rem;
-                padding: 0.3rem 0.6rem;
+                font-size: 0.85rem;
+                padding: 0.4rem 0.7rem;
             }
-            .chat-thread { max-height: 380px; }
+            .chat-thread { 
+                max-height: 400px; 
+                gap: 0.35rem;
+            }
+            .reply-input { 
+                height: 40px; 
+                padding: 0.4rem 0.7rem;
+                font-size: 0.85rem;
+            }
             .badge-tag, .badge-obj { font-size: 0.65rem; }
+            .chat-msg-header { font-size: 0.65rem; }
         }
     </style>
 </head>
