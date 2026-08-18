@@ -10,11 +10,11 @@
         body { font-size: 17px; }
 
         .particulares-container { 
-            max-width: 1400px; 
+            max-width: 1500px; 
             margin: 2.5rem auto; 
             padding: 0 1rem; 
             display: grid; 
-            grid-template-columns: 1fr 1fr; 
+            grid-template-columns: 1fr 1.6fr; 
             gap: 2.5rem; 
         }
         .card-box { 
@@ -63,15 +63,15 @@
             flex-direction: column;
             gap: 0.5rem;
             margin: 1rem 0;
-            max-height: 320px;
+            max-height: 520px;
             overflow-y: auto;
-            padding-right: 0.3rem;
+            padding-right: 0.6rem;
         }
         .chat-msg {
-            padding: 0.45rem 0.7rem;
+            padding: 0.5rem 0.9rem;
             border-radius: 6px;
-            font-size: 0.9rem;
-            max-width: 72%;
+            font-size: 0.95rem;
+            max-width: 86%;
             white-space: pre-wrap;
             line-height: 1.35;
         }
@@ -129,6 +129,7 @@
         @media (max-width: 850px) {
             .particulares-container { grid-template-columns: 1fr; }
             .chat-msg { max-width: 86%; }
+            .chat-thread { max-height: 420px; }
         }
     </style>
 </head>
