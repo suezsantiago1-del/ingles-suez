@@ -873,17 +873,12 @@ export const renderPrivateClasses = async (req, res) => {
         }
     }
 
-    // Detect if the most recent consulta has been responded/accepted by the professor
+    // If the student has any prior consulta, switch to chat-only (show the most recent chat)
     let singleChatMode = false;
     let activeConsultaId = null;
     if (Array.isArray(misConsultas) && misConsultas.length > 0) {
-        const recent = misConsultas[0];
-        const hasProfResponse = recent.respuesta_profesor && String(recent.respuesta_profesor).trim() !== '';
-        const hasProfChat = Array.isArray(recent.mensajesChat) && recent.mensajesChat.some(m => m.emisor === 'PROFESOR');
-        if (hasProfResponse || hasProfChat) {
-            singleChatMode = true;
-            activeConsultaId = recent.id;
-        }
+        singleChatMode = true;
+        activeConsultaId = misConsultas[0].id;
     }
 
     return res.render('privateClasses', { misConsultas, singleChatMode, activeConsultaId });
