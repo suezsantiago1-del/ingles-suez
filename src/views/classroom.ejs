@@ -444,19 +444,24 @@
                 }
                 
                 console.log('Inicialización completada');
-            }, 500); // Aumentado el delay para asegurar que el HTML está completamente renderizado
+            }, 1000); // Aumentado a 1000ms para asegurar renderizado completo
         });
 
-        // Agregar event listener en el document para capturar clicks en botones de multiple choice con onclick inline
+        // Agregar event listener global para capturar todos los clicks
         document.addEventListener('click', function(e) {
             const button = e.target.closest('button');
             if (!button) return;
             
-            // Verificar si es un botón de multiple choice con onclick
+            console.log('Click en botón detectado:', button.innerText);
+            
+            // Verificar si es un botón de multiple choice con onclick inline
             const onclick = button.getAttribute('onclick');
-            if (onclick && onclick.includes('checkAnswer')) {
-                console.log('Click en botón con onclick inline:', onclick);
-                // Dejar que el onclick original se ejecute
+            if (onclick) {
+                console.log('Botón tiene onclick:', onclick);
+                if (onclick.includes('checkAnswer')) {
+                    console.log('Es un botón de multiple choice, ejecutando onclick...');
+                    // No prevenir el comportamiento, dejar que el onclick se ejecute
+                }
             }
         }, true); // Use capture phase
     </script>
