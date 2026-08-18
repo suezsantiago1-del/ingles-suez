@@ -221,18 +221,17 @@
                             <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e2ebd5; padding-top: 1rem;">
                                 <% if (curso && curso.titulo === 'Conversación y Fluidez Real') { %>
                                     <div class="badge-coming-soon">Próximamente</div>
+                                <% } else if (locals.comprasIds && locals.comprasIds.includes(curso.id)) { %>
+                                    <!-- Curso comprado - Solo mostrar botón "Ir al Aula" -->
+                                    <a href="/classroom/<%= curso.id %>" style="background: #27ae60; color: white; padding: 0.65rem 1.2rem; border-radius: 4px; text-decoration: none; font-size: 0.85rem; font-family: 'Tenor Sans', sans-serif; font-weight: bold; width: 100%; text-align: center;">
+                                        Ir al Aula
+                                    </a>
                                 <% } else { %>
+                                    <!-- Curso no comprado - Mostrar precio y botón "Ver Curso" -->
                                     <span style="color: var(--dark-blue); font-size: 1.25rem; font-weight: bold; font-family: 'Tenor Sans', sans-serif;">$<%= curso.precio %> ARS</span>
-                                    
-                                    <% if (locals.comprasIds && locals.comprasIds.includes(curso.id)) { %>
-                                        <a href="/classroom/<%= curso.id %>" style="background: var(--mid-blue); color: white; padding: 0.65rem 1.2rem; border-radius: 4px; text-decoration: none; font-size: 0.85rem; font-family: 'Tenor Sans', sans-serif; font-weight: bold;">
-                                            Ir al Aula
-                                        </a>
-                                    <% } else { %>
-                                        <a href="/course/<%= curso.id %>" style="background: var(--dark-blue); color: white; padding: 0.65rem 1.2rem; border-radius: 4px; text-decoration: none; font-size: 0.85rem; font-family: 'Tenor Sans', sans-serif;">
-                                            Ver Curso
-                                        </a>
-                                    <% } %>
+                                    <a href="/course/<%= curso.id %>" style="background: var(--dark-blue); color: white; padding: 0.65rem 1.2rem; border-radius: 4px; text-decoration: none; font-size: 0.85rem; font-family: 'Tenor Sans', sans-serif;">
+                                        Ver Curso
+                                    </a>
                                 <% } %>
                             </div>
                         </div>
