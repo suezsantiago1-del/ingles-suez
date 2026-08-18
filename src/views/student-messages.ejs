@@ -6,10 +6,169 @@
     <title>Bandeja de Mensajes - INGLÉS SUEZ</title>
     <link rel="stylesheet" href="/css/styles.css">
     <style>
-        .container-mensajes { max-width: 850px; margin: 3rem auto; padding: 0 1.5rem; }
-        .mensaje-card { background: #ffffff; border: 1px solid #cbd5e0; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .badge { background: #e2ebd5; color: #184168; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
-        .badge-nota { background: #2b6cb0; color: #ffffff; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.85rem; font-weight: bold; margin-right: 0.5rem; }
+        .container-mensajes { 
+            max-width: 850px; 
+            margin: 2rem auto; 
+            padding: 0 1rem; 
+        }
+        
+        @media (min-width: 768px) {
+            .container-mensajes {
+                padding: 0 1.5rem;
+                margin: 3rem auto;
+            }
+        }
+        
+        .mensaje-card { 
+            background: #ffffff; 
+            border: 1px solid #cbd5e0; 
+            border-radius: 8px; 
+            padding: 1rem; 
+            margin-bottom: 1rem; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05); 
+        }
+        
+        @media (min-width: 768px) {
+            .mensaje-card {
+                padding: 1.5rem;
+                margin-bottom: 1.5rem;
+            }
+        }
+        
+        .badge { 
+            background: #e2ebd5; 
+            color: #184168; 
+            padding: 0.2rem 0.6rem; 
+            border-radius: 4px; 
+            font-size: 0.75rem; 
+            font-weight: bold; 
+        }
+        
+        @media (min-width: 768px) {
+            .badge {
+                font-size: 0.8rem;
+            }
+        }
+        
+        .badge-nota { 
+            background: #2b6cb0; 
+            color: #ffffff; 
+            padding: 0.2rem 0.6rem; 
+            border-radius: 4px; 
+            font-size: 0.75rem; 
+            font-weight: bold; 
+            margin-right: 0.5rem; 
+        }
+        
+        @media (min-width: 768px) {
+            .badge-nota {
+                font-size: 0.85rem;
+            }
+        }
+        
+        .msg-card {
+            margin-top: 0.5rem;
+        }
+        
+        @media (min-width: 768px) {
+            .msg-card {
+                margin-top: 0.6rem;
+            }
+        }
+        
+        .bubble-student, .bubble-teacher {
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+        }
+        
+        @media (min-width: 768px) {
+            .bubble-student, .bubble-teacher {
+                padding: 1rem;
+                margin-bottom: 0.75rem;
+            }
+        }
+        
+        .bubble-student {
+            background: #f1f5f9;
+            border-left: 3px solid #64748b;
+        }
+        
+        .bubble-teacher {
+            background: #eff6ff;
+            border-left: 3px solid #3b82f6;
+        }
+        
+        .nota-timestamp {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            align-items: flex-start;
+        }
+        
+        @media (min-width: 640px) {
+            .nota-timestamp {
+                flex-direction: row;
+                align-items: center;
+                gap: 0.5rem;
+            }
+        }
+        
+        .messages-empty {
+            text-align: center;
+            padding: 2rem;
+            background: white;
+            border-radius: 8px;
+            color: #64748b;
+        }
+        
+        details {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 0.5rem;
+            background: white;
+        }
+        
+        summary {
+            cursor: pointer; 
+            font-weight: 600; 
+            color: var(--primary-navy); 
+            padding: 0.5rem 0; 
+            list-style: none;
+            font-size: 0.9rem;
+        }
+        
+        @media (min-width: 768px) {
+            summary {
+                font-weight: 800;
+                font-size: 1rem;
+            }
+        }
+        
+        summary::-webkit-details-marker {
+            display: none;
+        }
+        
+        summary::after {
+            content: '▼';
+            font-size: 0.75rem;
+            margin-left: 0.5rem;
+            transition: transform 0.2s;
+        }
+        
+        details[open] summary::after {
+            transform: rotate(180deg);
+        }
+        
+        @media (max-width: 767px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            .card {
+                margin-bottom: 1rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -17,44 +176,44 @@
     <%- include('partials/header') %>
 
     <main class="container-mensajes">
-        <h1 style="color: #0b2238;">Mis Mensajes y Devoluciones</h1>
-        <p style="color: #4a5568;">Aquí encontrarás las correcciones y observaciones enviadas por el profesor sobre tus tareas:</p>
+        <h1 style="color: #0b2238; margin-bottom: 0.5rem;">Mis Mensajes y Devoluciones</h1>
+        <p style="color: #4a5568; margin-bottom: 1.5rem;">Aquí encontrarás las correcciones y observaciones enviadas por el profesor sobre tus tareas:</p>
 
         <% if (cursos && cursos.length > 0) { %>
             <% cursos.forEach(curso => { %>
-                <div class="card" style="margin-bottom: 1.25rem;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:0.65rem; border-bottom:1px solid #eef4fb;">
-                        <div style="display:flex; gap:0.75rem; align-items:center;">
-                            <span class="course-badge"><%= curso.curso_titulo %></span>
-                            <span style="color:var(--text-muted); font-size:0.95rem;">(<%= curso.lecciones.length %> clases)</span>
+                <div class="card" style="margin-bottom: 1rem;">
+                    <div style="display:flex; flex-direction: column; gap: 0.5rem; padding-bottom:0.65rem; border-bottom:1px solid #eef4fb;">
+                        <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap: wrap;">
+                            <span class="course-badge" style="font-size: 0.85rem;"><%= curso.curso_titulo %></span>
+                            <span style="color:var(--text-muted); font-size:0.85rem;">(<%= curso.lecciones.length %> clases)</span>
                         </div>
                     </div>
 
                     <div style="margin-top:1rem;">
                         <% curso.lecciones.forEach(leccion => { %>
                             <details open style="margin-bottom: 1rem;">
-                                <summary style="cursor: pointer; font-weight: 800; color: var(--primary-navy); padding: 0.5rem 0; list-style: none;"> <%= leccion.leccion_titulo %> </summary>
+                                <summary style="cursor: pointer; font-weight: 600; color: var(--primary-navy); padding: 0.5rem 0; list-style: none;"> <%= leccion.leccion_titulo %> </summary>
 
                                 <% leccion.mensajes.forEach(m => { %>
-                                    <div class="msg-card" style="margin-top:0.6rem;">
-                                        <div class="msg-header" style="margin-bottom:0.6rem;">
+                                    <div class="msg-card" style="margin-top:0.5rem;">
+                                        <div class="msg-header" style="margin-bottom:0.5rem;">
                                             <div></div>
                                             <div class="nota-timestamp">
                                                 <% if (m.nota !== null && m.nota !== undefined) { %>
-                                                    <span class="nota-badge">Calif: <%= m.nota %>/10</span>
+                                                    <span class="badge-nota">Calif: <%= m.nota %>/10</span>
                                                 <% } %>
-                                                <span><%= new Date(m.fecha).toLocaleString('es-AR') %></span>
+                                                <span style="font-size: 0.8rem; color: #64748b;"><%= new Date(m.fecha).toLocaleString('es-AR') %></span>
                                             </div>
                                         </div>
 
                                         <div class="bubble-student">
-                                            <strong style="display:block; color:#0b2238; margin-bottom:0.35rem;">Tu entrega enviada</strong>
-                                            <div style="color:#334155; font-size:0.95rem;"><%= m.entrega_alumno %></div>
+                                            <strong style="display:block; color:#0b2238; margin-bottom:0.35rem; font-size: 0.85rem;">Tu entrega enviada</strong>
+                                            <div style="color:#334155; font-size:0.9rem;"><%= m.entrega_alumno %></div>
                                         </div>
 
                                         <div class="bubble-teacher">
-                                            <strong style="display:block; color:var(--accent-blue); margin-bottom:0.35rem;">Devolución del Profesor</strong>
-                                            <div style="color:#0f172a; font-size:0.95rem;"><%= m.mensaje %></div>
+                                            <strong style="display:block; color:var(--accent-blue); margin-bottom:0.35rem; font-size: 0.85rem;">Devolución del Profesor</strong>
+                                            <div style="color:#0f172a; font-size:0.9rem;"><%= m.mensaje %></div>
                                         </div>
                                     </div>
                                 <% }); %>

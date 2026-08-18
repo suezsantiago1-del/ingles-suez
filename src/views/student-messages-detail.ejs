@@ -5,19 +5,56 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mis Mensajes - <%= course.titulo %></title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Mobile sidebar transition */
+        .sidebar-transition {
+            transition: transform 0.3s ease-in-out;
+        }
+        
+        /* Overlay for mobile sidebar */
+        .sidebar-overlay {
+            transition: opacity 0.3s ease-in-out;
+        }
+        
+        /* Hide scrollbar for mobile sidebar */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
 </head>
 <body class="bg-slate-100 min-h-screen flex flex-col m-0">
 
     <!-- Include header partial -->
     <%- include('partials/header') %>
 
-    <div class="flex flex-row w-full flex-1 overflow-hidden">
+    <div class="flex flex-row w-full flex-1 overflow-hidden relative">
+
+        <!-- Mobile Menu Button -->
+        <button id="mobileMenuBtn" class="lg:hidden fixed top-20 left-4 z-20 bg-[#002244] text-white p-3 rounded-lg shadow-lg hover:bg-[#003366] transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+        </button>
+
+        <!-- Overlay for mobile -->
+        <div id="sidebarOverlay" class="sidebar-overlay fixed inset-0 bg-black/50 z-30 lg:hidden hidden opacity-0" onclick="toggleSidebar()"></div>
 
         <!-- Sidebar -->
-        <aside class="w-80 bg-white border-r border-slate-200 flex-shrink-0 flex flex-col h-[calc(100vh-64px)] overflow-y-auto">
-            <div class="p-4 border-b border-slate-200 bg-slate-50 sticky top-0 z-10">
-                <h2 class="font-bold text-[#002244] text-lg truncate"><%= course.titulo %></h2>
-                <p class="text-xs text-slate-500">Selecciona una clase</p>
+        <aside id="sidebar" class="sidebar-transition fixed lg:relative z-40 lg:z-auto w-80 bg-white border-r border-slate-200 flex-shrink-0 flex flex-col h-[calc(100vh-64px)] overflow-y-auto -translate-x-full lg:translate-x-0 hide-scrollbar">
+            <div class="p-4 border-b border-slate-200 bg-slate-50 sticky top-0 z-10 flex justify-between items-center">
+                <div>
+                    <h2 class="font-bold text-[#002244] text-lg truncate"><%= course.titulo %></h2>
+                    <p class="text-xs text-slate-500">Selecciona una clase</p>
+                </div>
+                <button onclick="toggleSidebar()" class="lg:hidden text-slate-500 hover:text-slate-700 p-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
             </div>
 
             <div class="divide-y divide-slate-100 flex-1">
@@ -32,6 +69,7 @@
                         </div>
                     <% } else { %>
                         <a href="/messages/<%= course.id %>?lessonId=<%= lesson.id %>"
+                           onclick="closeSidebarOnMobile()"
                            class="block transition-colors duration-150 p-4 text-sm font-medium <%= isActive ? 'bg-[#002244] text-white rounded-lg mx-3 my-2 shadow-sm' : 'text-slate-700 hover:bg-slate-50' %>">
                             <strong><%= lesson.orden %>.</strong> <%= lesson.titulo %>
                         </a>
@@ -41,9 +79,9 @@
         </aside>
 
         <!-- Content -->
-        <main class="flex-1 p-8 bg-slate-100 h-[calc(100vh-64px)] overflow-y-auto">
-            <div class="max-w-4xl mx-auto">
-                <h1 class="text-2xl font-bold text-[#002244] mb-6">Devoluciones - Clase seleccionada</h1>
+        <main class="flex-1 p-4 lg:p-8 bg-slate-100 h-[calc(100vh-64px)] overflow-y-auto w-full">
+            <div class="max-w-4xl mx-auto mt-12 lg:mt-0">
+                <h1 class="text-xl lg:text-2xl font-bold text-[#002244] mb-4 lg:mb-6">Devoluciones - Clase seleccionada</h1>
 
                 <% if (typeof errorMessage !== 'undefined' && errorMessage) { %>
                     <div class="mb-4 p-4 bg-yellow-50 border-l-4 border-amber-400 text-amber-800 rounded">
@@ -54,37 +92,70 @@
                 <% if (activeLessonId) { %>
                     <% if (messages && messages.length > 0) { %>
                         <% messages.forEach(m => { %>
-                            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
-                                <div class="flex justify-between items-center mb-4 border-b pb-3">
-                                    <span class="text-sm text-slate-500">Enviado: <%= new Date(m.fecha).toLocaleString('es-AR') %></span>
+                            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 lg:p-6 mb-4 lg:mb-6">
+                                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 border-b pb-3 gap-2">
+                                    <span class="text-xs sm:text-sm text-slate-500">Enviado: <%= new Date(m.fecha).toLocaleString('es-AR') %></span>
                                     <% if (m.nota !== null && m.nota !== undefined) { %>
                                         <span class="bg-[#002244] text-white text-xs px-3 py-1 rounded-md font-bold">Calif: <%= m.nota %></span>
                                     <% } %>
                                 </div>
 
                                 <div class="mb-6 bg-slate-50 p-4 rounded-xl border border-slate-100">
-                                    <h3 class="font-bold text-slate-800 mb-2 text-sm uppercase tracking-wider">Tu entrega enviada</h3>
-                                    <p class="text-slate-600 whitespace-pre-line"><%= m.entrega_alumno %></p>
+                                    <h3 class="font-bold text-slate-800 mb-2 text-xs sm:text-sm uppercase tracking-wider">Tu entrega enviada</h3>
+                                    <p class="text-sm sm:text-base text-slate-600 whitespace-pre-line"><%= m.entrega_alumno %></p>
                                 </div>
 
                                 <div class="bg-blue-50/40 p-4 rounded-xl border-l-4 border-[#002244]">
-                                    <h3 class="font-bold text-[#002244] mb-2 text-sm uppercase tracking-wider">Devolución del Profesor</h3>
-                                    <p class="text-slate-700 whitespace-pre-line"><%= m.mensaje %></p>
+                                    <h3 class="font-bold text-[#002244] mb-2 text-xs sm:text-sm uppercase tracking-wider">Devolución del Profesor</h3>
+                                    <p class="text-sm sm:text-base text-slate-700 whitespace-pre-line"><%= m.mensaje %></p>
                                 </div>
                             </div>
                         <% }) %>
                     <% } else { %>
-                        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-12 text-center">
-                            <p class="text-slate-500 text-lg">No hay devoluciones registradas para esta clase.</p>
+                        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 lg:p-12 text-center">
+                            <p class="text-slate-500 text-base lg:text-lg">No hay devoluciones registradas para esta clase.</p>
                         </div>
                     <% } %>
                 <% } else { %>
-                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-12 text-center">
-                        <p class="text-slate-500 text-lg">Selecciona una clase en el panel de la izquierda para ver el contenido.</p>
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 lg:p-12 text-center">
+                        <p class="text-slate-500 text-base lg:text-lg">Selecciona una clase en el panel para ver el contenido.</p>
                     </div>
                 <% } %>
             </div>
         </main>
     </div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            sidebar.classList.toggle('-translate-x-full');
+            sidebar.classList.toggle('translate-x-0');
+            overlay.classList.toggle('hidden');
+            overlay.classList.toggle('opacity-0');
+            overlay.classList.toggle('opacity-100');
+        }
+
+        function closeSidebarOnMobile() {
+            if (window.innerWidth < 1024) {
+                toggleSidebar();
+            }
+        }
+
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const menuBtn = document.getElementById('mobileMenuBtn');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            if (window.innerWidth < 1024 && 
+                !sidebar.contains(event.target) && 
+                !menuBtn.contains(event.target) &&
+                !overlay.classList.contains('hidden')) {
+                toggleSidebar();
+            }
+        });
+    </script>
 </body>
 </html>

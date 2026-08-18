@@ -18,27 +18,92 @@
     box-sizing: border-box;
   }
 
+  /* Mobile menu styles */
+  .mobile-menu-btn {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+  }
+  
+  .mobile-menu-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 200;
+  }
+  
+  .mobile-menu {
+    display: none;
+    position: fixed;
+    top: 0;
+    right: -300px;
+    width: 300px;
+    height: 100%;
+    background: #0b2238;
+    z-index: 201;
+    padding: 2rem;
+    transition: right 0.3s ease;
+    overflow-y: auto;
+  }
+  
+  .mobile-menu.active {
+    right: 0;
+  }
+  
+  .mobile-menu-overlay.active {
+    display: block;
+  }
+  
+  .mobile-menu a {
+    display: block;
+    color: white;
+    text-decoration: none;
+    padding: 1rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    font-family: 'GFS Didot', serif;
+  }
+  
+  .mobile-menu a:hover {
+    opacity: 0.8;
+  }
+
   /* Ajustes para pantallas pequeñas (Celulares) */
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
+    .mobile-menu-btn {
+      display: block;
+    }
+    
+    .nav-links-left {
+      display: none !important;
+    }
+    
+    .nav-links-right {
+      display: none !important;
+    }
+    
     .main-nav {
-      flex-direction: column !important;
-      padding: 1rem !important;
+      padding: 0.8rem 1rem !important;
+    }
+    
+    .nav-left {
       gap: 1rem !important;
     }
-    .nav-left, .nav-right {
-      flex-direction: column !important;
-      width: 100% !important;
-      justify-content: center !important;
-      gap: 0.8rem !important;
+    
+    .nav-left img {
+      height: 50px !important;
     }
-    .nav-links-left, .nav-links-right {
-      flex-wrap: wrap !important;
-      justify-content: center !important;
-      gap: 1rem !important;
-      margin-left: 0 !important;
-    }
-    .nav-links-left a, .nav-links-right a {
-      font-size: 0.95rem !important;
+  }
+  
+  @media (min-width: 1025px) {
+    .mobile-menu,
+    .mobile-menu-overlay {
+      display: none !important;
     }
   }
 </style>
@@ -49,7 +114,7 @@
             <img src="/img/logo.jpg" alt="INGLÉS SUEZ" style="height: 68px; width: auto; object-fit: contain; border-radius: 6px;">
         </a>
         
-        <!-- Enlaces secundarios -->
+        <!-- Enlaces secundarios (Desktop) -->
         <div class="nav-links-left" style="display: flex; gap: 1.8rem; align-items: center; margin-left: 0.5rem;">
             <a href="/cursos-todos" style="color: white; text-decoration: none; font-size: 1.05rem; opacity: 0.45; font-family: 'GFS Didot', serif; transition: opacity 0.2s ease;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.45'">Cursos</a>
             <a href="/clases-particulares" style="color: white; text-decoration: none; font-size: 1.05rem; opacity: 0.45; font-family: 'GFS Didot', serif; transition: opacity 0.2s ease;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.45'">Clases Particulares</a>
@@ -57,6 +122,14 @@
         </div>
     </div>
     
+    <!-- Mobile menu button -->
+    <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="white">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+    </button>
+    
+    <!-- Desktop navigation -->
     <div class="nav-links-right" style="display: flex; gap: 1.8rem; align-items: center;">
         <a href="/" style="color: white; text-decoration: none; font-size: 1rem; font-family: 'GFS Didot', serif;">Inicio</a>
         
@@ -83,3 +156,50 @@
         <% } %>
     </div>
 </nav>
+
+<!-- Mobile menu -->
+<div class="mobile-menu-overlay" onclick="toggleMobileMenu()"></div>
+<div class="mobile-menu">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <span style="color: white; font-weight: bold; font-family: 'Tenor Sans', sans-serif;">Menú</span>
+        <button onclick="toggleMobileMenu()" style="background: none; border: none; cursor: pointer;">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="white">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+    </div>
+    
+    <a href="/" onclick="toggleMobileMenu()">Inicio</a>
+    <a href="/cursos-todos" onclick="toggleMobileMenu()">Cursos</a>
+    <a href="/clases-particulares" onclick="toggleMobileMenu()">Clases Particulares</a>
+    <a href="/about" onclick="toggleMobileMenu()">Acerca de</a>
+    
+    <% if (locals.user) { %>
+        <% if (locals.user.email === 'suezsantiago1@gmail.com') { %>
+            <a href="/profesor/entregas" onclick="toggleMobileMenu()" style="background: #e2ebd5; color: #0b2238; padding: 0.5rem; border-radius: 4px; margin-top: 1rem;">Panel Profesor</a>
+        <% } %>
+
+        <a href="/messages" onclick="toggleMobileMenu()">
+            Mis Mensajes
+            <% if (locals.mensajesNoLeidos && locals.mensajesNoLeidos > 0) { %>
+                <span style="background: #e53e3e; color: white; border-radius: 50%; padding: 0.1rem 0.4rem; font-size: 0.75rem; font-weight: bold; margin-left: 0.3rem;"><%= locals.mensajesNoLeidos %></span>
+            <% } %>
+        </a>
+
+        <a href="/mis-cursos" onclick="toggleMobileMenu()">Mis Cursos</a>
+        <a href="/auth/profile" onclick="toggleMobileMenu()">Mi Perfil</a>
+        <a href="/auth/logout" onclick="toggleMobileMenu()" style="color: #feb2b2;">Cerrar Sesión</a>
+    <% } else { %>
+        <a href="/auth/login" onclick="toggleMobileMenu()">Iniciar Sesión</a>
+        <a href="/auth/register" onclick="toggleMobileMenu()" style="background: white; color: #0b2238; padding: 0.6rem 1.3rem; border-radius: 6px; text-align: center; margin-top: 1rem;">Registrarse</a>
+    <% } %>
+</div>
+
+<script>
+function toggleMobileMenu() {
+    const menu = document.querySelector('.mobile-menu');
+    const overlay = document.querySelector('.mobile-menu-overlay');
+    menu.classList.toggle('active');
+    overlay.classList.toggle('active');
+}
+</script>

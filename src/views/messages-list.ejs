@@ -5,27 +5,73 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mis Cursos - Mensajes</title>
     <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        /* Mobile improvements */
+        main {
+            padding: 1rem;
+        }
+        
+        @media (min-width: 768px) {
+            main {
+                padding: 0 1.5rem;
+            }
+        }
+        
+        .card {
+            padding: 1.25rem;
+            border-radius: 0.75rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .messages-empty {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+            background: white;
+            border-radius: 0.75rem;
+        }
+        
+        @media (max-width: 767px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            .card {
+                padding: 1rem;
+            }
+        }
+    </style>
 </head>
 <body>
 
     <%- include('partials/header') %>
 
-    <main style="max-width:900px; margin:3rem auto; padding:0 1.5rem;">
-        <h1 style="color:var(--primary-navy);">Mis Cursos</h1>
-        <p style="color:var(--text-muted);">Selecciona un curso para ver las devoluciones por clase.</p>
+    <main style="max-width:900px; margin:2rem auto; padding:0 1rem;">
+        <h1 style="color:var(--primary-navy); margin-bottom: 0.5rem;">Mis Cursos</h1>
+        <p style="color:var(--text-muted); margin-bottom: 1.5rem;">Selecciona un curso para ver las devoluciones por clase.</p>
 
-        <div style="margin-top:1.5rem; display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:1rem;">
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap:1rem;">
             <% if (cursos && cursos.length > 0) { %>
                 <% cursos.forEach(c => { %>
-                    <a href="/messages/<%= c.id %>" class="card" style="text-decoration:none; color:inherit;">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <div style="font-weight:800; color:var(--primary-navy);"><%= c.titulo %></div>
-                            <div style="color:var(--text-muted);">Ver devoluciones →</div>
+                    <a href="/messages/<%= c.id %>" class="card" style="text-decoration:none; color:inherit; background: white; border: 1px solid #e2e8f0;">
+                        <div style="display:flex; flex-direction: column; gap: 0.5rem;">
+                            <div style="font-weight:800; color:var(--primary-navy); font-size: 1rem; line-height: 1.4;"><%= c.titulo %></div>
+                            <div style="color:var(--text-muted); font-size: 0.875rem; display: flex; align-items: center; gap: 0.25rem;">
+                                Ver devoluciones 
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                </svg>
+                            </div>
                         </div>
                     </a>
                 <% }) %>
             <% } else { %>
-                <div class="messages-empty">No tienes cursos asociados.</div>
+                <div class="messages-empty" style="grid-column: 1 / -1;">No tienes cursos asociados.</div>
             <% } %>
         </div>
 
