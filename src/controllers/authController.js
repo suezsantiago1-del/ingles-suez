@@ -108,8 +108,12 @@ export const processRegister = async (req, res) => {
             [nombre.trim(), cleanEmail, hashedPassword, verificationToken, verificationTokenExpires]
         );
 
-        // Enviar email de verificación
-        const emailResult = await sendVerificationEmail(cleanEmail, nombre.trim(), verificationToken, req);
+        // Comentado temporalmente: el envío de email puede fallar si no está configurado el servicio
+        // const emailResult = await sendVerificationEmail(cleanEmail, nombre.trim(), verificationToken, req);
+        // 
+        // Si más adelante configuras el servicio de email, descomenta la línea de arriba
+        // y modifica el código siguiente según sea necesario
+        // Por ahora, permitimos el registro sin enviar email inmediato
         
         if (emailResult.success) {
             console.log('Email de verificación enviado a:', cleanEmail);
