@@ -872,7 +872,21 @@ export const renderPrivateClasses = async (req, res) => {
             console.error('Error al obtener consultas particulares del alumno:', error);
         }
     }
-    return res.render('privateClasses', { misConsultas });
+
+    // Detect if the most recent consulta has been responded/accepted by the professor
+    let singleChatMode = false;
+    let activeConsultaId = null;
+    if (Array.isArray(misConsultas) && misConsultas.length > 0) {
+        const recent = misConsultas[0];
+        const hasProfResponse = recent.respuesta_profesor && String(recent.respuesta_profesor).trim() !== '';
+        const hasProfChat = Array.isArray(recent.mensajesChat) && recent.mensajesChat.some(m => m.emisor === 'PROFESOR');
+        if (hasProfResponse || hasProfChat) {
+            singleChatMode = true;
+            activeConsultaId = recent.id;
+        }
+    }
+
+    return res.render('privateClasses', { misConsultas, singleChatMode, activeConsultaId });
 };
 
 /**

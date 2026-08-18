@@ -132,9 +132,10 @@
 
     <%- include('partials/header') %>
 
-    <div class="particulares-container">
+    <div class="particulares-container" style="<%= singleChatMode ? 'grid-template-columns: 1fr;' : '' %>">
         
         <!-- FORMULARIO DE SOLICITUD -->
+        <% if (!singleChatMode) { %>
         <div class="card-box">
             <h2>Solicitar Clase Particular</h2>
             <form id="form-consulta-particular">
@@ -167,6 +168,7 @@
                 </button>
             </form>
         </div>
+        <% } %>
 
         <!-- LISTA DE CONSULTAS Y CHAT CON EL PROFESOR -->
         <div class="card-box">
@@ -174,7 +176,8 @@
 
             <% if (typeof misConsultas !== 'undefined' && misConsultas.length > 0) { %>
                 <div style="max-height: 520px; overflow-y: auto; padding-right: 0.3rem;">
-                    <% misConsultas.forEach(c => { %>
+                    <% const consultasToShow = singleChatMode ? misConsultas.filter(x => x.id == activeConsultaId) : misConsultas; %>
+                    <% consultasToShow.forEach(c => { %>
                         <div class="chat-card">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.3rem;">
                                 <div>
