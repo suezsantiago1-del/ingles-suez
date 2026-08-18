@@ -50,7 +50,10 @@ const dbPromise = (async () => {
             id SERIAL PRIMARY KEY,
             nombre VARCHAR(255) NOT NULL,
             email VARCHAR(255) UNIQUE NOT NULL,
-            password VARCHAR(255) NOT NULL
+            password VARCHAR(255) NOT NULL,
+            email_verificado BOOLEAN DEFAULT FALSE,
+            verification_token VARCHAR(255),
+            verification_token_expires TIMESTAMP
         );
 
         CREATE TABLE IF NOT EXISTS cursos (
@@ -118,6 +121,11 @@ const dbPromise = (async () => {
     await adapter.pgPool.query(`ALTER TABLE lecciones ADD COLUMN IF NOT EXISTS teacher_note TEXT;`);
     await adapter.pgPool.query(`ALTER TABLE cursos ADD COLUMN IF NOT EXISTS instructor_email VARCHAR(255);`);
     await adapter.pgPool.query(`ALTER TABLE entregas ADD COLUMN IF NOT EXISTS teacher_notes TEXT;`);
+    
+    // Columnas para verificación de email
+    await adapter.pgPool.query(`ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS email_verificado BOOLEAN DEFAULT FALSE;`);
+    await adapter.pgPool.query(`ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS verification_token VARCHAR(255);`);
+    await adapter.pgPool.query(`ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS verification_token_expires TIMESTAMP;`);
     
     // Forzado explícito de creación de mensajes_particulares
     await adapter.pgPool.query(`

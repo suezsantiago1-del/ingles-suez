@@ -1,5 +1,6 @@
 import bcrypt from 'bcrypt';
 import dbPromise from '../config/database.js';
+import crypto from 'crypto';
 
 export const renderLogin = (req, res) => {
     if (req.session.user) {
@@ -25,6 +26,15 @@ export const processLogin = async (req, res) => {
         const passwordValida = await bcrypt.compare(password, usuario.password);
         if (!passwordValida) {
             return res.render('login', { error: 'Correo electrónico o contraseña incorrectos.' });
+        }
+
+        // Verificar si el email está verificado
+        if (!usuario.email_verificado) {
+            return res.render('verify-email', { 
+                email: usuario.email, 
+                success: null, 
+                error: 'Debes verificar tu correo electrónico antes de iniciar sesión. Revisa tu bandeja de entrada o solicita un nuevo email de verificación.' 
+            });
         }
 
         // CORRECCIÓN DE COOKIE: Evita asignar "expires = false" para no romper express-session
@@ -75,24 +85,25 @@ export const processRegister = async (req, res) => {
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
+        
+        // Generar token de verificación
+        const verificationToken = crypto.randomBytes(32).toString('hex');
+        const verificationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 horas
 
         const result = await db.run(
-            'INSERT INTO usuarios (nombre, email, password) VALUES (?, ?, ?) RETURNING id',
-            [nombre.trim(), cleanEmail, hashedPassword]
+            'INSERT INTO usuarios (nombre, email, password, verification_token, verification_token_expires) VALUES (?, ?, ?, ?, ?) RETURNING id',
+            [nombre.trim(), cleanEmail, hashedPassword, verificationToken, verificationTokenExpires]
         );
 
-        req.session.user = {
-            id: result.lastID,
-            nombre: nombre.trim(),
-            email: cleanEmail
-        };
+        // Enviar email de verificación (aquí iría la integración real con servicio de email)
+        // Por ahora, mostramos el token en la respuesta para desarrollo
+        console.log('Token de verificación:', verificationToken);
+        console.log('Link de verificación:', `${req.protocol}://${req.get('host')}/auth/verify/${verificationToken}`);
 
-        return req.session.save((err) => {
-            if (err) {
-                console.error('Error al guardar sesión tras registro:', err);
-                return res.render('register', { error: 'Ocurrió un error al iniciar sesión automática.' });
-            }
-            return res.redirect('/');
+        // Renderizar página de verificación pendiente
+        return res.render('verify-email', { 
+            email: cleanEmail, 
+            success: 'Cuenta creada exitosamente. Por favor verifica tu correo electrónico.' 
         });
 
     } catch (error) {
@@ -180,5 +191,131 @@ export const updatePassword = async (req, res) => {
     } catch (error) {
         console.error('Error al cambiar la contraseña:', error);
         return res.render('profile', { usuario: req.session.user, success: null, error: 'Ocurrió un error inesperado.' });
+    }
+};
+
+export const renderVerifyEmail = (req, res) => {
+    const { token } = req.params;
+    return res.render('verify-email', { token, email: null, success: null, error: null });
+};
+
+export const verifyEmail = async (req, res) => {
+    const { token } = req.params;
+
+    try {
+        const db = await dbPromise;
+        const usuario = await db.get(
+            'SELECT * FROM usuarios WHERE verification_token = ? AND verification_token_expires > NOW()',
+            [token]
+        );
+
+        if (!usuario) {
+            return res.render('verify-email', { 
+                token: null, 
+                email: null, 
+                success: null, 
+                error: 'Token inválido o expirado. Por favor solicita un nuevo email de verificación.' 
+            });
+        }
+
+        if (usuario.email_verificado) {
+            return res.render('verify-email', { 
+                token: null, 
+                email: usuario.email, 
+                success: 'Tu correo electrónico ya está verificado.', 
+                error: null 
+            });
+        }
+
+        await db.run(
+            'UPDATE usuarios SET email_verificado = TRUE, verification_token = NULL, verification_token_expires = NULL WHERE id = ?',
+            [usuario.id]
+        );
+
+        // Iniciar sesión automáticamente después de verificación
+        req.session.user = {
+            id: usuario.id,
+            nombre: usuario.nombre,
+            email: usuario.email
+        };
+
+        return req.session.save((err) => {
+            if (err) {
+                console.error('Error al guardar sesión tras verificación:', err);
+                return res.render('verify-email', { 
+                    token: null, 
+                    email: usuario.email, 
+                    success: null, 
+                    error: 'Error al iniciar sesión. Por favor inicia sesión manualmente.' 
+                });
+            }
+            return res.redirect('/');
+        });
+
+    } catch (error) {
+        console.error('Error al verificar email:', error);
+        return res.render('verify-email', { 
+            token: null, 
+            email: null, 
+            success: null, 
+            error: 'Ocurrió un error al verificar el correo electrónico.' 
+        });
+    }
+};
+
+export const resendVerification = async (req, res) => {
+    const { email } = req.body;
+    const cleanEmail = email ? email.toLowerCase().trim() : '';
+
+    try {
+        const db = await dbPromise;
+        const usuario = await db.get('SELECT * FROM usuarios WHERE LOWER(email) = LOWER(?)', [cleanEmail]);
+
+        if (!usuario) {
+            return res.render('verify-email', { 
+                token: null, 
+                email: null, 
+                success: null, 
+                error: 'No se encontró una cuenta con ese correo electrónico.' 
+            });
+        }
+
+        if (usuario.email_verificado) {
+            return res.render('verify-email', { 
+                token: null, 
+                email: usuario.email, 
+                success: 'Tu correo electrónico ya está verificado. Puedes iniciar sesión.', 
+                error: null 
+            });
+        }
+
+        // Generar nuevo token
+        const newVerificationToken = crypto.randomBytes(32).toString('hex');
+        const verificationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+        await db.run(
+            'UPDATE usuarios SET verification_token = ?, verification_token_expires = ? WHERE id = ?',
+            [newVerificationToken, verificationTokenExpires, usuario.id]
+        );
+
+        // Enviar email de verificación (aquí iría la integración real)
+        console.log('Nuevo token de verificación:', newVerificationToken);
+        console.log('Link de verificación:', `${req.protocol}://${req.get('host')}/auth/verify/${newVerificationToken}`);
+
+        return res.render('verify-email', { 
+            token: null, 
+            email: usuario.email, 
+            success: 'Se ha enviado un nuevo email de verificación. Por favor revisa tu bandeja de entrada.', 
+            error: null 
+        });
+
+    } catch (error) {
+        console.error('Error al reenviar verificación:', error);
+        return res.render('verify-email', { 
+            token: null, 
+            email: null, 
+            success: null, 
+            error: 'Ocurrió un error al reenviar el email de verificación.' 
+        });
     }
 };

@@ -7,7 +7,10 @@ import {
     logout,
     renderProfile,
     updateProfile,
-    updatePassword
+    updatePassword,
+    renderVerifyEmail,
+    verifyEmail,
+    resendVerification
 } from '../controllers/authController.js';
 
 import {
@@ -28,6 +31,11 @@ router.get('/register', renderRegister);
 router.post('/register', processRegister);
 
 router.get('/logout', logout);
+
+// Verificación de email
+router.get('/verify/:token', verifyEmail);
+router.get('/verify-email', renderVerifyEmail);
+router.post('/resend-verification', resendVerification);
 
 // Rutas de Perfil
 router.get('/profile', renderProfile);

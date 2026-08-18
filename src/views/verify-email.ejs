@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificar Email - INGLÉS SUEZ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=GFS+Didot&family=Tenor+Sans&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #0b2238 0%, #1e4d77 50%, #85abc9 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            font-family: 'GFS Didot', serif;
+        }
+        
+        .verify-container {
+            background: white;
+            border-radius: 12px;
+            padding: 3rem;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+        
+        .verify-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .verify-title {
+            font-family: 'Tenor Sans', sans-serif;
+            color: #0b2238;
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+        }
+        
+        .verify-message {
+            color: #4a5568;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+        
+        .success-message {
+            background: #f0fff4;
+            border: 1px solid #c6f6d5;
+            color: #22543d;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .error-message {
+            background: #fff5f5;
+            border: 1px solid #feb2b2;
+            color: #9b2c2c;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .btn-primary {
+            background: #184168;
+            color: white;
+            padding: 0.8rem 2rem;
+            border: none;
+            border-radius: 6px;
+            font-family: 'Tenor Sans', sans-serif;
+            font-size: 1rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: background 0.2s;
+        }
+        
+        .btn-primary:hover {
+            background: #0b2238;
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            color: #184168;
+            padding: 0.8rem 2rem;
+            border: 1px solid #184168;
+            border-radius: 6px;
+            font-family: 'Tenor Sans', sans-serif;
+            font-size: 1rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: background 0.2s;
+        }
+        
+        .btn-secondary:hover {
+            background: #f0f9ff;
+        }
+        
+        .email-display {
+            background: #f7fafc;
+            padding: 0.8rem;
+            border-radius: 6px;
+            font-family: monospace;
+            color: #2d3748;
+            margin-bottom: 1.5rem;
+            word-break: break-all;
+        }
+        
+        .resend-form {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        .resend-form input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            font-family: inherit;
+        }
+        
+        .links {
+            margin-top: 2rem;
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .links a {
+            color: #184168;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        
+        .links a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="verify-container">
+        <% if (success) { %>
+            <div class="verify-icon">✅</div>
+            <h1 class="verify-title">¡Verificación Exitosa!</h1>
+            <div class="success-message">
+                <%= success %>
+            </div>
+        <% } else if (error) { %>
+            <div class="verify-icon">⚠️</div>
+            <h1 class="verify-title">Error de Verificación</h1>
+            <div class="error-message">
+                <%= error %>
+            </div>
+        <% } else { %>
+            <div class="verify-icon">📧</div>
+            <h1 class="verify-title">Verifica tu Email</h1>
+            <p class="verify-message">
+                Hemos enviado un enlace de verificación a tu correo electrónico. 
+                Por favor haz clic en el enlace para activar tu cuenta.
+            </p>
+            
+            <% if (email) { %>
+                <div class="email-display">
+                    <%= email %>
+                </div>
+            <% } %>
+        <% } %>
+        
+        <% if (!success && email) { %>
+            <div class="resend-form">
+                <p style="color: #4a5568; margin-bottom: 1rem;">¿No recibiste el email?</p>
+                <form action="/auth/resend-verification" method="POST">
+                    <input type="email" name="email" value="<%= email %>" placeholder="Ingresa tu correo electrónico" required>
+                    <button type="submit" class="btn-secondary">Reenviar Email de Verificación</button>
+                </form>
+            </div>
+        <% } %>
+        
+        <div class="links">
+            <a href="/auth/login">Iniciar Sesión</a>
+            <a href="/">Volver al Inicio</a>
+        </div>
+    </div>
+
+</body>
+</html>

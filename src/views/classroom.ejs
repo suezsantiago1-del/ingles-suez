@@ -256,164 +256,195 @@
 
     <!-- Script de Interactividad para los Quizzes y Revisiones -->
     <script>
-        // Hacer las funciones globales para asegurar que funcionen con onclick inline
-        window.checkAnswer = function(button, isCorrect, feedbackId, explanationText) {
-            console.log('checkAnswer called', { isCorrect, feedbackId, explanationText });
+        // Definir funciones inmediatamente para asegurar disponibilidad global
+        (function() {
+            console.log('Inicializando funciones del classroom...');
             
-            const container = button.closest('.quiz-question');
-            if (!container) {
-                console.error('No se encontró el contenedor .quiz-question');
-                return;
-            }
-            
-            const buttons = container.querySelectorAll('.option-btn');
-            const feedbackBox = document.getElementById(feedbackId);
+            // Función para respuestas de multiple choice
+            window.checkAnswer = function(button, isCorrect, feedbackId, explanationText) {
+                console.log('checkAnswer llamado:', { isCorrect, feedbackId, explanationText });
+                
+                try {
+                    const container = button.closest('.quiz-question');
+                    if (!container) {
+                        console.error('No se encontró el contenedor .quiz-question');
+                        return;
+                    }
+                    
+                    const buttons = container.querySelectorAll('.option-btn');
+                    const feedbackBox = document.getElementById(feedbackId);
 
-            if (!feedbackBox) {
-                console.error('No se encontró el feedback box con ID:', feedbackId);
-                return;
-            }
-
-            buttons.forEach(btn => btn.disabled = true);
-
-            if (isCorrect) {
-                button.classList.add('selected-correct');
-                feedbackBox.style.display = 'block';
-                feedbackBox.style.background = '#f0fff4';
-                feedbackBox.style.border = '1px solid #c6f6d5';
-                feedbackBox.style.color = '#22543d';
-                feedbackBox.innerHTML = '<strong>Respuesta Correcta.</strong> ' + explanationText;
-            } else {
-                button.classList.add('selected-incorrect');
-                feedbackBox.style.display = 'block';
-                feedbackBox.style.background = '#fff5f5';
-                feedbackBox.style.border = '1px solid #feb2b2';
-                feedbackBox.style.color = '#9b2c2c';
-                feedbackBox.innerHTML = '<strong>Respuesta Incorrecta.</strong> ' + explanationText;
-            }
-        };
-
-        // Manejador del envío de revisión manual con guardado en la Base de Datos
-        window.submitRevision = async function(btn) {
-            console.log('submitRevision called');
-            
-            const parentSection = btn.closest('section') || btn.parentElement;
-            const textarea = parentSection ? parentSection.querySelector('textarea') : null;
-
-            if (textarea && textarea.value.trim() === '') {
-                alert('Por favor, escribe tu respuesta o proyecto antes de enviar.');
-                return;
-            }
-
-            const cursoId = "<%- curso.id %>";
-            const leccionId = "<%- leccionActiva ? leccionActiva.id : '' %>";
-            const contenido = textarea ? textarea.value.trim() : '';
-
-            const originalText = btn.innerText;
-            btn.innerText = 'Enviando...';
-            btn.disabled = true;
-
-            try {
-                const response = await fetch('/entregas', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ cursoId, leccionId, contenido })
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    btn.innerText = 'Enviado';
-                    btn.style.background = '#718096';
-                    btn.style.cursor = 'not-allowed';
-
-                    if (textarea) {
-                        textarea.disabled = true;
-                        textarea.style.backgroundColor = '#edf2f7';
+                    if (!feedbackBox) {
+                        console.error('No se encontró el feedback box con ID:', feedbackId);
+                        return;
                     }
 
-                    const toast = document.getElementById('toast-notification');
-                    if (toast) toast.classList.add('show');
-                    
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 1500);
-                } else {
-                    alert(data.message || 'Ocurrió un error al guardar tu entrega.');
-                    btn.innerText = originalText;
-                    btn.disabled = false;
+                    buttons.forEach(btn => btn.disabled = true);
+
+                    if (isCorrect) {
+                        button.classList.add('selected-correct');
+                        feedbackBox.style.display = 'block';
+                        feedbackBox.style.background = '#f0fff4';
+                        feedbackBox.style.border = '1px solid #c6f6d5';
+                        feedbackBox.style.color = '#22543d';
+                        feedbackBox.innerHTML = '<strong>Respuesta Correcta.</strong> ' + explanationText;
+                    } else {
+                        button.classList.add('selected-incorrect');
+                        feedbackBox.style.display = 'block';
+                        feedbackBox.style.background = '#fff5f5';
+                        feedbackBox.style.border = '1px solid #feb2b2';
+                        feedbackBox.style.color = '#9b2c2c';
+                        feedbackBox.innerHTML = '<strong>Respuesta Incorrecta.</strong> ' + explanationText;
+                    }
+                } catch (error) {
+                    console.error('Error en checkAnswer:', error);
                 }
-            } catch (error) {
-                console.error('Error enviando la entrega:', error);
-                alert('Hubo un error de conexión al enviar tu respuesta.');
-                btn.innerText = originalText;
-                btn.disabled = false;
-            }
-        };
+            };
+
+            // Manejador del envío de revisión manual
+            window.submitRevision = async function(btn) {
+                console.log('submitRevision llamado');
+                
+                try {
+                    const parentSection = btn.closest('section') || btn.parentElement;
+                    const textarea = parentSection ? parentSection.querySelector('textarea') : null;
+
+                    if (textarea && textarea.value.trim() === '') {
+                        alert('Por favor, escribe tu respuesta o proyecto antes de enviar.');
+                        return;
+                    }
+
+                    const cursoId = "<%- curso.id %>";
+                    const leccionId = "<%- leccionActiva ? leccionActiva.id : '' %>";
+                    const contenido = textarea ? textarea.value.trim() : '';
+
+                    const originalText = btn.innerText;
+                    btn.innerText = 'Enviando...';
+                    btn.disabled = true;
+
+                    try {
+                        const response = await fetch('/entregas', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ cursoId, leccionId, contenido })
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            btn.innerText = 'Enviado';
+                            btn.style.background = '#718096';
+                            btn.style.cursor = 'not-allowed';
+
+                            if (textarea) {
+                                textarea.disabled = true;
+                                textarea.style.backgroundColor = '#edf2f7';
+                            }
+
+                            const toast = document.getElementById('toast-notification');
+                            if (toast) toast.classList.add('show');
+                            
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 1500);
+                        } else {
+                            alert(data.message || 'Ocurrió un error al guardar tu entrega.');
+                            btn.innerText = originalText;
+                            btn.disabled = false;
+                        }
+                    } catch (error) {
+                        console.error('Error enviando la entrega:', error);
+                        alert('Hubo un error de conexión al enviar tu respuesta.');
+                        btn.innerText = originalText;
+                        btn.disabled = false;
+                    }
+                } catch (error) {
+                    console.error('Error en submitRevision:', error);
+                    alert('Error al procesar el envío.');
+                }
+            };
+            
+            console.log('Funciones definidas correctamente');
+        })();
 
         // Vincular funciones y bloqueos según el estado de la entrega
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('DOM Content Loaded');
+            console.log('DOM Content Loaded - Iniciando vinculación de botones');
             
-            // Vincular botones de envío
-            const buttons = document.querySelectorAll('button');
-            buttons.forEach(btn => {
-                const text = btn.innerText.toUpperCase();
-                console.log('Procesando botón:', text);
+            // Esperar un momento para asegurar que el contenido HTML está completamente renderizado
+            setTimeout(() => {
+                console.log('Iniciando vinculación de botones después de delay');
                 
-                if (
-                    text.includes('ENVIAR') || 
-                    text.includes('ENTREGAR') || 
-                    text.includes('PROYECTO') || 
-                    text.includes('EXAMEN') || 
-                    text.includes('FINAL') || 
-                    text.includes('REHACER')
-                ) {
-                    // Remover cualquier onclick existente para evitar duplicados
-                    btn.removeAttribute('onclick');
-                    // Agregar event listener
-                    btn.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        window.submitRevision(this);
+                // Vincular botones de envío con diferentes patrones de texto
+                const buttons = document.querySelectorAll('button');
+                console.log('Total de botones encontrados:', buttons.length);
+                
+                buttons.forEach((btn, index) => {
+                    const text = btn.innerText.toUpperCase();
+                    console.log(`Botón ${index}:`, text);
+                    
+                    // Patrones más amplios para detectar botones de envío
+                    const esBotonEnvio = 
+                        text.includes('ENVIAR') || 
+                        text.includes('ENTREGAR') || 
+                        text.includes('PROYECTO') || 
+                        text.includes('EXAMEN') || 
+                        text.includes('FINAL') || 
+                        text.includes('REHACER') ||
+                        text.includes('REVISIÓN') ||
+                        text.includes('REVIEW');
+                    
+                    if (esBotonEnvio) {
+                        // Remover cualquier onclick existente para evitar duplicados
+                        btn.removeAttribute('onclick');
+                        
+                        // Agregar event listener
+                        btn.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            console.log('Click en botón de envío:', text);
+                            window.submitRevision(this);
+                        });
+                        
+                        console.log('Botón vinculado a submitRevision:', text);
+                    }
+                });
+
+                // Lógica de deshabilitado dinámico
+                const notaRaw = <%= JSON.stringify((leccionActiva && leccionActiva.nota !== null && leccionActiva.nota !== undefined) ? leccionActiva.nota : '') %>;
+                const nota = notaRaw !== "" ? parseInt(notaRaw, 10) : -1;
+                const estaEnviadaSinNota = <%= JSON.stringify((leccionActiva && leccionActiva.completada && (leccionActiva.nota === null || leccionActiva.nota === undefined)) ? true : false) %>;
+
+                console.log('Estado de entrega:', { nota, estaEnviadaSinNota });
+
+                // Bloquear formulario únicamente si APROBÓ (nota >= 6) o si está EN REVISIÓN (enviado sin nota)
+                if (nota >= 6 || estaEnviadaSinNota) {
+                    const textareas = document.querySelectorAll('.leccion-body textarea');
+                    const btnEnviars = document.querySelectorAll('.leccion-body button');
+
+                    textareas.forEach(t => {
+                        t.disabled = true;
+                        t.placeholder = nota >= 6 ? "Entregable / Proyecto Aprobado." : "Entrega enviada, en proceso de revisión...";
+                        t.style.backgroundColor = "#edf2f7";
                     });
-                    console.log('Botón vinculado a submitRevision:', text);
+
+                    btnEnviars.forEach(btn => {
+                        btn.disabled = true;
+                        btn.innerText = nota >= 6 ? 'APROBADO' : 'EN REVISIÓN';
+                        btn.style.background = nota >= 6 ? '#38a169' : '#718096';
+                        btn.style.cursor = 'not-allowed';
+                    });
+                } else if (nota !== -1 && nota < 6) {
+                    // Si REPROBÓ (< 6), habilitar botón como "REHACER ENTREGABLE"
+                    const btnEnviars = document.querySelectorAll('.leccion-body button');
+                    btnEnviars.forEach(btn => {
+                        btn.innerText = 'REHACER Y ENVIAR ENTREGABLE';
+                        btn.style.background = '#e53e3e';
+                    });
                 }
-            });
-
-            // Lógica de deshabilitado dinámico
-            const notaRaw = <%= JSON.stringify((leccionActiva && leccionActiva.nota !== null && leccionActiva.nota !== undefined) ? leccionActiva.nota : '') %>;
-            const nota = notaRaw !== "" ? parseInt(notaRaw, 10) : -1;
-            const estaEnviadaSinNota = <%= JSON.stringify((leccionActiva && leccionActiva.completada && (leccionActiva.nota === null || leccionActiva.nota === undefined)) ? true : false) %>;
-
-            console.log('Estado de entrega:', { nota, estaEnviadaSinNota });
-
-            // Bloquear formulario únicamente si APROBÓ (nota >= 6) o si está EN REVISIÓN (enviado sin nota)
-            if (nota >= 6 || estaEnviadaSinNota) {
-                const textareas = document.querySelectorAll('.leccion-body textarea');
-                const btnEnviars = document.querySelectorAll('.leccion-body button');
-
-                textareas.forEach(t => {
-                    t.disabled = true;
-                    t.placeholder = nota >= 6 ? "Entregable / Proyecto Aprobado." : "Entrega enviada, en proceso de revisión...";
-                    t.style.backgroundColor = "#edf2f7";
-                });
-
-                btnEnviars.forEach(btn => {
-                    btn.disabled = true;
-                    btn.innerText = nota >= 6 ? 'APROBADO' : 'EN REVISIÓN';
-                    btn.style.background = nota >= 6 ? '#38a169' : '#718096';
-                    btn.style.cursor = 'not-allowed';
-                });
-            } else if (nota !== -1 && nota < 6) {
-                // Si REPROBÓ (< 6), habilitar botón como "REHACER ENTREGABLE"
-                const btnEnviars = document.querySelectorAll('.leccion-body button');
-                btnEnviars.forEach(btn => {
-                    btn.innerText = 'REHACER Y ENVIAR ENTREGABLE';
-                    btn.style.background = '#e53e3e';
-                });
-            }
-            
-            console.log('Inicialización completada');
+                
+                console.log('Inicialización completada');
+            }, 100); // Pequeño delay para asegurar que el HTML está completamente renderizado
         });
     </script>
 </body>
