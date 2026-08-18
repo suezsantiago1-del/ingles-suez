@@ -24,6 +24,8 @@ export const processLogin = async (req, res) => {
             return res.render('login', { error: 'Correo electrónico o contraseña incorrectos.' });
         }
 
+        console.log('Usuario encontrado:', { id: usuario.id, email: usuario.email, email_verificado: usuario.email_verificado });
+
         const passwordValida = await bcrypt.compare(password, usuario.password);
         if (!passwordValida) {
             return res.render('login', { error: 'Correo electrónico o contraseña incorrectos.' });
@@ -31,6 +33,8 @@ export const processLogin = async (req, res) => {
 
         // Verificar si el email está verificado
         if (!usuario.email_verificado) {
+            console.log('Email no verificado, enviando email de verificación...');
+            
             // Generar nuevo token de verificación
             const newVerificationToken = crypto.randomBytes(32).toString('hex');
             const verificationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
@@ -55,6 +59,8 @@ export const processLogin = async (req, res) => {
                 success: emailResult.success ? 'Se ha enviado un email de verificación. Por favor revisa tu bandeja de entrada.' : null,
                 error: emailResult.success ? null : 'No se pudo enviar el email de verificación. Contacta al administrador o intenta reenviarlo.'
             });
+        } else {
+            console.log('Email ya verificado, permitiendo login...');
         }
 
         // CORRECCIÓN DE COOKIE: Evita asignar "expires = false" para no romper express-session
@@ -97,6 +103,8 @@ export const processRegister = async (req, res) => {
     const { nombre, email, password, confirmPassword } = req.body;
     const cleanEmail = email ? email.toLowerCase().trim() : '';
 
+    console.log('Intento de registro:', { nombre, email: cleanEmail });
+
     // Validar que las contraseñas coincidan
     if (password !== confirmPassword) {
         return res.render('register', { error: 'Las contraseñas no coinciden.' });
@@ -107,6 +115,7 @@ export const processRegister = async (req, res) => {
         const usuarioExistente = await db.get('SELECT id FROM usuarios WHERE LOWER(email) = LOWER(?)', [cleanEmail]);
 
         if (usuarioExistente) {
+            console.log('Usuario ya existe:', cleanEmail);
             return res.render('register', { error: 'El correo electrónico ya está registrado.' });
         }
 
@@ -116,10 +125,15 @@ export const processRegister = async (req, res) => {
         const verificationToken = crypto.randomBytes(32).toString('hex');
         const verificationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 horas
 
+        console.log('Creando usuario con token de verificación...');
+
         const result = await db.run(
             'INSERT INTO usuarios (nombre, email, password, verification_token, verification_token_expires) VALUES (?, ?, ?, ?, ?) RETURNING id',
             [nombre.trim(), cleanEmail, hashedPassword, verificationToken, verificationTokenExpires]
         );
+
+        console.log('Usuario creado con ID:', result.lastID);
+        console.log('Enviando email de verificación...');
 
         // Enviar email de verificación con Brevo
         const emailResult = await sendVerificationEmail(cleanEmail, nombre.trim(), verificationToken, req);
