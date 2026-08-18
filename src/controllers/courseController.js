@@ -1287,24 +1287,59 @@ export const renderMessagesCourse = async (req, res) => {
 
     try {
         const db = await dbPromise;
-        const course = await db.get('SELECT id, titulo FROM cursos WHERE id = ?', [cursoId]);
-        if (!course) return res.status(404).send('Curso no encontrado');
 
-        // Get first 10 lessons for the course
-        const lessons = await db.all('SELECT id, titulo, orden FROM lecciones WHERE curso_id = ? ORDER BY orden LIMIT 10', [cursoId]);
+        // Load course safely
+        let course;
+        try {
+            course = await db.get('SELECT id, titulo FROM cursos WHERE id = ?', [cursoId]);
+            if (!course) {
+                console.error('renderMessagesCourse: course not found for id=', cursoId);
+                return res.status(404).send('Curso no encontrado');
+            }
+        } catch (err) {
+            console.error('renderMessagesCourse: error fetching course', err && err.stack ? err.stack : err);
+            return res.render('student-messages-detail', {
+                course: { id: cursoId, titulo: 'Curso (error)' },
+                lessons: [],
+                activeLessonId: null,
+                messages: [],
+                errorMessage: 'Error al cargar el curso'
+            });
+        }
 
-        // Compute user's progress: max completed lesson order
-        const row = await db.get(`
-            SELECT MAX(l.orden) as maxOrden
-            FROM entregas e
-            JOIN lecciones l ON e.leccion_id = l.id
-            WHERE e.usuario_id = ? AND e.curso_id = ?
-        `, [usuarioId, cursoId]);
+        // Get first 10 lessons for the course (safe)
+        let lessons = [];
+        try {
+            lessons = await db.all('SELECT id, titulo, orden FROM lecciones WHERE curso_id = ? ORDER BY orden LIMIT 10', [cursoId]) || [];
+        } catch (err) {
+            console.error('renderMessagesCourse: error fetching lessons', err && err.stack ? err.stack : err);
+            lessons = [];
+        }
+
+        // Compute user's progress: max completed lesson order (safe)
+        let row = null;
+        try {
+            row = await db.get(`
+                SELECT MAX(l.orden) as maxOrden
+                FROM entregas e
+                JOIN lecciones l ON e.leccion_id = l.id
+                WHERE e.usuario_id = ? AND e.curso_id = ?
+            `, [usuarioId, cursoId]);
+        } catch (err) {
+            console.error('renderMessagesCourse: error fetching progress', err && err.stack ? err.stack : err);
+            row = null;
+        }
         const rawMax = row && (row.maxorden ?? row.maxOrden);
         const maxCompleted = rawMax ? parseInt(rawMax, 10) : 0;
 
-        // Check if user has a purchase (full access) for this course
-        const compra = await db.get('SELECT id FROM compras WHERE usuario_id = ? AND curso_id = ?', [usuarioId, cursoId]);
+        // Check if user has a purchase (full access) for this course (safe)
+        let compra = null;
+        try {
+            compra = await db.get('SELECT id FROM compras WHERE usuario_id = ? AND curso_id = ?', [usuarioId, cursoId]);
+        } catch (err) {
+            console.error('renderMessagesCourse: error checking purchase', err && err.stack ? err.stack : err);
+            compra = null;
+        }
         const hasPurchase = !!compra;
 
         // Determine highest lesson order in the fetched lessons
@@ -1337,18 +1372,23 @@ export const renderMessagesCourse = async (req, res) => {
             activeLessonId = unlocked ? unlocked.id : (lessonsWithLock[0] ? lessonsWithLock[0].id : null);
         }
 
-        // Fetch messages/devoluciones for the active lesson
+        // Fetch messages/devoluciones for the active lesson (safe)
         let messages = [];
         const activeLessonIdNum = activeLessonId ? parseInt(activeLessonId, 10) : null;
         if (activeLessonIdNum) {
-            messages = await db.all(`
-                SELECT d.id AS devolucion_id, d.mensaje, d.nota, d.fecha, e.contenido AS entrega_alumno
-                FROM devoluciones d
-                JOIN entregas e ON d.entrega_id = e.id
-                JOIN lecciones l ON e.leccion_id = l.id
-                WHERE e.usuario_id = ? AND e.curso_id = ? AND l.id = ?
-                ORDER BY d.fecha DESC
-            `, [usuarioId, cursoId, activeLessonIdNum]);
+            try {
+                messages = await db.all(`
+                    SELECT d.id AS devolucion_id, d.mensaje, d.nota, d.fecha, e.contenido AS entrega_alumno
+                    FROM devoluciones d
+                    JOIN entregas e ON d.entrega_id = e.id
+                    JOIN lecciones l ON e.leccion_id = l.id
+                    WHERE e.usuario_id = ? AND e.curso_id = ? AND l.id = ?
+                    ORDER BY d.fecha DESC
+                `, [usuarioId, cursoId, activeLessonIdNum]) || [];
+            } catch (err) {
+                console.error('renderMessagesCourse: error fetching messages', err && err.stack ? err.stack : err);
+                messages = [];
+            }
         }
 
         return res.render('student-messages-detail', {
@@ -1359,6 +1399,13 @@ export const renderMessagesCourse = async (req, res) => {
         });
     } catch (error) {
         console.error('Error rendering messages for course:', error && error.stack ? error.stack : error);
-        return res.status(500).send('Error interno del servidor');
+        // Render a safe fallback view for web routes instead of returning JSON/500
+        return res.render('student-messages-detail', {
+            course: { id: cursoId || null, titulo: 'Mensajes - Error' },
+            lessons: [],
+            activeLessonId: null,
+            messages: [],
+            errorMessage: 'Ocurrió un error al cargar las devoluciones. Intente nuevamente más tarde.'
+        });
     }
 };

@@ -45,6 +45,12 @@
             <div class="max-w-4xl mx-auto">
                 <h1 class="text-2xl font-bold text-[#002244] mb-6">Devoluciones - Clase seleccionada</h1>
 
+                <% if (typeof errorMessage !== 'undefined' && errorMessage) { %>
+                    <div class="mb-4 p-4 bg-yellow-50 border-l-4 border-amber-400 text-amber-800 rounded">
+                        <%= errorMessage %>
+                    </div>
+                <% } %>
+
                 <% if (activeLessonId) { %>
                     <% if (messages && messages.length > 0) { %>
                         <% messages.forEach(m => { %>
