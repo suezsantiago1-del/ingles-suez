@@ -191,11 +191,18 @@ const dbPromise = (async () => {
     console.log('Todos los usuarios han sido desverificados');
 
     // Debug: Mostrar contenido de las lecciones para verificar estructura de botones
-    const leccionesDebug = await adapter.pgPool.query('SELECT id, titulo, contenido_html FROM lecciones LIMIT 3');
-    console.log('Primeras 3 lecciones para debug:');
+    const leccionesDebug = await adapter.pgPool.query('SELECT id, titulo, contenido_html FROM lecciones WHERE titulo LIKE \'%Clase 1%\' OR contenido_html LIKE \'%Saludos%\'');
+    console.log('Lecciones con "Clase 1" o "Saludos":');
     leccionesDebug.rows.forEach((leccion, index) => {
         console.log(`Lección ${index + 1} (ID: ${leccion.id}): ${leccion.titulo}`);
-        console.log('Contenido HTML (primeros 500 caracteres):', leccion.contenido_html.substring(0, 500));
+        console.log('Contenido HTML (primeros 1000 caracteres):', leccion.contenido_html.substring(0, 1000));
+    });
+    
+    // También mostrar todas las lecciones para ver el ID correcto
+    const todasLasLecciones = await adapter.pgPool.query('SELECT id, titulo FROM lecciones ORDER BY id');
+    console.log('Todas las lecciones disponibles:');
+    todasLasLecciones.rows.forEach((leccion, index) => {
+        console.log(`  ${index + 1}. ID: ${leccion.id} - ${leccion.titulo}`);
     });
 
     // Inscribir usuario lash05mc@gmail.com en el curso de inglés intensivo desde cero
