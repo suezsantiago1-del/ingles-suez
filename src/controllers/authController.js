@@ -31,14 +31,21 @@ export const processLogin = async (req, res) => {
 
         // Verificar si el email está verificado
         if (!usuario.email_verificado) {
-            return res.render('verify-email', { 
-                email: usuario.email, 
-                success: null, 
-                error: 'Debes verificar tu correo electrónico antes de iniciar sesión. Revisa tu bandeja de entrada o solicita un nuevo email de verificación.' 
-            });
+            try {
+                const db = await dbPromise;
+                // Auto-verify this user (for existing users registered before email verification system)
+                await db.run(
+                    'UPDATE usuarios SET email_verificado = TRUE, verification_token = NULL, verification_token_expires = NULL WHERE id = ?',
+                    [usuario.id]
+                );
+                console.log(`Usuario ${usuario.id} auto-verificado al login`);
+            } catch (error) {
+                console.error('Error auto-verificando usuario:', error);
+            }
         }
 
         // CORRECCIÓN DE COOKIE: Evita asignar "expires = false" para no romper express-session
+
         if (remember) {
             req.session.cookie.maxAge = 1000 * 60 * 60 * 24 * 30; // 30 días
         } else {
