@@ -31,17 +31,30 @@ export const processLogin = async (req, res) => {
 
         // Verificar si el email está verificado
         if (!usuario.email_verificado) {
-            try {
-                const db = await dbPromise;
-                // Auto-verify this user (for existing users registered before email verification system)
-                await db.run(
-                    'UPDATE usuarios SET email_verificado = TRUE, verification_token = NULL, verification_token_expires = NULL WHERE id = ?',
-                    [usuario.id]
-                );
-                console.log(`Usuario ${usuario.id} auto-verificado al login`);
-            } catch (error) {
-                console.error('Error auto-verificando usuario:', error);
+            // Generar nuevo token de verificación
+            const newVerificationToken = crypto.randomBytes(32).toString('hex');
+            const verificationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+            await db.run(
+                'UPDATE usuarios SET verification_token = ?, verification_token_expires = ? WHERE id = ?',
+                [newVerificationToken, verificationTokenExpires, usuario.id]
+            );
+
+            // Enviar email de verificación
+            const emailResult = await sendVerificationEmail(usuario.email, usuario.nombre, newVerificationToken, req);
+            
+            if (emailResult.success) {
+                console.log('Email de verificación enviado al iniciar sesión:', usuario.email);
+            } else {
+                console.error('Error al enviar email de verificación al login:', emailResult.error);
             }
+
+            // Redirigir a página de verificación
+            return res.render('verify-email', { 
+                email: usuario.email, 
+                success: emailResult.success ? 'Se ha enviado un email de verificación. Por favor revisa tu bandeja de entrada.' : null,
+                error: emailResult.success ? null : 'No se pudo enviar el email de verificación. Contacta al administrador o intenta reenviarlo.'
+            });
         }
 
         // CORRECCIÓN DE COOKIE: Evita asignar "expires = false" para no romper express-session
