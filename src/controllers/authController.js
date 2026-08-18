@@ -108,12 +108,8 @@ export const processRegister = async (req, res) => {
             [nombre.trim(), cleanEmail, hashedPassword, verificationToken, verificationTokenExpires]
         );
 
-        // Comentado temporalmente: el envío de email puede fallar si no está configurado el servicio
-        // const emailResult = await sendVerificationEmail(cleanEmail, nombre.trim(), verificationToken, req);
-        // 
-        // Si más adelante configuras el servicio de email, descomenta la línea de arriba
-        // y modifica el código siguiente según sea necesario
-        // Por ahora, permitimos el registro sin enviar email inmediato
+        // Enviar email de verificación con Brevo
+        const emailResult = await sendVerificationEmail(cleanEmail, nombre.trim(), verificationToken, req);
         
         if (emailResult.success) {
             console.log('Email de verificación enviado a:', cleanEmail);
@@ -227,7 +223,7 @@ export const verifyEmail = async (req, res) => {
     try {
         const db = await dbPromise;
         const usuario = await db.get(
-            'SELECT * FROM usuarios WHERE verification_token = ? AND verification_token_expires > NOW()',
+            'SELECT * FROM usuarios WHERE verification_token = ? AND verification_token_expires > datetime("now")',
             [token]
         );
 

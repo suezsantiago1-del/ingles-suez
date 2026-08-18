@@ -1,21 +1,29 @@
 import nodemailer from 'nodemailer';
 
-// Configurar transporter de email
+// Configurar transporter de email usando las variables SMTP existentes
 const createTransporter = () => {
-    const smtpUser = process.env.SMTP_USER || process.env.EMAIL_USER;
-    const smtpPass = process.env.SMTP_PASS || process.env.EMAIL_PASS;
+    const smtpHost = process.env.SMTP_HOST;
+    const smtpPort = process.env.SMTP_PORT;
+    const smtpUser = process.env.SMTP_USER;
+    const smtpPass = process.env.SMTP_PASS;
+
+    console.log('Configurando SMTP:', {
+        host: smtpHost,
+        port: smtpPort,
+        user: smtpUser,
+        passConfigured: !!smtpPass
+    });
 
     // Si no hay credenciales SMTP configuradas, devolver null
-    if (!smtpUser || !smtpPass) {
-        console.warn('⚠️  SMTP no configurado. Agrega SMTP_USER y SMTP_PASS en tu archivo .env');
+    if (!smtpHost || !smtpPort || !smtpUser || !smtpPass) {
+        console.warn('⚠️  SMTP no configurado completamente. Se requieren SMTP_HOST, SMTP_PORT, SMTP_USER y SMTP_PASS');
         return null;
     }
 
-    // Usar Gmail como servicio de email (configuración por defecto)
     return nodemailer.createTransport({
-        host: process.env.SMTP_HOST || 'smtp.gmail.com',
-        port: process.env.SMTP_PORT || 587,
-        secure: false, // true para 465, false para otros puertos
+        host: smtpHost,
+        port: parseInt(smtpPort),
+        secure: parseInt(smtpPort) === 465, // true para 465, false para otros puertos
         auth: {
             user: smtpUser,
             pass: smtpPass
@@ -31,14 +39,18 @@ export const sendVerificationEmail = async (email, nombre, token, req) => {
         if (!transporter) {
             return { 
                 success: false, 
-                error: 'SMTP no configurado. Agrega SMTP_USER y SMTP_PASS en tu archivo .env' 
+                error: 'SMTP no configurado. Se requieren SMTP_HOST, SMTP_PORT, SMTP_USER y SMTP_PASS en las variables de entorno.' 
             };
         }
 
         const verificationUrl = `${req.protocol}://${req.get('host')}/auth/verify/${token}`;
+        const senderEmail = process.env.EMAIL_FROM || process.env.SMTP_USER || 'noreply@ingleessuez.com';
+        
+        console.log('Enviando email de verificación a:', email);
+        console.log('URL de verificación:', verificationUrl);
         
         const mailOptions = {
-            from: process.env.EMAIL_FROM || '"INGLÉS SUEZ" <noreply@ingleessuez.com>',
+            from: senderEmail,
             to: email,
             subject: 'Verifica tu correo electrónico - INGLÉS SUEZ',
             html: `
@@ -97,11 +109,13 @@ export const sendVerificationEmail = async (email, nombre, token, req) => {
         };
 
         const info = await transporter.sendMail(mailOptions);
-        console.log('Email enviado:', info.messageId);
+        console.log('Email enviado exitosamente:', info.messageId);
+        console.log('Respuesta del servidor:', info.response);
         return { success: true, messageId: info.messageId };
         
     } catch (error) {
         console.error('Error enviando email:', error);
+        console.error('Error completo:', error.message);
         return { success: false, error: error.message };
     }
 };
@@ -114,12 +128,14 @@ export const sendEmail = async (to, subject, html) => {
         if (!transporter) {
             return { 
                 success: false, 
-                error: 'SMTP no configurado. Agrega SMTP_USER y SMTP_PASS en tu archivo .env' 
+                error: 'SMTP no configurado. Se requieren SMTP_HOST, SMTP_PORT, SMTP_USER y SMTP_PASS en las variables de entorno.' 
             };
         }
 
+        const senderEmail = process.env.EMAIL_FROM || process.env.SMTP_USER || 'noreply@ingleessuez.com';
+        
         const mailOptions = {
-            from: process.env.EMAIL_FROM || '"INGLÉS SUEZ" <noreply@ingleessuez.com>',
+            from: senderEmail,
             to,
             subject,
             html
