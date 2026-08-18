@@ -59,9 +59,13 @@ export const sendVerificationEmail = async (email, nombre, token, req) => {
         const senderEmail = getSenderEmail();
         
         console.log('Enviando email a Brevo API...');
+        console.log('Usando remitente:', senderEmail);
         
         const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
-        sendSmtpEmail.sender = { email: senderEmail, name: 'INGLÉS SUEZ' };
+        sendSmtpEmail.sender = { 
+            email: 'suezsantiago1@gmail.com', 
+            name: 'INGLÉS SUEZ' 
+        };
         sendSmtpEmail.to = [{ email: email, name: nombre }];
         sendSmtpEmail.subject = 'Verifica tu correo electrónico - INGLÉS SUEZ';
         sendSmtpEmail.htmlContent = `
