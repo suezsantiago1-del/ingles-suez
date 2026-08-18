@@ -7,7 +7,17 @@
     <link rel="stylesheet" href="/css/styles.css">
     <style>
         /* Slightly larger base UI scale for readability */
-        body { font-size: 17px; }
+        body { 
+            font-size: 17px;
+            overflow-x: hidden; /* Prevenir scroll horizontal */
+        }
+        
+        /* Evitar scrollbars duplicados */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
 
         .particulares-container { 
             max-width: 1500px; 
@@ -16,6 +26,7 @@
             display: grid; 
             grid-template-columns: 1fr 1.6fr; 
             gap: 2.5rem; 
+            min-height: calc(100vh - 200px); /* Asegurar altura mínima */
         }
         .card-box { 
             background: white; 
@@ -23,6 +34,7 @@
             padding: 2rem; 
             border: 1px solid #cbd5e0; 
             box-shadow: 0 6px 18px rgba(0,0,0,0.04); 
+            overflow: hidden; /* Evitar overflow en las cards */
         }
         .card-box h2 { 
             color: #0b2238; 
@@ -66,20 +78,20 @@
         .chat-thread {
             display: flex;
             flex-direction: column;
-            gap: 0.5rem;
-            margin: 1rem 0;
-            max-height: 600px;
+            gap: 0.8rem;
+            margin: 1.2rem 0;
+            max-height: 700px;
             overflow-y: auto;
-            padding-right: 0.6rem;
+            padding-right: 0.8rem;
         }
         .chat-msg {
-            padding: 0.6rem 1rem;
-            border-radius: 14px;
-            font-size: 0.95rem;
-            max-width: 80%;
+            padding: 1rem 1.5rem;
+            border-radius: 16px;
+            font-size: 1.1rem;
+            max-width: 75%;
             white-space: pre-wrap;
-            line-height: 1.4;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+            line-height: 1.5;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.08);
         }
         .chat-msg-alumno {
             background: linear-gradient(135deg, #e8f0fe 0%, #d2e3fc 100%);
@@ -93,44 +105,44 @@
             color: #0b2238;
             align-self: flex-start;
             border-bottom-left-radius: 4px;
-            border-left: 3px solid #4a7c59;
+            border-left: 4px solid #4a7c59;
             border: 1px solid #c8e6c9;
         }
         .chat-msg-header {
-            font-size: 0.75rem;
+            font-size: 0.85rem;
             font-weight: 600;
-            margin-bottom: 0.15rem;
+            margin-bottom: 0.3rem;
             display: flex;
             justify-content: space-between;
-            gap: 0.5rem;
-            opacity: 0.85;
+            gap: 0.6rem;
+            opacity: 0.9;
         }
 
         .reply-box {
             display: flex;
-            gap: 0.6rem;
-            margin-top: 0.8rem;
+            gap: 0.8rem;
+            margin-top: 1rem;
             border-top: 1px solid #edf2f7;
-            padding-top: 0.8rem;
+            padding-top: 1rem;
         }
         .reply-input {
             flex: 1;
-            padding: 0.6rem 1rem;
+            padding: 0.8rem 1.2rem;
             border: 1px solid #cbd5e0;
-            border-radius: 8px;
+            border-radius: 10px;
             font-family: inherit;
-            font-size: 0.95rem;
+            font-size: 1.05rem;
             resize: none;
-            height: 48px;
+            height: 56px;
         }
         .reply-btn {
             background: #184168;
             color: white;
             border: none;
-            border-radius: 8px;
-            padding: 0 1.2rem;
+            border-radius: 10px;
+            padding: 0 1.5rem;
             font-weight: 600;
-            font-size: 0.95rem;
+            font-size: 1.05rem;
             cursor: pointer;
             white-space: nowrap;
             transition: background 0.2s ease;
@@ -140,41 +152,44 @@
         }
 
         @media (max-width: 850px) {
-            .particulares-container { grid-template-columns: 1fr; }
+            .particulares-container { 
+                grid-template-columns: 1fr; 
+                margin: 1.5rem auto;
+            }
             .chat-msg { 
-                max-width: 88%; 
-                padding: 0.5rem 0.8rem;
-                font-size: 0.9rem;
+                max-width: 85%; 
+                padding: 0.8rem 1.2rem;
+                font-size: 1rem;
             }
             .chat-thread { 
-                max-height: 450px; 
-                gap: 0.4rem;
+                max-height: 500px; 
+                gap: 0.6rem;
             }
             .reply-input { 
-                height: 42px; 
-                padding: 0.5rem 0.8rem;
-                font-size: 0.9rem;
+                height: 50px; 
+                padding: 0.7rem 1rem;
+                font-size: 1rem;
             }
-            .chat-msg-header { font-size: 0.7rem; }
+            .chat-msg-header { font-size: 0.8rem; }
         }
         
         @media (max-width: 480px) {
             .chat-msg { 
-                max-width: 95%; 
-                font-size: 0.85rem;
-                padding: 0.4rem 0.7rem;
+                max-width: 92%; 
+                font-size: 0.95rem;
+                padding: 0.7rem 1rem;
             }
             .chat-thread { 
-                max-height: 400px; 
-                gap: 0.35rem;
+                max-height: 450px; 
+                gap: 0.5rem;
             }
             .reply-input { 
-                height: 40px; 
-                padding: 0.4rem 0.7rem;
-                font-size: 0.85rem;
+                height: 48px; 
+                padding: 0.6rem 0.9rem;
+                font-size: 0.95rem;
             }
-            .badge-tag, .badge-obj { font-size: 0.65rem; }
-            .chat-msg-header { font-size: 0.65rem; }
+            .badge-tag, .badge-obj { font-size: 0.7rem; }
+            .chat-msg-header { font-size: 0.75rem; }
         }
     </style>
 </head>
@@ -225,10 +240,9 @@
             <h2>Mis Consultas y Respuestas</h2>
 
             <% if (typeof misConsultas !== 'undefined' && misConsultas.length > 0) { %>
-                <div style="max-height: 520px; overflow-y: auto; padding-right: 0.3rem;">
-                    <% const consultasToShow = singleChatMode ? misConsultas.filter(x => x.id == activeConsultaId) : misConsultas; %>
-                    <% consultasToShow.forEach(c => { %>
-                        <div class="chat-card">
+                <% const consultasToShow = singleChatMode ? misConsultas.filter(x => x.id == activeConsultaId) : misConsultas; %>
+                <% consultasToShow.forEach(c => { %>
+                    <div class="chat-card">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.3rem;">
                                 <div>
                                     <span class="badge-tag"><%= c.modalidad %></span>
