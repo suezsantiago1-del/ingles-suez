@@ -841,6 +841,10 @@ export const descargarCertificado = async (req, res) => {
 // SECCIÓN: CLASES PARTICULARES
 // ==========================================
 
+/**
+ * Renderiza la página de Clases Particulares para el alumno,
+ * cargando el historial de sus consultas previas e incluyendo el hilo de mensajes interactivo.
+ */
 export const renderPrivateClasses = async (req, res) => {
     let misConsultas = [];
     if (req.session.user) {
@@ -852,6 +856,7 @@ export const renderPrivateClasses = async (req, res) => {
                 ORDER BY fecha_consulta DESC
             `, [req.session.user.id]);
 
+            // Cargar el historial extendido del chat para cada consulta
             for (let c of misConsultas) {
                 try {
                     c.mensajesChat = await db.all(`
@@ -870,6 +875,10 @@ export const renderPrivateClasses = async (req, res) => {
     return res.render('privateClasses', { misConsultas });
 };
 
+/**
+ * Guarda la consulta/solicitud enviada por el alumno para Clases Particulares
+ * e inserta el primer mensaje en el historial de chat interactivo.
+ */
 export const guardarConsultaParticulares = async (req, res) => {
     if (!req.session.user) {
         return res.status(401).json({ success: false, message: 'Usuario no autenticado' });
@@ -885,6 +894,7 @@ export const guardarConsultaParticulares = async (req, res) => {
     try {
         const db = await dbPromise;
 
+        // 1. Guardar consulta principal y retornar el ID generado
         const result = await db.run(`
             INSERT INTO mensajes_particulares (usuario_id, modalidad, objetivo, mensaje_alumno)
             VALUES (?, ?, ?, ?)
@@ -893,6 +903,7 @@ export const guardarConsultaParticulares = async (req, res) => {
 
         const consultaId = result ? result.lastID : null;
 
+        // 2. Registrar el mensaje inicial en el historial del chat
         if (consultaId) {
             try {
                 await db.run(`
@@ -917,6 +928,9 @@ export const guardarConsultaParticulares = async (req, res) => {
     }
 };
 
+/**
+ * Permite al alumno enviar mensajes continuos dentro de una consulta activa
+ */
 export const enviarMensajeAlumnoChat = async (req, res) => {
     const { consultaId, mensaje } = req.body;
     const usuarioId = req.session?.user?.id;
@@ -944,6 +958,9 @@ export const enviarMensajeAlumnoChat = async (req, res) => {
     }
 };
 
+/**
+ * Renderiza el panel de gestión de Clases Particulares para el Profesor
+ */
 export const renderPanelParticularesProfesor = async (req, res) => {
     if (!req.session.user) {
         return res.redirect('/auth/login');
@@ -975,6 +992,7 @@ export const renderPanelParticularesProfesor = async (req, res) => {
             ORDER BY mp.fecha_consulta DESC
         `);
 
+        // Cargar el historial de chat para la vista del profesor
         for (let c of consultas) {
             try {
                 c.mensajesChat = await db.all(`
@@ -994,6 +1012,9 @@ export const renderPanelParticularesProfesor = async (req, res) => {
     }
 };
 
+/**
+ * Guarda la respuesta del profesor a una consulta de Clase Particular
+ */
 export const guardarRespuestaParticular = async (req, res) => {
     if (!req.session.user) {
         return res.status(401).json({ success: false, message: 'No autenticado' });
@@ -1040,6 +1061,7 @@ export const guardarRespuestaParticular = async (req, res) => {
     }
 };
 
+// Upload or set a video for a lesson (file upload or external URL)
 export const uploadLessonVideo = async (req, res) => {
     if (!req.session.user) {
         return res.status(401).json({ success: false, message: 'No autenticado' });
@@ -1051,7 +1073,12 @@ export const uploadLessonVideo = async (req, res) => {
     }
 
     try {
+        console.log('uploadLessonVideo: start. session user=', req.session && req.session.user ? req.session.user.email : null);
+        console.log('uploadLessonVideo: headers.content-length=', req.headers && req.headers['content-length']);
+        console.log('uploadLessonVideo: req.body=', req.body);
+        console.log('uploadLessonVideo: req.file=', req.file);
         const db = await dbPromise;
+
         const { leccionId, videoUrl } = req.body;
 
         if (!leccionId) {
@@ -1060,18 +1087,41 @@ export const uploadLessonVideo = async (req, res) => {
 
         let finalUrl = null;
 
+        // If a file was uploaded (middleware should populate req.file)
         if (req.file && req.file.filename) {
+            // Verify the file was saved to disk
             const savedPath = req.file.path || path.join(__dirname, '../../public/videos', req.file.filename);
             const exists = fs.existsSync(savedPath);
+            console.log('uploadLessonVideo: expected savedPath=', savedPath, 'exists=', exists);
+
+            if (exists) {
+                try {
+                    const stats = fs.statSync(savedPath);
+                    console.log('uploadLessonVideo: saved file stats:', { size: stats.size, mtime: stats.mtime });
+                } catch (sErr) {
+                    console.warn('uploadLessonVideo: could not stat saved file', sErr);
+                }
+
+                try {
+                    const dir = path.dirname(savedPath);
+                    const files = fs.readdirSync(dir).slice(-20);
+                    console.log('uploadLessonVideo: recent files in upload dir:', files);
+                } catch (rErr) {
+                    console.warn('uploadLessonVideo: could not read upload dir', rErr);
+                }
+            }
 
             if (!exists) {
+                // If multer didn't save where we expected, try using req.file.path
                 if (req.file.path && fs.existsSync(req.file.path)) {
-                    // ok
+                    console.log('uploadLessonVideo: found file at req.file.path=', req.file.path);
                 } else {
+                    console.error('uploadLessonVideo: uploaded file not found on disk. req.file:', req.file);
                     return res.status(500).json({ success: false, message: 'Archivo subido no encontrado en el servidor' });
                 }
             }
 
+            // Determine URL base for served uploads. If we store under public/, use that relative path.
             const uploadsPublicRoot = path.join(__dirname, '../../public');
             let urlBase = '/videos';
             try {
@@ -1079,15 +1129,20 @@ export const uploadLessonVideo = async (req, res) => {
                 if (uploadsDirResolved.startsWith(uploadsPublicRoot)) {
                     urlBase = '/' + path.relative(uploadsPublicRoot, uploadsDirResolved).replace(/\\/g, '/');
                 } else {
+                    // If uploads stored outside public, we expose them under /uploads via server.js
                     urlBase = '/uploads';
                 }
             } catch (e) {
+                console.warn('uploadLessonVideo: could not compute urlBase for uploads, defaulting to /videos', e);
                 urlBase = '/videos';
             }
 
             finalUrl = `${urlBase}/${req.file.filename}`;
+            console.log('uploadLessonVideo: computed finalUrl=', finalUrl);
         } else if (videoUrl && videoUrl.trim() !== '') {
             let candidate = videoUrl.trim();
+
+            // Normalize YouTube watch/share links to embed form
             try {
                 if (candidate.includes('youtube.com/watch')) {
                     const urlObj = new URL(candidate);
@@ -1100,7 +1155,10 @@ export const uploadLessonVideo = async (req, res) => {
                         candidate = `https://www.youtube.com/embed/${id}`;
                     }
                 }
-            } catch (e) {}
+            } catch (e) {
+                // ignore URL parsing errors and fall back to raw value
+            }
+
             finalUrl = candidate;
         }
 
@@ -1108,22 +1166,35 @@ export const uploadLessonVideo = async (req, res) => {
             return res.status(400).json({ success: false, message: 'No se proporcionó archivo ni URL de video' });
         }
 
-        await db.run('UPDATE lecciones SET video_url = ? WHERE id = ?', [finalUrl, leccionId]);
-        return res.json({ success: true, message: 'Video de la lección guardado correctamente', video_url: finalUrl });
+        try {
+            await db.run('UPDATE lecciones SET video_url = ? WHERE id = ?', [finalUrl, leccionId]);
+            console.log('uploadLessonVideo: DB updated leccionId=', leccionId, 'with video_url=', finalUrl);
+            return res.json({ success: true, message: 'Video de la lección guardado correctamente', video_url: finalUrl });
+        } catch (dbErr) {
+            console.error('uploadLessonVideo: error updating DB with video_url', dbErr);
+            return res.status(500).json({ success: false, message: 'Error guardando la referencia del video en la base de datos' });
+        }
     } catch (error) {
-        console.error('Error al subir/guardar video de la lección:', error);
+        // Log full stack for debugging upload-related failures (including Multer)
+        console.error('Error al subir/guardar video de la lección:', error && error.stack ? error.stack : error);
+
+        // If the error is a Multer error, return a clearer JSON status
         if (error && (error instanceof multer.MulterError || error.name === 'MulterError')) {
             if (error.code === 'LIMIT_FILE_SIZE') {
                 return res.status(413).json({ success: false, message: 'El archivo excede el tamaño máximo permitido' });
             }
             return res.status(400).json({ success: false, message: error.message || 'Error en la subida de archivo' });
         }
+
+        // Generic fallback
         return res.status(500).json({ success: false, message: 'Error interno al procesar el video' });
     }
 };
 
+// Create or update a course announcement
 export const createOrUpdateAnnouncement = async (req, res) => {
     if (!req.session.user) return res.status(401).json({ success: false, message: 'No autenticado' });
+    const EMAIL_PROFESOR = 'suezsantiago1@gmail.com';
     if (req.session.user.email !== EMAIL_PROFESOR) return res.status(403).json({ success: false, message: 'Acceso no autorizado' });
 
     const { id, curso_id, mensaje } = req.body;
@@ -1144,8 +1215,10 @@ export const createOrUpdateAnnouncement = async (req, res) => {
     }
 };
 
+// Delete a course announcement
 export const deleteAnnouncement = async (req, res) => {
     if (!req.session.user) return res.status(401).json({ success: false, message: 'No autenticado' });
+    const EMAIL_PROFESOR = 'suezsantiago1@gmail.com';
     if (req.session.user.email !== EMAIL_PROFESOR) return res.status(403).json({ success: false, message: 'Acceso no autorizado' });
 
     const { id } = req.body;
@@ -1161,8 +1234,10 @@ export const deleteAnnouncement = async (req, res) => {
     }
 };
 
+// Update per-lesson teacher note
 export const updateLessonTeacherNote = async (req, res) => {
     if (!req.session.user) return res.status(401).json({ success: false, message: 'No autenticado' });
+    const EMAIL_PROFESOR = 'suezsantiago1@gmail.com';
     if (req.session.user.email !== EMAIL_PROFESOR) return res.status(403).json({ success: false, message: 'Acceso no autorizado' });
 
     const { leccionId, note } = req.body;
@@ -1183,6 +1258,7 @@ export const renderMessagesList = async (req, res) => {
     const usuarioId = req.session.user.id;
     try {
         const db = await dbPromise;
+        // List courses the student purchased
         const cursos = await db.all(`
             SELECT c.id, c.titulo
             FROM cursos c
@@ -1204,26 +1280,43 @@ export const renderMessagesCourse = async (req, res) => {
     const cursoIdRaw = req.params.courseId;
     const cursoId = parseInt(cursoIdRaw, 10);
     const selectedLessonId = req.query.lessonId ? parseInt(req.query.lessonId, 10) : null;
-    
     if (!cursoId || Number.isNaN(cursoId)) {
+        console.error('renderMessagesCourse: invalid courseId param', { cursoIdRaw });
         return res.status(400).send('Invalid course id');
     }
 
     try {
         const db = await dbPromise;
 
-        const course = await db.get('SELECT id, titulo FROM cursos WHERE id = ?', [cursoId]);
-        if (!course) {
-            return res.status(404).send('Curso no encontrado');
+        // Load course safely
+        let course;
+        try {
+            course = await db.get('SELECT id, titulo FROM cursos WHERE id = ?', [cursoId]);
+            if (!course) {
+                console.error('renderMessagesCourse: course not found for id=', cursoId);
+                return res.status(404).send('Curso no encontrado');
+            }
+        } catch (err) {
+            console.error('renderMessagesCourse: error fetching course', err && err.stack ? err.stack : err);
+            return res.render('student-messages-detail', {
+                course: { id: cursoId, titulo: 'Curso (error)' },
+                lessons: [],
+                activeLessonId: null,
+                messages: [],
+                errorMessage: 'Error al cargar el curso'
+            });
         }
 
+        // Get first 10 lessons for the course (safe)
         let lessons = [];
         try {
             lessons = await db.all('SELECT id, titulo, orden FROM lecciones WHERE curso_id = ? ORDER BY orden LIMIT 10', [cursoId]) || [];
         } catch (err) {
+            console.error('renderMessagesCourse: error fetching lessons', err && err.stack ? err.stack : err);
             lessons = [];
         }
 
+        // Compute user's progress: max completed lesson order (safe)
         let row = null;
         try {
             row = await db.get(`
@@ -1233,22 +1326,29 @@ export const renderMessagesCourse = async (req, res) => {
                 WHERE e.usuario_id = ? AND e.curso_id = ?
             `, [usuarioId, cursoId]);
         } catch (err) {
+            console.error('renderMessagesCourse: error fetching progress', err && err.stack ? err.stack : err);
             row = null;
         }
         const rawMax = row && (row.maxorden ?? row.maxOrden);
         const maxCompleted = rawMax ? parseInt(rawMax, 10) : 0;
 
+        // Check if user has a purchase (full access) for this course (safe)
         let compra = null;
         try {
             compra = await db.get('SELECT id FROM compras WHERE usuario_id = ? AND curso_id = ?', [usuarioId, cursoId]);
         } catch (err) {
+            console.error('renderMessagesCourse: error checking purchase', err && err.stack ? err.stack : err);
             compra = null;
         }
         const hasPurchase = !!compra;
 
+        // Determine highest lesson order in the fetched lessons
         const maxLessonOrden = lessons.length ? Math.max(...lessons.map(x => parseInt(x.orden, 10))) : 0;
+
+        // If the user purchased the course or has completed up to the last lesson, unlock all
         const unlockAll = hasPurchase || (maxCompleted >= maxLessonOrden);
 
+        // Build lessons with isLocked flag (allow access up to maxCompleted + 1 when not unlocked)
         const lessonsWithLock = lessons.map(l => {
             const ordenNum = parseInt(l.orden, 10);
             const isLocked = !unlockAll && (ordenNum > (maxCompleted + 1));
@@ -1260,12 +1360,19 @@ export const renderMessagesCourse = async (req, res) => {
             };
         });
 
+        // Debug logging for progress and lesson lock state
+        console.log(`renderMessagesCourse: usuarioId=${usuarioId}, cursoId=${cursoId}, maxCompleted=${maxCompleted}, hasPurchase=${hasPurchase}, maxLessonOrden=${maxLessonOrden}, unlockAll=${unlockAll}`);
+        lessonsWithLock.forEach(ll => console.log(`Lesson: id=${ll.id}, orden=${ll.orden}, isLocked=${ll.isLocked}`));
+
+        // Determine active lesson
         let activeLessonId = selectedLessonId;
         if (!activeLessonId) {
+            // pick first unlocked lesson
             const unlocked = lessonsWithLock.find(l => !l.isLocked);
             activeLessonId = unlocked ? unlocked.id : (lessonsWithLock[0] ? lessonsWithLock[0].id : null);
         }
 
+        // Fetch messages/devoluciones for the active lesson (safe)
         let messages = [];
         const activeLessonIdNum = activeLessonId ? parseInt(activeLessonId, 10) : null;
         if (activeLessonIdNum) {
@@ -1279,25 +1386,25 @@ export const renderMessagesCourse = async (req, res) => {
                     ORDER BY d.fecha DESC
                 `, [usuarioId, cursoId, activeLessonIdNum]) || [];
             } catch (err) {
+                console.error('renderMessagesCourse: error fetching messages', err && err.stack ? err.stack : err);
                 messages = [];
             }
         }
 
-        return res.render('student-messages-detail', {
-            course,
-            lessons: lessonsWithLock,
-            activeLessonId: activeLessonIdNum,
-            messages
-        });
+        try {
+            return res.render('student-messages-detail', {
+                course,
+                lessons: lessonsWithLock,
+                activeLessonId: activeLessonIdNum,
+                messages
+            });
+        } catch (renderErr) {
+            console.error('renderMessagesCourse: error rendering EJS', renderErr && renderErr.stack ? renderErr.stack : renderErr);
+            return res.status(500).send('<h1>500 - Error interno del servidor</h1>');
+        }
     } catch (error) {
-        console.error('Error rendering messages for course:', error);
-        // MEJORA CLAVE: Renderiza un HTML detallado con el error real en lugar de silenciarlo con un JSON de API
-        return res.status(500).send(`
-            <div style="font-family: sans-serif; padding: 40px; text-align: center;">
-                <h2 style="color: #b91c1c;">Ocurrió un error al cargar las devoluciones</h2>
-                <p style="color: #334155; margin-bottom: 20px;">${error.message}</p>
-                <a href="/mis-cursos" style="background: #002244; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none;">Volver a mis cursos</a>
-            </div>
-        `);
+        console.error('Error rendering messages for course:', error && error.stack ? error.stack : error);
+        // As a last resort, send a simple 500 HTML response to avoid render recursion
+        return res.status(500).send('<h1>500 - Error interno del servidor</h1>');
     }
 };
