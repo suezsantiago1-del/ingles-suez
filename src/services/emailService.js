@@ -20,14 +20,22 @@ const createTransporter = () => {
         return null;
     }
 
+    const port = parseInt(smtpPort);
+    
     return nodemailer.createTransport({
         host: smtpHost,
-        port: parseInt(smtpPort),
-        secure: parseInt(smtpPort) === 465, // true para 465, false para otros puertos
+        port: port,
+        secure: port === 465, // true para 465 (SSL), false para otros (TLS)
+        tls: {
+            rejectUnauthorized: false, // Permitir certificados autofirmados si es necesario
+            minVersion: 'TLSv1.2'
+        },
         auth: {
             user: smtpUser,
             pass: smtpPass
-        }
+        },
+        debug: true, // Habilitar logs de debug
+        logger: true // Loguear actividad SMTP
     });
 };
 
