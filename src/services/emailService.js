@@ -2,14 +2,23 @@ import nodemailer from 'nodemailer';
 
 // Configurar transporter de email
 const createTransporter = () => {
+    const smtpUser = process.env.SMTP_USER || process.env.EMAIL_USER;
+    const smtpPass = process.env.SMTP_PASS || process.env.EMAIL_PASS;
+
+    // Si no hay credenciales SMTP configuradas, devolver null
+    if (!smtpUser || !smtpPass) {
+        console.warn('⚠️  SMTP no configurado. Agrega SMTP_USER y SMTP_PASS en tu archivo .env');
+        return null;
+    }
+
     // Usar Gmail como servicio de email (configuración por defecto)
     return nodemailer.createTransport({
         host: process.env.SMTP_HOST || 'smtp.gmail.com',
         port: process.env.SMTP_PORT || 587,
         secure: false, // true para 465, false para otros puertos
         auth: {
-            user: process.env.SMTP_USER || process.env.EMAIL_USER,
-            pass: process.env.SMTP_PASS || process.env.EMAIL_PASS
+            user: smtpUser,
+            pass: smtpPass
         }
     });
 };
@@ -18,6 +27,14 @@ export const sendVerificationEmail = async (email, nombre, token, req) => {
     try {
         const transporter = createTransporter();
         
+        // Si no hay transporter configurado, devolver error claro
+        if (!transporter) {
+            return { 
+                success: false, 
+                error: 'SMTP no configurado. Agrega SMTP_USER y SMTP_PASS en tu archivo .env' 
+            };
+        }
+
         const verificationUrl = `${req.protocol}://${req.get('host')}/auth/verify/${token}`;
         
         const mailOptions = {
@@ -93,6 +110,14 @@ export const sendEmail = async (to, subject, html) => {
     try {
         const transporter = createTransporter();
         
+        // Si no hay transporter configurado, devolver error claro
+        if (!transporter) {
+            return { 
+                success: false, 
+                error: 'SMTP no configurado. Agrega SMTP_USER y SMTP_PASS en tu archivo .env' 
+            };
+        }
+
         const mailOptions = {
             from: process.env.EMAIL_FROM || '"INGLÉS SUEZ" <noreply@ingleessuez.com>',
             to,

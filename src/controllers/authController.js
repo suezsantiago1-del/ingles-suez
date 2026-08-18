@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 import dbPromise from '../config/database.js';
 import crypto from 'crypto';
+import { sendVerificationEmail } from '../services/emailService.js';
 
 export const renderLogin = (req, res) => {
     if (req.session.user) {
@@ -73,8 +74,13 @@ export const renderRegister = (req, res) => {
 };
 
 export const processRegister = async (req, res) => {
-    const { nombre, email, password } = req.body;
+    const { nombre, email, password, confirmPassword } = req.body;
     const cleanEmail = email ? email.toLowerCase().trim() : '';
+
+    // Validar que las contraseñas coincidan
+    if (password !== confirmPassword) {
+        return res.render('register', { error: 'Las contraseñas no coinciden.' });
+    }
 
     try {
         const db = await dbPromise;
@@ -95,15 +101,20 @@ export const processRegister = async (req, res) => {
             [nombre.trim(), cleanEmail, hashedPassword, verificationToken, verificationTokenExpires]
         );
 
-        // Enviar email de verificación (aquí iría la integración real con servicio de email)
-        // Por ahora, mostramos el token en la respuesta para desarrollo
-        console.log('Token de verificación:', verificationToken);
-        console.log('Link de verificación:', `${req.protocol}://${req.get('host')}/auth/verify/${verificationToken}`);
+        // Enviar email de verificación
+        const emailResult = await sendVerificationEmail(cleanEmail, nombre.trim(), verificationToken, req);
+        
+        if (emailResult.success) {
+            console.log('Email de verificación enviado a:', cleanEmail);
+        } else {
+            console.error('Error al enviar email de verificación:', emailResult.error);
+        }
 
         // Renderizar página de verificación pendiente
         return res.render('verify-email', { 
             email: cleanEmail, 
-            success: 'Cuenta creada exitosamente. Por favor verifica tu correo electrónico.' 
+            success: emailResult.success ? 'Cuenta creada exitosamente. Por favor verifica tu correo electrónico.' : null,
+            error: emailResult.success ? null : 'No se pudo enviar el email de verificación automáticamente. Contacta al administrador o intenta reenviarlo.'
         });
 
     } catch (error) {
@@ -298,15 +309,20 @@ export const resendVerification = async (req, res) => {
             [newVerificationToken, verificationTokenExpires, usuario.id]
         );
 
-        // Enviar email de verificación (aquí iría la integración real)
-        console.log('Nuevo token de verificación:', newVerificationToken);
-        console.log('Link de verificación:', `${req.protocol}://${req.get('host')}/auth/verify/${newVerificationToken}`);
+        // Enviar email de verificación
+        const emailResult = await sendVerificationEmail(usuario.email, usuario.nombre, newVerificationToken, req);
+        
+        if (emailResult.success) {
+            console.log('Nuevo email de verificación enviado a:', usuario.email);
+        } else {
+            console.error('Error al reenviar email de verificación:', emailResult.error);
+        }
 
         return res.render('verify-email', { 
             token: null, 
             email: usuario.email, 
-            success: 'Se ha enviado un nuevo email de verificación. Por favor revisa tu bandeja de entrada.', 
-            error: null 
+            success: emailResult.success ? 'Se ha enviado un nuevo email de verificación. Por favor revisa tu bandeja de entrada.' : null, 
+            error: emailResult.success ? null : 'No se pudo enviar el email de verificación. Contacta al administrador o intenta nuevamente.'
         });
 
     } catch (error) {
