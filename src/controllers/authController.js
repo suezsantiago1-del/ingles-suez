@@ -247,14 +247,19 @@ export const renderVerifyEmail = (req, res) => {
 export const verifyEmail = async (req, res) => {
     const { token } = req.params;
 
+    console.log('Intentando verificar email con token:', token);
+
     try {
         const db = await dbPromise;
         const usuario = await db.get(
-            'SELECT * FROM usuarios WHERE verification_token = ? AND verification_token_expires > datetime("now")',
+            'SELECT * FROM usuarios WHERE verification_token = ? AND verification_token_expires > NOW()',
             [token]
         );
 
+        console.log('Usuario encontrado:', usuario ? { id: usuario.id, email: usuario.email, email_verificado: usuario.email_verificado } : null);
+
         if (!usuario) {
+            console.log('Token inválido o expirado');
             return res.render('verify-email', { 
                 token: null, 
                 email: null, 
