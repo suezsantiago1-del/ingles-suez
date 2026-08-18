@@ -190,6 +190,14 @@ const dbPromise = (async () => {
     `);
     console.log('Todos los usuarios han sido desverificados');
 
+    // Debug: Mostrar contenido de las lecciones para verificar estructura de botones
+    const leccionesDebug = await adapter.pgPool.query('SELECT id, titulo, contenido_html FROM lecciones LIMIT 3');
+    console.log('Primeras 3 lecciones para debug:');
+    leccionesDebug.rows.forEach((leccion, index) => {
+        console.log(`Lección ${index + 1} (ID: ${leccion.id}): ${leccion.titulo}`);
+        console.log('Contenido HTML (primeros 500 caracteres):', leccion.contenido_html.substring(0, 500));
+    });
+
     // Inscribir usuario lash05mc@gmail.com en el curso de inglés intensivo desde cero
     const emailUsuario1 = 'lash05mc@gmail.com';
     const nombreUsuario1 = 'Usuario de Prueba';
