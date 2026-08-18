@@ -1,67 +1,58 @@
-import nodemailer from 'nodemailer';
+import { Brevo } from '@brevo/node';
 
-// Configurar transporter de email usando las variables SMTP existentes
-const createTransporter = () => {
-    const smtpHost = process.env.SMTP_HOST;
-    const smtpPort = process.env.SMTP_PORT;
-    const smtpUser = process.env.SMTP_USER;
-    const smtpPass = process.env.SMTP_PASS;
-
-    console.log('Configurando SMTP:', {
-        host: smtpHost,
-        port: smtpPort,
-        user: smtpUser,
-        passConfigured: !!smtpPass
-    });
-
-    // Si no hay credenciales SMTP configuradas, devolver null
-    if (!smtpHost || !smtpPort || !smtpUser || !smtpPass) {
-        console.warn('⚠️  SMTP no configurado completamente. Se requieren SMTP_HOST, SMTP_PORT, SMTP_USER y SMTP_PASS');
-        return null;
-    }
-
-    const port = parseInt(smtpPort);
-    
-    return nodemailer.createTransport({
-        host: smtpHost,
-        port: port,
-        secure: port === 465, // true para 465 (SSL), false para otros (TLS)
-        tls: {
-            rejectUnauthorized: false, // Permitir certificados autofirmados si es necesario
-            minVersion: 'TLSv1.2'
-        },
-        auth: {
-            user: smtpUser,
-            pass: smtpPass
-        },
-        debug: true, // Habilitar logs de debug
-        logger: true // Loguear actividad SMTP
-    });
+// Obtener API Key de Brevo desde cualquier variable de entorno disponible
+const getBrevoApiKey = () => {
+    return process.env.BREVO_API_KEY || 
+           process.env.SMTP_PASS || 
+           process.env.BREVO_KEY ||
+           process.env.SENDINBLUE_API_KEY ||
+           '';
 };
+
+// Obtener email remitente
+const getSenderEmail = () => {
+    return process.env.BREVO_SENDER_EMAIL || 
+           process.env.EMAIL_FROM ||
+           process.env.SMTP_USER ||
+           process.env.EMAIL_USER ||
+           'suezsantiago1@gmail.com';
+};
+
+// Inicializar cliente de Brevo
+const brevoClient = new Brevo({
+    apiKey: getBrevoApiKey()
+});
 
 export const sendVerificationEmail = async (email, nombre, token, req) => {
     try {
-        const transporter = createTransporter();
+        const apiKey = getBrevoApiKey();
+        console.log('Enviando email de verificación con API de Brevo a:', email);
+        console.log('API Key configurada:', !!apiKey);
+        console.log('API Key longitud:', apiKey.length);
         
-        // Si no hay transporter configurado, devolver error claro
-        if (!transporter) {
+        if (!apiKey) {
             return { 
                 success: false, 
-                error: 'SMTP no configurado. Se requieren SMTP_HOST, SMTP_PORT, SMTP_USER y SMTP_PASS en las variables de entorno.' 
+                error: 'No se encontró API Key de Brevo. Configura BREVO_API_KEY o SMTP_PASS en las variables de entorno.' 
             };
         }
-
+        
         const verificationUrl = `${req.protocol}://${req.get('host')}/auth/verify/${token}`;
-        const senderEmail = process.env.EMAIL_FROM || process.env.SMTP_USER || 'noreply@ingleessuez.com';
+        const senderEmail = getSenderEmail();
         
-        console.log('Enviando email de verificación a:', email);
-        console.log('URL de verificación:', verificationUrl);
+        console.log('Enviando email a Brevo API...');
         
-        const mailOptions = {
-            from: senderEmail,
-            to: email,
+        const sendSmtpEmail = await brevoClient.sendTransacEmails({
+            sender: {
+                email: senderEmail,
+                name: 'INGLÉS SUEZ'
+            },
+            to: [{
+                email: email,
+                name: nombre
+            }],
             subject: 'Verifica tu correo electrónico - INGLÉS SUEZ',
-            html: `
+            htmlContent: `
                 <!DOCTYPE html>
                 <html>
                 <head>
@@ -114,47 +105,50 @@ export const sendVerificationEmail = async (email, nombre, token, req) => {
                 </body>
                 </html>
             `
-        };
+        });
 
-        const info = await transporter.sendMail(mailOptions);
-        console.log('Email enviado exitosamente:', info.messageId);
-        console.log('Respuesta del servidor:', info.response);
-        return { success: true, messageId: info.messageId };
+        console.log('Respuesta de Brevo API:', sendSmtpEmail);
+        console.log('Email enviado con messageId:', sendSmtpEmail.messageId);
+        return { success: true, messageId: sendSmtpEmail.messageId };
         
     } catch (error) {
-        console.error('Error enviando email:', error);
+        console.error('Error enviando email con API de Brevo:', error);
         console.error('Error completo:', error.message);
+        console.error('Error response:', error.response);
         return { success: false, error: error.message };
     }
 };
 
 export const sendEmail = async (to, subject, html) => {
     try {
-        const transporter = createTransporter();
+        const apiKey = getBrevoApiKey();
         
-        // Si no hay transporter configurado, devolver error claro
-        if (!transporter) {
+        if (!apiKey) {
             return { 
                 success: false, 
-                error: 'SMTP no configurado. Se requieren SMTP_HOST, SMTP_PORT, SMTP_USER y SMTP_PASS en las variables de entorno.' 
+                error: 'No se encontró API Key de Brevo. Configura BREVO_API_KEY o SMTP_PASS en las variables de entorno.' 
             };
         }
-
-        const senderEmail = process.env.EMAIL_FROM || process.env.SMTP_USER || 'noreply@ingleessuez.com';
         
-        const mailOptions = {
-            from: senderEmail,
-            to,
+        const senderEmail = getSenderEmail();
+        
+        const sendSmtpEmail = await brevoClient.sendTransacEmails({
+            sender: {
+                email: senderEmail,
+                name: 'INGLÉS SUEZ'
+            },
+            to: [{
+                email: to
+            }],
             subject,
-            html
-        };
+            htmlContent: html
+        });
 
-        const info = await transporter.sendMail(mailOptions);
-        console.log('Email enviado:', info.messageId);
-        return { success: true, messageId: info.messageId };
+        console.log('Email enviado con API de Brevo:', sendSmtpEmail);
+        return { success: true, messageId: sendSmtpEmail.messageId };
         
     } catch (error) {
-        console.error('Error enviando email:', error);
+        console.error('Error enviando email con API de Brevo:', error);
         return { success: false, error: error.message };
     }
 };
