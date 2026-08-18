@@ -10,7 +10,11 @@ import {
     updatePassword,
     renderVerifyEmail,
     verifyEmail,
-    resendVerification
+    resendVerification,
+    renderForgotPassword,
+    processForgotPassword,
+    renderResetPassword,
+    processResetPassword
 } from '../controllers/authController.js';
 
 import {
@@ -36,6 +40,12 @@ router.get('/logout', logout);
 router.get('/verify/:token', verifyEmail);
 router.get('/verify-email', renderVerifyEmail);
 router.post('/resend-verification', resendVerification);
+
+// Recuperación de contraseña
+router.get('/forgot-password', renderForgotPassword);
+router.post('/forgot-password', processForgotPassword);
+router.get('/reset-password/:token', renderResetPassword);
+router.post('/reset-password/:token', processResetPassword);
 
 // Rutas de Perfil
 router.get('/profile', renderProfile);

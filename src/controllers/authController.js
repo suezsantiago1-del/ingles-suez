@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt';
 import dbPromise from '../config/database.js';
 import crypto from 'crypto';
-import { sendVerificationEmail } from '../services/emailService.js';
+import { sendVerificationEmail, sendEmail } from '../services/emailService.js';
 
 export const renderLogin = (req, res) => {
     if (req.session.user) {
@@ -371,6 +371,171 @@ export const resendVerification = async (req, res) => {
             email: null, 
             success: null, 
             error: 'Ocurrió un error al reenviar el email de verificación.' 
+        });
+    }
+};
+
+export const renderForgotPassword = (req, res) => {
+    return res.render('forgot-password', { error: null, success: null });
+};
+
+export const processForgotPassword = async (req, res) => {
+    const { email } = req.body;
+    const cleanEmail = email ? email.toLowerCase().trim() : '';
+
+    try {
+        const db = await dbPromise;
+        const usuario = await db.get('SELECT * FROM usuarios WHERE LOWER(email) = LOWER(?)', [cleanEmail]);
+
+        if (!usuario) {
+            // Por seguridad, no revelamos si el email existe o no
+            return res.render('forgot-password', { 
+                error: null, 
+                success: 'Si el correo electrónico está registrado, recibirás un email con instrucciones para restablecer tu contraseña.' 
+            });
+        }
+
+        // Generar token de recuperación
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const resetTokenExpires = new Date(Date.now() + 1 * 60 * 60 * 1000); // 1 hora
+
+        await db.run(
+            'UPDATE usuarios SET verification_token = ?, verification_token_expires = ? WHERE id = ?',
+            [resetToken, resetTokenExpires, usuario.id]
+        );
+
+        const resetUrl = `${req.protocol}://${req.get('host')}/auth/reset-password/${resetToken}`;
+
+        const emailResult = await sendEmail(
+            usuario.email,
+            'Restablecer tu contraseña - INGLÉS SUEZ',
+            `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Restablecer Contraseña - INGLÉS SUEZ</title>
+                </head>
+                <body style="font-family: Arial, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px;">
+                    <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                        <div style="background: linear-gradient(135deg, #0b2238 0%, #184168 100%); padding: 30px; text-align: center;">
+                            <h1 style="color: white; margin: 0; font-size: 24px;">INGLÉS SUEZ</h1>
+                            <p style="color: #a4c4de; margin: 10px 0 0;">Plataforma de Aprendizaje de Inglés</p>
+                        </div>
+                        
+                        <div style="padding: 40px 30px;">
+                            <h2 style="color: #0b2238; margin-top: 0;">Restablecer tu contraseña</h2>
+                            <p style="color: #4a5568; line-height: 1.6;">
+                                Hola ${usuario.nombre}, hemos recibido una solicitud para restablecer tu contraseña.
+                            </p>
+                            
+                            <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 20px; margin: 30px 0; border-radius: 4px;">
+                                <p style="color: #856404; margin: 0;">
+                                    <strong>¿No solicitaste esto?</strong><br>
+                                    Ignora este email y tu contraseña permanecerá sin cambios.
+                                </p>
+                            </div>
+                            
+                            <div style="text-align: center; margin: 40px 0;">
+                                <a href="${resetUrl}" style="display: inline-block; background: #184168; color: white; padding: 15px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;">
+                                    Restablecer mi Contraseña
+                                </a>
+                            </div>
+                            
+                            <p style="color: #718096; font-size: 14px; text-align: center; margin: 30px 0;">
+                                O copia y pega este enlace en tu navegador:<br>
+                                <code style="background: #f7fafc; padding: 10px; border-radius: 4px; display: inline-block; word-break: break-all;">${resetUrl}</code>
+                            </p>
+                            
+                            <p style="color: #4a5568; font-size: 14px; text-align: center; margin: 20px 0;">
+                                Este enlace expirará en 1 hora.
+                            </p>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `
+        );
+
+        if (emailResult.success) {
+            console.log('Email de recuperación enviado a:', usuario.email);
+        } else {
+            console.error('Error al enviar email de recuperación:', emailResult.error);
+        }
+
+        return res.render('forgot-password', { 
+            error: null, 
+            success: 'Si el correo electrónico está registrado, recibirás un email con instrucciones para restablecer tu contraseña.' 
+        });
+
+    } catch (error) {
+        console.error('Error al procesar recuperación de contraseña:', error);
+        return res.render('forgot-password', { 
+            error: null, 
+            success: 'Si el correo electrónico está registrado, recibirás un email con instrucciones para restablecer tu contraseña.' 
+        });
+    }
+};
+
+export const renderResetPassword = (req, res) => {
+    const { token } = req.params;
+    return res.render('reset-password', { token, error: null, success: null });
+};
+
+export const processResetPassword = async (req, res) => {
+    const { token } = req.params;
+    const { password, confirmPassword } = req.body;
+
+    if (password !== confirmPassword) {
+        return res.render('reset-password', { 
+            token, 
+            error: 'Las contraseñas no coinciden.', 
+            success: null 
+        });
+    }
+
+    if (password.length < 6) {
+        return res.render('reset-password', { 
+            token, 
+            error: 'La contraseña debe tener al menos 6 caracteres.', 
+            success: null 
+        });
+    }
+
+    try {
+        const db = await dbPromise;
+        const usuario = await db.get(
+            'SELECT * FROM usuarios WHERE verification_token = ? AND verification_token_expires > NOW()',
+            [token]
+        );
+
+        if (!usuario) {
+            return res.render('reset-password', { 
+                token: null, 
+                error: 'Token inválido o expirado. Por favor solicita un nuevo email de recuperación.', 
+                success: null 
+            });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        await db.run(
+            'UPDATE usuarios SET password = ?, verification_token = NULL, verification_token_expires = NULL WHERE id = ?',
+            [hashedPassword, usuario.id]
+        );
+
+        return res.render('login', { 
+            error: null, 
+            success: 'Tu contraseña ha sido restablecida exitosamente. Ya puedes iniciar sesión.' 
+        });
+
+    } catch (error) {
+        console.error('Error al restablecer contraseña:', error);
+        return res.render('reset-password', { 
+            token: null, 
+            error: 'Ocurrió un error al restablecer la contraseña. Por favor intenta nuevamente.', 
+            success: null 
         });
     }
 };
