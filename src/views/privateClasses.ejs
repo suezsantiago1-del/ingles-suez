@@ -6,89 +6,92 @@
     <title>Clases Particulares - INGLÉS SUEZ</title>
     <link rel="stylesheet" href="/css/styles.css">
     <style>
+        /* Slightly larger base UI scale for readability */
+        body { font-size: 17px; }
+
         .particulares-container { 
-            max-width: 1200px; 
-            margin: 2rem auto; 
+            max-width: 1400px; 
+            margin: 2.5rem auto; 
             padding: 0 1rem; 
             display: grid; 
             grid-template-columns: 1fr 1fr; 
-            gap: 2rem; 
+            gap: 2.5rem; 
         }
         .card-box { 
             background: white; 
-            border-radius: 8px; 
-            padding: 1.8rem; 
+            border-radius: 10px; 
+            padding: 2rem; 
             border: 1px solid #cbd5e0; 
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04); 
+            box-shadow: 0 6px 18px rgba(0,0,0,0.04); 
         }
         .card-box h2 { 
             color: #0b2238; 
             margin-top: 0; 
-            font-size: 1.3rem; 
+            font-size: 1.45rem; 
             border-bottom: 2px solid #0b2238; 
-            padding-bottom: 0.5rem; 
+            padding-bottom: 0.6rem; 
         }
         
         .chat-card { 
             background: #ffffff; 
-            border: 1px solid #cbd5e0; 
+            border: 1px solid #e6eef6; 
             border-radius: 8px; 
-            padding: 1.2rem; 
-            margin-bottom: 1.2rem; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+            padding: 1rem; 
+            margin-bottom: 0.9rem; 
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
         }
         .badge-tag { 
             background: #184168; 
             color: white; 
-            padding: 0.2rem 0.6rem; 
+            padding: 0.25rem 0.6rem; 
             border-radius: 4px; 
-            font-size: 0.75rem; 
+            font-size: 0.78rem; 
             font-weight: bold; 
         }
         .badge-obj {
-            background: #edf2f7;
+            background: #f7fafc;
             color: #2d3748;
-            padding: 0.2rem 0.6rem;
+            padding: 0.22rem 0.5rem;
             border-radius: 4px;
-            font-size: 0.75rem;
+            font-size: 0.78rem;
             font-weight: 600;
         }
 
-        /* ESTILOS DEL HILO DEL CHAT */
+        /* Chat thread: reduce message box size for comfortable reading */
         .chat-thread {
             display: flex;
             flex-direction: column;
-            gap: 0.6rem;
+            gap: 0.5rem;
             margin: 1rem 0;
-            max-height: 250px;
+            max-height: 320px;
             overflow-y: auto;
             padding-right: 0.3rem;
         }
         .chat-msg {
-            padding: 0.7rem 0.9rem;
-            border-radius: 8px;
+            padding: 0.45rem 0.7rem;
+            border-radius: 6px;
             font-size: 0.9rem;
-            max-width: 88%;
+            max-width: 72%;
             white-space: pre-wrap;
-            line-height: 1.4;
+            line-height: 1.35;
         }
         .chat-msg-alumno {
-            background: #e2e8f0;
-            color: #2d3748;
+            background: #edf2fb;
+            color: #1f2937;
             align-self: flex-end;
-            border-bottom-right-radius: 2px;
+            border-bottom-right-radius: 4px;
         }
         .chat-msg-profesor {
-            background: #e2ebd5;
-            color: #1a202c;
+            background: #f0f7ea;
+            color: #0b2238;
             align-self: flex-start;
-            border-bottom-left-radius: 2px;
+            border-bottom-left-radius: 4px;
             border-left: 3px solid #184168;
         }
         .chat-msg-header {
             font-size: 0.75rem;
-            font-weight: bold;
-            margin-bottom: 0.2rem;
+            font-weight: 700;
+            margin-bottom: 0.18rem;
             display: flex;
             justify-content: space-between;
             gap: 0.5rem;
@@ -96,35 +99,36 @@
 
         .reply-box {
             display: flex;
-            gap: 0.5rem;
+            gap: 0.6rem;
             margin-top: 0.8rem;
             border-top: 1px solid #edf2f7;
             padding-top: 0.8rem;
         }
         .reply-input {
             flex: 1;
-            padding: 0.5rem 0.8rem;
+            padding: 0.55rem 0.9rem;
             border: 1px solid #cbd5e0;
-            border-radius: 6px;
+            border-radius: 8px;
             font-family: inherit;
-            font-size: 0.88rem;
+            font-size: 0.95rem;
             resize: none;
-            height: 38px;
+            height: 44px;
         }
         .reply-btn {
             background: #184168;
             color: white;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             padding: 0 1rem;
             font-weight: bold;
-            font-size: 0.85rem;
+            font-size: 0.95rem;
             cursor: pointer;
             white-space: nowrap;
         }
 
         @media (max-width: 850px) {
             .particulares-container { grid-template-columns: 1fr; }
+            .chat-msg { max-width: 86%; }
         }
     </style>
 </head>
