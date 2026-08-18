@@ -256,10 +256,23 @@
 
     <!-- Script de Interactividad para los Quizzes y Revisiones -->
     <script>
-        function checkAnswer(button, isCorrect, feedbackId, explanationText) {
+        // Hacer las funciones globales para asegurar que funcionen con onclick inline
+        window.checkAnswer = function(button, isCorrect, feedbackId, explanationText) {
+            console.log('checkAnswer called', { isCorrect, feedbackId, explanationText });
+            
             const container = button.closest('.quiz-question');
+            if (!container) {
+                console.error('No se encontró el contenedor .quiz-question');
+                return;
+            }
+            
             const buttons = container.querySelectorAll('.option-btn');
             const feedbackBox = document.getElementById(feedbackId);
+
+            if (!feedbackBox) {
+                console.error('No se encontró el feedback box con ID:', feedbackId);
+                return;
+            }
 
             buttons.forEach(btn => btn.disabled = true);
 
@@ -278,10 +291,12 @@
                 feedbackBox.style.color = '#9b2c2c';
                 feedbackBox.innerHTML = '<strong>Respuesta Incorrecta.</strong> ' + explanationText;
             }
-        }
+        };
 
         // Manejador del envío de revisión manual con guardado en la Base de Datos
-        async function submitRevision(btn) {
+        window.submitRevision = async function(btn) {
+            console.log('submitRevision called');
+            
             const parentSection = btn.closest('section') || btn.parentElement;
             const textarea = parentSection ? parentSection.querySelector('textarea') : null;
 
@@ -334,13 +349,18 @@
                 btn.innerText = originalText;
                 btn.disabled = false;
             }
-        }
+        };
 
         // Vincular funciones y bloqueos según el estado de la entrega
         document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM Content Loaded');
+            
+            // Vincular botones de envío
             const buttons = document.querySelectorAll('button');
             buttons.forEach(btn => {
                 const text = btn.innerText.toUpperCase();
+                console.log('Procesando botón:', text);
+                
                 if (
                     text.includes('ENVIAR') || 
                     text.includes('ENTREGAR') || 
@@ -349,7 +369,14 @@
                     text.includes('FINAL') || 
                     text.includes('REHACER')
                 ) {
-                    btn.setAttribute('onclick', 'submitRevision(this)');
+                    // Remover cualquier onclick existente para evitar duplicados
+                    btn.removeAttribute('onclick');
+                    // Agregar event listener
+                    btn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        window.submitRevision(this);
+                    });
+                    console.log('Botón vinculado a submitRevision:', text);
                 }
             });
 
@@ -357,6 +384,8 @@
             const notaRaw = <%= JSON.stringify((leccionActiva && leccionActiva.nota !== null && leccionActiva.nota !== undefined) ? leccionActiva.nota : '') %>;
             const nota = notaRaw !== "" ? parseInt(notaRaw, 10) : -1;
             const estaEnviadaSinNota = <%= JSON.stringify((leccionActiva && leccionActiva.completada && (leccionActiva.nota === null || leccionActiva.nota === undefined)) ? true : false) %>;
+
+            console.log('Estado de entrega:', { nota, estaEnviadaSinNota });
 
             // Bloquear formulario únicamente si APROBÓ (nota >= 6) o si está EN REVISIÓN (enviado sin nota)
             if (nota >= 6 || estaEnviadaSinNota) {
@@ -369,7 +398,7 @@
                     t.style.backgroundColor = "#edf2f7";
                 });
 
-                    btnEnviars.forEach(btn => {
+                btnEnviars.forEach(btn => {
                     btn.disabled = true;
                     btn.innerText = nota >= 6 ? 'APROBADO' : 'EN REVISIÓN';
                     btn.style.background = nota >= 6 ? '#38a169' : '#718096';
@@ -383,6 +412,8 @@
                     btn.style.background = '#e53e3e';
                 });
             }
+            
+            console.log('Inicialización completada');
         });
     </script>
 </body>
