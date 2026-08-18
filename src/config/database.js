@@ -179,6 +179,16 @@ const dbPromise = (async () => {
     `);
     console.log('Usuarios de prueba eliminados');
 
+    // Desverificar todos los usuarios para forzar re-verificación
+    await adapter.pgPool.query(`
+        UPDATE usuarios 
+        SET email_verificado = FALSE, 
+            verification_token = NULL, 
+            verification_token_expires = NULL
+        WHERE email_verificado = TRUE;
+    `);
+    console.log('Todos los usuarios han sido desverificados');
+
     // Cursos iniciales (solo si la tabla está vacía)
     const countRes = await adapter.pgPool.query("SELECT COUNT(*) FROM cursos");
     if (parseInt(countRes.rows[0].count) === 0) {
