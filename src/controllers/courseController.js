@@ -400,8 +400,6 @@ export const renderClassroom = async (req, res) => {
                 return res.redirect(`/classroom/${cursoId}?leccion=${primeraDesbloqueada.id}`);
             }
         }
-            }
-        }
 
         // Load announcements for this course
         const anuncios = await db.all('SELECT id, mensaje, created_at FROM curso_anuncios WHERE curso_id = ? ORDER BY created_at DESC', [cursoId]);
