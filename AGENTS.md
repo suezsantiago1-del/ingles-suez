@@ -60,6 +60,8 @@ Variables de entorno (`.env`):
 - `MP_ACCESS_TOKEN` — MercadoPago. Sin esto el checkout falla pero la app levanta.
 - `SESSION_SECRET` — secreto de sesión.
 - `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` / `EMAIL_FROM` — Brevo.
+- `EMAIL_PROFESOR` (opcional) — cuenta con permisos de profesor.
+- `SEED_TEST_DATA` (opcional) — en `'true'` carga usuarios de prueba. Solo dev.
 - `UPLOADS_DIR` (opcional) — carpeta de videos. Default: `public/videos`.
 - `PORT` (opcional) — default 3000.
 
@@ -86,6 +88,8 @@ server.js                        (306)   Express, sesión, middleware global, mu
 src/config/database.js           (192)   adapter pg + schema + seed de cursos
 src/config/seeds.js              (1171)  ⚠️ NO ABRIR ENTERO. Solo el HTML de las
                                  lecciones iniciales. Se corre si la tabla está vacía.
+src/config/devSeeds.js           (135)   usuarios y datos de prueba. Solo corre con
+                                 SEED_TEST_DATA=true y nunca en producción.
 src/routes/authRoutes.js         (67)    rutas montadas en /auth
 src/controllers/authController.js    (540)   login, registro, perfil, verificación, reset
 src/controllers/courseController.js  (1417)  cursos, pagos, classroom, entregas,
@@ -264,6 +268,8 @@ constante del módulo ya está en scope.
 1. `database.js` corre `CREATE TABLE IF NOT EXISTS`, `ALTER TABLE ... ADD COLUMN
    IF NOT EXISTS` y los seeds en **cada arranque**. Los seeds son condicionales
    (`IF COUNT = 0`): no rompas esa condición o vas a duplicar cursos y lecciones.
+   `devSeeds.js` además crea usuarios de prueba, pero solo con `SEED_TEST_DATA=true`
+   y nunca con `NODE_ENV=production`. No quites ninguna de esas dos guardas.
 2. Los permisos de profesor se resuelven comparando emails, no con un campo `rol`.
    Ver la sección "Autenticación y roles".
 3. Las rutas de clases particulares están declaradas dos veces: en `server.js` y

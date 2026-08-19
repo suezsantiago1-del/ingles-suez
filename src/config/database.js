@@ -1,5 +1,6 @@
 import pg from 'pg';
 import { seedLecciones } from './seeds.js';
+import { seedDatosDePrueba } from './devSeeds.js';
 
 class DatabaseAdapter {
     constructor() {
@@ -186,6 +187,8 @@ const dbPromise = (async () => {
 
     await seedLecciones(adapter);
 
+    // Solo corre si SEED_TEST_DATA=true (ver src/config/devSeeds.js)
+    await seedDatosDePrueba(adapter);
 
     return adapter;
 })();
