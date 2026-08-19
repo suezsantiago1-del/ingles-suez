@@ -352,7 +352,7 @@ export const renderClassroom = async (req, res) => {
             if (!mapaEntregas.has(l.id)) return false;
             const entregaInfo = mapaEntregas.get(l.id) || {};
             const notaVal = entregaInfo.nota;
-            return notaVal !== null && notaVal !== undefined && parseInt(notaVal, 10) >= 6;
+            return notaVal !== null && notaVal !== undefined && parseInt(notaVal, 10) >= 7;
         });
 
         let leccionAnteriorEntregada = true;
@@ -495,7 +495,7 @@ export const guardarEntrega = async (req, res) => {
                     ORDER BY e.id DESC LIMIT 1
                 `, [usuarioId, prev.id]);
 
-                if (!entregaPrev || entregaPrev.nota === null || parseInt(entregaPrev.nota, 10) < 6) {
+                if (!entregaPrev || entregaPrev.nota === null || parseInt(entregaPrev.nota, 10) < 7) {
                     return res.status(403).json({ 
                         success: false, 
                         message: 'Debes tener aprobadas las clases 1 a 9 para enviar el Proyecto Integrador.' 
@@ -513,7 +513,7 @@ export const guardarEntrega = async (req, res) => {
             LIMIT 1
         `, [usuarioId, leccionId]);
 
-        if (ultimaEntrega && ultimaEntrega.nota !== null && parseInt(ultimaEntrega.nota, 10) >= 6) {
+        if (ultimaEntrega && ultimaEntrega.nota !== null && parseInt(ultimaEntrega.nota, 10) >= 7) {
             return res.status(400).json({ 
                 success: false, 
                 message: 'Esta clase/proyecto ya se encuentra aprobado y no permite más envíos.' 
@@ -745,7 +745,7 @@ export const descargarCertificado = async (req, res) => {
             SELECT d.nota, d.fecha 
             FROM entregas e
             JOIN devoluciones d ON d.entrega_id = e.id
-            WHERE e.usuario_id = ? AND e.leccion_id = ? AND d.nota >= 6
+            WHERE e.usuario_id = ? AND e.leccion_id = ? AND d.nota >= 7
             ORDER BY e.id DESC
             LIMIT 1
         `, [usuarioId, leccion10.id]);

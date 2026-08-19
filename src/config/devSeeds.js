@@ -130,7 +130,7 @@ export async function seedDatosDePrueba(adapter) {
               WHERE id IN (
                   SELECT d.id FROM devoluciones d
                     JOIN entregas e ON d.entrega_id = e.id
-                   WHERE e.usuario_id = $1 AND d.nota >= 6
+                   WHERE e.usuario_id = $1 AND d.nota >= 7
               )`,
             [profe.rows[0].id]
         );

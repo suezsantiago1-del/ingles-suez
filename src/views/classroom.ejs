@@ -168,7 +168,7 @@
             <% } %>
 
             <!-- Banner de Descarga de Certificado (Visible solo al aprobar la Clase 10) -->
-            <% if (leccionActiva && leccionActiva.orden === 10 && leccionActiva.nota !== null && leccionActiva.nota !== undefined && leccionActiva.nota >= 6) { %>
+            <% if (leccionActiva && leccionActiva.orden === 10 && leccionActiva.nota !== null && leccionActiva.nota !== undefined && leccionActiva.nota >= 7) { %>
                 <div class="certificado-banner">
                     <h2 style="color: #0b2238; margin-top: 0; font-size: 1.4rem;">¡Felicitaciones por completar el curso!</h2>
                     <p style="color: #2d3748; margin-bottom: 0.5rem;">
@@ -184,7 +184,7 @@
             <% if (leccionActiva) { %>
                 <div style="margin-bottom: 2rem;">
                     <% if (leccionActiva.nota !== null && leccionActiva.nota !== undefined) { %>
-                        <% if (leccionActiva.nota >= 6) { %>
+                        <% if (leccionActiva.nota >= 7) { %>
                             <!-- CASO 1: APROBADO -->
                             <div style="background: #f0fff4; border: 1px solid #c6f6d5; padding: 1.2rem; border-radius: 8px; text-align: center;">
                                 <h3 style="color: #22543d; margin: 0.3rem 0;">¡Entregable Aprobado!</h3>
@@ -247,6 +247,14 @@
 
             <!-- Contenido Interactivo -->
             <div class="leccion-body">
+                <% if (leccionActiva && leccionActiva.nota !== null && leccionActiva.nota !== undefined && leccionActiva.nota < 7) { %>
+                    <!-- Botón global de rehacer: único punto para volver a intentar cuando la nota es < 7 -->
+                    <div id="rehacerEjerciciosWrap" style="display: flex; justify-content: flex-end; margin-bottom: 1.5rem;">
+                        <button type="button" id="btnRehacerEjercicios" style="background: #e53e3e; color: white; border: none; padding: 0.7rem 1.4rem; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.95rem;">
+                            Rehacer ejercicios
+                        </button>
+                    </div>
+                <% } %>
                 <%- leccionActiva ? leccionActiva.contenido_html : '' %>
             </div>
         </main>
@@ -377,72 +385,100 @@
             setTimeout(() => {
                 console.log('Iniciando vinculación de botones después de delay');
                 
-                // Vincular botones de envío con diferentes patrones de texto
-                const buttons = document.querySelectorAll('button');
-                console.log('Total de botones encontrados:', buttons.length);
-                
-                buttons.forEach((btn, index) => {
-                    const text = btn.innerText.toUpperCase();
-                    console.log(`Botón ${index}:`, text);
-                    
-                    // Patrones más amplios para detectar botones de envío
-                    const esBotonEnvio = 
-                        text.includes('ENVIAR') || 
-                        text.includes('ENTREGAR') || 
-                        text.includes('PROYECTO') || 
-                        text.includes('EXAMEN') || 
-                        text.includes('FINAL') || 
-                        text.includes('REHACER') ||
-                        text.includes('REVISIÓN') ||
-                        text.includes('REVIEW');
-                    
-                    if (esBotonEnvio) {
-                        // Remover cualquier onclick existente para evitar duplicados
-                        btn.removeAttribute('onclick');
-                        
-                        // Agregar event listener
-                        btn.addEventListener('click', function(e) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            console.log('Click en botón de envío:', text);
-                            window.submitRevision(this);
-                        });
-                        
-                        console.log('Botón vinculado a submitRevision:', text);
-                    }
-                });
+                // El botón de envío del entregable es el ÚLTIMO botón dentro de
+                // .leccion-body (la sección de entregable es el bloque final).
+                // Así los botones de multiple choice quedan intactos.
+                const btnsLeccion = document.querySelectorAll('.leccion-body button');
+                const btnSubmit = btnsLeccion[btnsLeccion.length - 1];
+                console.log('Total de botones en la lección:', btnsLeccion.length);
+
+                if (btnSubmit) {
+                    // Vincular el envío SOLO al botón del entregable
+                    btnSubmit.removeAttribute('onclick');
+                    btnSubmit.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('Click en botón de envío:', btnSubmit.innerText);
+                        window.submitRevision(this);
+                    });
+                }
 
                 // Lógica de deshabilitado dinámico
                 const notaRaw = <%- JSON.stringify((leccionActiva && leccionActiva.nota !== null && leccionActiva.nota !== undefined) ? leccionActiva.nota : '') %>;
                 const nota = notaRaw !== "" ? parseInt(notaRaw, 10) : -1;
                 const estaEnviadaSinNota = <%- JSON.stringify((leccionActiva && leccionActiva.completada && (leccionActiva.nota === null || leccionActiva.nota === undefined)) ? true : false) %>;
+                const NOTA_APROBACION = 7;
 
                 console.log('Estado de entrega:', { nota, estaEnviadaSinNota });
 
-                // Bloquear formulario únicamente si APROBÓ (nota >= 6) o si está EN REVISIÓN (enviado sin nota)
-                if (nota >= 6 || estaEnviadaSinNota) {
-                    const textareas = document.querySelectorAll('.leccion-body textarea');
-                    const btnEnviars = document.querySelectorAll('.leccion-body button');
+                // Guardar textos/estilos originales del entregable para poder restaurarlos al rehacer.
+                const textareaEntrega = document.querySelector('.leccion-body textarea');
+                const textareaPlaceholderOrig = textareaEntrega ? textareaEntrega.placeholder : '';
+                const submitTextOrig = btnSubmit ? btnSubmit.innerText : '';
+                const submitBgOrig = btnSubmit ? btnSubmit.style.background : '';
 
-                    textareas.forEach(t => {
-                        t.disabled = true;
-                        t.placeholder = nota >= 6 ? "Entregable / Proyecto Aprobado." : "Entrega enviada, en proceso de revisión...";
-                        t.style.backgroundColor = "#edf2f7";
-                    });
+                if (nota >= NOTA_APROBACION || estaEnviadaSinNota) {
+                    // APROBADO (>= 7) o EN REVISIÓN: se bloquea solo el entregable; el multiple choice queda intacto.
+                    if (textareaEntrega) {
+                        textareaEntrega.disabled = true;
+                        textareaEntrega.placeholder = nota >= NOTA_APROBACION
+                            ? "Entregable / Proyecto Aprobado."
+                            : "Entrega enviada, en proceso de revisión...";
+                        textareaEntrega.style.backgroundColor = "#edf2f7";
+                    }
 
-                    btnEnviars.forEach(btn => {
-                        btn.disabled = true;
-                        btn.innerText = nota >= 6 ? 'APROBADO' : 'EN REVISIÓN';
-                        btn.style.background = nota >= 6 ? '#38a169' : '#718096';
-                        btn.style.cursor = 'not-allowed';
-                    });
-                } else if (nota !== -1 && nota < 6) {
-                    // Si REPROBÓ (< 6), habilitar botón como "REHACER ENTREGABLE"
-                    const btnEnviars = document.querySelectorAll('.leccion-body button');
-                    btnEnviars.forEach(btn => {
-                        btn.innerText = 'REHACER Y ENVIAR ENTREGABLE';
-                        btn.style.background = '#e53e3e';
-                    });
+                    if (btnSubmit) {
+                        btnSubmit.disabled = true;
+                        btnSubmit.innerText = nota >= NOTA_APROBACION ? 'APROBADO' : 'EN REVISIÓN';
+                        btnSubmit.style.background = nota >= NOTA_APROBACION ? '#38a169' : '#718096';
+                        btnSubmit.style.cursor = 'not-allowed';
+                    }
+                } else if (nota !== -1 && nota < NOTA_APROBACION) {
+                    // REPROBADO (< 7): se bloquea TODO (multiple choice + entregable) hasta reiniciar.
+                    // Solo se modifica el estado disabled; los textos de las opciones quedan como están.
+                    document.querySelectorAll('.leccion-body .option-btn').forEach(b => { b.disabled = true; });
+
+                    if (textareaEntrega) {
+                        textareaEntrega.disabled = true;
+                        textareaEntrega.style.backgroundColor = "#edf2f7";
+                    }
+                    if (btnSubmit) {
+                        btnSubmit.disabled = true;
+                        btnSubmit.style.cursor = 'not-allowed';
+                    }
+
+                    const btnRehacer = document.getElementById('btnRehacerEjercicios');
+                    if (btnRehacer) {
+                        btnRehacer.addEventListener('click', () => {
+                            // Desbloquear y reiniciar el multiple choice
+                            document.querySelectorAll('.leccion-body .quiz-question').forEach(pregunta => {
+                                pregunta.querySelectorAll('.option-btn').forEach(b => {
+                                    b.disabled = false;
+                                    b.classList.remove('selected-correct', 'selected-incorrect');
+                                });
+                                const feedback = pregunta.querySelector('div[id]');
+                                if (feedback) { feedback.style.display = 'none'; feedback.innerHTML = ''; }
+                            });
+
+                            // Reiniciar el entregable final para un nuevo intento
+                            if (textareaEntrega) {
+                                textareaEntrega.disabled = false;
+                                textareaEntrega.value = '';
+                                textareaEntrega.placeholder = textareaPlaceholderOrig;
+                                textareaEntrega.style.backgroundColor = '';
+                            }
+                            if (btnSubmit) {
+                                btnSubmit.disabled = false;
+                                btnSubmit.innerText = submitTextOrig;
+                                btnSubmit.style.background = submitBgOrig;
+                                btnSubmit.style.cursor = 'pointer';
+                            }
+
+                            // Ocultar el botón global de rehacer
+                            const wrap = document.getElementById('rehacerEjerciciosWrap');
+                            if (wrap) wrap.remove();
+                        });
+                    }
                 }
                 
                 console.log('Inicialización completada');
