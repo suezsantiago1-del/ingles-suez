@@ -309,6 +309,36 @@ const dbPromise = (async () => {
         }
     }
 
+    // Resetear notas aprobadas para suezsantiago1@gmail.com
+    const emailReset = 'suezsantiago1@gmail.com';
+    const usuarioReset = await adapter.pgPool.query(
+        'SELECT id FROM usuarios WHERE LOWER(email) = LOWER($1)',
+        [emailReset]
+    );
+    
+    if (usuarioReset.rows.length > 0) {
+        const usuarioIdReset = usuarioReset.rows[0].id;
+        
+        // Obtener todas las devoluciones con notas >= 6 para este usuario
+        const devolucionesReset = await adapter.pgPool.query(
+            'SELECT d.id FROM devoluciones d JOIN entregas e ON d.entrega_id = e.id WHERE e.usuario_id = $1 AND d.nota >= 6',
+            [usuarioIdReset]
+        );
+        
+        if (devolucionesReset.rows.length > 0) {
+            // Resetear notas a NULL para que el usuario pueda rehacer las entregas
+            await adapter.pgPool.query(
+                'UPDATE devoluciones SET nota = NULL WHERE id = ANY($1)',
+                [devolucionesReset.rows.map(d => d.id)]
+            );
+            console.log(`Notas reseteadas para ${emailReset} (${devolucionesReset.rows.length} entregas)`);
+        } else {
+            console.log(`No se encontraron entregas aprobadas para ${emailReset}`);
+        }
+    } else {
+        console.log(`Usuario ${emailReset} no encontrado`);
+    }
+
     // Cursos iniciales (solo si la tabla está vacía)
     const countRes = await adapter.pgPool.query("SELECT COUNT(*) FROM cursos");
     if (parseInt(countRes.rows[0].count) === 0) {
