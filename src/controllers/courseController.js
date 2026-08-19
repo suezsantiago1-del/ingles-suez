@@ -13,7 +13,8 @@ const client = new MercadoPagoConfig({
     accessToken: process.env.MP_ACCESS_TOKEN ? process.env.MP_ACCESS_TOKEN.trim() : ''
 });
 
-const EMAIL_PROFESOR = 'suezsantiago1@gmail.com';
+// Email del profesor. Sobreescribible con la variable de entorno EMAIL_PROFESOR.
+const EMAIL_PROFESOR = process.env.EMAIL_PROFESOR || 'suezsantiago1@gmail.com';
 
 export const renderCourseDetail = async (req, res) => {
     const { id } = req.params;
@@ -536,7 +537,6 @@ export const renderPanelProfesor = async (req, res) => {
         return res.redirect('/auth/login');
     }
 
-    const EMAIL_PROFESOR = 'suezsantiago1@gmail.com';
 
     if (req.session.user.email !== EMAIL_PROFESOR) {
         return res.status(403).send('<h1>403 - Acceso denegado: Solo el profesor puede ver esta sección.</h1>');
@@ -591,7 +591,6 @@ export const guardarDevolucion = async (req, res) => {
         return res.status(401).json({ success: false, message: 'No autenticado' });
     }
 
-    const EMAIL_PROFESOR = 'suezsantiago1@gmail.com';
     if (req.session.user.email !== EMAIL_PROFESOR) {
         return res.status(403).json({ success: false, message: 'Acceso no autorizado' });
     }
@@ -635,7 +634,6 @@ export const saveTeacherNote = async (req, res) => {
         return res.status(401).json({ success: false, message: 'No autenticado' });
     }
 
-    const EMAIL_PROFESOR = 'suezsantiago1@gmail.com';
     if (req.session.user.email !== EMAIL_PROFESOR) {
         return res.status(403).json({ success: false, message: 'Acceso no autorizado' });
     }
@@ -982,7 +980,6 @@ export const renderPanelParticularesProfesor = async (req, res) => {
         return res.redirect('/auth/login');
     }
 
-    const EMAIL_PROFESOR = 'suezsantiago1@gmail.com';
 
     if (req.session.user.email !== EMAIL_PROFESOR) {
         return res.status(403).send('<h1>403 - Acceso denegado: Solo el profesor puede ver esta sección.</h1>');
@@ -1036,7 +1033,6 @@ export const guardarRespuestaParticular = async (req, res) => {
         return res.status(401).json({ success: false, message: 'No autenticado' });
     }
 
-    const EMAIL_PROFESOR = 'suezsantiago1@gmail.com';
     if (req.session.user.email !== EMAIL_PROFESOR) {
         return res.status(403).json({ success: false, message: 'Acceso no autorizado' });
     }
@@ -1083,7 +1079,6 @@ export const uploadLessonVideo = async (req, res) => {
         return res.status(401).json({ success: false, message: 'No autenticado' });
     }
 
-    const EMAIL_PROFESOR = 'suezsantiago1@gmail.com';
     if (req.session.user.email !== EMAIL_PROFESOR) {
         return res.status(403).json({ success: false, message: 'Acceso no autorizado' });
     }
@@ -1210,7 +1205,6 @@ export const uploadLessonVideo = async (req, res) => {
 // Create or update a course announcement
 export const createOrUpdateAnnouncement = async (req, res) => {
     if (!req.session.user) return res.status(401).json({ success: false, message: 'No autenticado' });
-    const EMAIL_PROFESOR = 'suezsantiago1@gmail.com';
     if (req.session.user.email !== EMAIL_PROFESOR) return res.status(403).json({ success: false, message: 'Acceso no autorizado' });
 
     const { id, curso_id, mensaje } = req.body;
@@ -1234,7 +1228,6 @@ export const createOrUpdateAnnouncement = async (req, res) => {
 // Delete a course announcement
 export const deleteAnnouncement = async (req, res) => {
     if (!req.session.user) return res.status(401).json({ success: false, message: 'No autenticado' });
-    const EMAIL_PROFESOR = 'suezsantiago1@gmail.com';
     if (req.session.user.email !== EMAIL_PROFESOR) return res.status(403).json({ success: false, message: 'Acceso no autorizado' });
 
     const { id } = req.body;
@@ -1253,7 +1246,6 @@ export const deleteAnnouncement = async (req, res) => {
 // Update per-lesson teacher note
 export const updateLessonTeacherNote = async (req, res) => {
     if (!req.session.user) return res.status(401).json({ success: false, message: 'No autenticado' });
-    const EMAIL_PROFESOR = 'suezsantiago1@gmail.com';
     if (req.session.user.email !== EMAIL_PROFESOR) return res.status(403).json({ success: false, message: 'Acceso no autorizado' });
 
     const { leccionId, note } = req.body;
