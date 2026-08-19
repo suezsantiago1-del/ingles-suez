@@ -6,6 +6,22 @@
 export async function seedLecciones(adapter) {
         // Lecciones iniciales (SOLO SI LA TABLA LECCIONES ESTÁ VACÍA)
         const countLecciones = await adapter.pgPool.query("SELECT COUNT(*) FROM lecciones");
+
+        // Corrección idempotente: quitar el encabezado "Ejercicios de Alto Rendimiento"
+        // de las clases 3, 4 y 5. También aplica a bases ya pobladas, donde el bloque
+        // de seeds condicional (IF COUNT = 0) no vuelve a correr.
+        const encabezadosARendimiento = [
+            '<h2 style="color: #0b2238; margin-top: 0.8rem; margin-bottom: 0;">Ejercicios de Alto Rendimiento — Clase 3</h2>',
+            '<h2 style="color: #0b2238; margin-top: 0.8rem; margin-bottom: 0;">Ejercicios de Alto Rendimiento — Clase 4</h2>',
+            '<h2 style="color: #0b2238; margin-top: 0.8rem; margin-bottom: 0;">Ejercicios de Alto Rendimiento — Clase 5</h2>'
+        ];
+        for (const h of encabezadosARendimiento) {
+            await adapter.pgPool.query(
+                "UPDATE lecciones SET contenido_html = REPLACE(contenido_html, $1, '')",
+                [h]
+            );
+        }
+
         if (parseInt(countLecciones.rows[0].count) === 0) {
 
             // ==========================================
@@ -132,8 +148,7 @@ export async function seedLecciones(adapter) {
                 <div class="clase-contenido" style="color: #1a202c; font-family: system-ui, -apple-system, sans-serif;">
                     <header style="margin-bottom: 2rem; border-bottom: 2px solid #0b2238; padding-bottom: 1rem;">
                         <span style="background: #0b2238; color: white; padding: 0.3rem 0.8rem; border-radius: 4px; font-size: 0.75rem; text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px;">FASE DE PRÁCTICA INTERACTIVA</span>
-                        <h2 style="color: #0b2238; margin-top: 0.8rem; margin-bottom: 0;">Ejercicios de Alto Rendimiento — Clase 3</h2>
-                    </header>
+                        </header>
 
                     <section class="bloque-fase" style="margin-bottom: 3rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center; background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
@@ -197,8 +212,7 @@ export async function seedLecciones(adapter) {
                 <div class="clase-contenido" style="color: #1a202c; font-family: system-ui, -apple-system, sans-serif;">
                     <header style="margin-bottom: 2rem; border-bottom: 2px solid #0b2238; padding-bottom: 1rem;">
                         <span style="background: #0b2238; color: white; padding: 0.3rem 0.8rem; border-radius: 4px; font-size: 0.75rem; text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px;">FASE DE PRÁCTICA INTERACTIVA</span>
-                        <h2 style="color: #0b2238; margin-top: 0.8rem; margin-bottom: 0;">Ejercicios de Alto Rendimiento — Clase 4</h2>
-                    </header>
+                        </header>
 
                     <section class="bloque-fase" style="margin-bottom: 3rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center; background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
@@ -278,8 +292,7 @@ export async function seedLecciones(adapter) {
                 <div class="clase-contenido" style="color: #1a202c; font-family: system-ui, -apple-system, sans-serif;">
                     <header style="margin-bottom: 2rem; border-bottom: 2px solid #0b2238; padding-bottom: 1rem;">
                         <span style="background: #0b2238; color: white; padding: 0.3rem 0.8rem; border-radius: 4px; font-size: 0.75rem; text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px;">FASE DE PRÁCTICA INTERACTIVA</span>
-                        <h2 style="color: #0b2238; margin-top: 0.8rem; margin-bottom: 0;">Ejercicios de Alto Rendimiento — Clase 5</h2>
-                    </header>
+                        </header>
 
                     <section class="bloque-fase" style="margin-bottom: 3rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center; background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
