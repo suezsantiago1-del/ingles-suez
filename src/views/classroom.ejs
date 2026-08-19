@@ -256,50 +256,51 @@
 
     <!-- Script de Interactividad para los Quizzes y Revisiones -->
     <script>
-        // Definir funciones inmediatamente para asegurar disponibilidad global
-        (function() {
-            console.log('Inicializando funciones del classroom...');
+        // Definir funciones globalmente para asegurar disponibilidad inmediata
+        console.log('Inicializando funciones del classroom...');
+        
+        // Función para respuestas de multiple choice - definida directamente en window
+        window.checkAnswer = function(button, isCorrect, feedbackId, explanationText) {
+            console.log('checkAnswer llamado:', { isCorrect, feedbackId, explanationText });
             
-            // Función para respuestas de multiple choice
-            window.checkAnswer = function(button, isCorrect, feedbackId, explanationText) {
-                console.log('checkAnswer llamado:', { isCorrect, feedbackId, explanationText });
-                
-                try {
-                    const container = button.closest('.quiz-question');
-                    if (!container) {
-                        console.error('No se encontró el contenedor .quiz-question');
-                        return;
-                    }
-                    
-                    const buttons = container.querySelectorAll('.option-btn');
-                    const feedbackBox = document.getElementById(feedbackId);
-
-                    if (!feedbackBox) {
-                        console.error('No se encontró el feedback box con ID:', feedbackId);
-                        return;
-                    }
-
-                    buttons.forEach(btn => btn.disabled = true);
-
-                    if (isCorrect) {
-                        button.classList.add('selected-correct');
-                        feedbackBox.style.display = 'block';
-                        feedbackBox.style.background = '#f0fff4';
-                        feedbackBox.style.border = '1px solid #c6f6d5';
-                        feedbackBox.style.color = '#22543d';
-                        feedbackBox.innerHTML = '<strong>Respuesta Correcta.</strong> ' + explanationText;
-                    } else {
-                        button.classList.add('selected-incorrect');
-                        feedbackBox.style.display = 'block';
-                        feedbackBox.style.background = '#fff5f5';
-                        feedbackBox.style.border = '1px solid #feb2b2';
-                        feedbackBox.style.color = '#9b2c2c';
-                        feedbackBox.innerHTML = '<strong>Respuesta Incorrecta.</strong> ' + explanationText;
-                    }
-                } catch (error) {
-                    console.error('Error en checkAnswer:', error);
+            try {
+                const container = button.closest('.quiz-question');
+                if (!container) {
+                    console.error('No se encontró el contenedor .quiz-question');
+                    return;
                 }
-            };
+                
+                const buttons = container.querySelectorAll('.option-btn');
+                const feedbackBox = document.getElementById(feedbackId);
+
+                if (!feedbackBox) {
+                    console.error('No se encontró el feedback box con ID:', feedbackId);
+                    return;
+                }
+
+                buttons.forEach(btn => btn.disabled = true);
+
+                if (isCorrect) {
+                    button.classList.add('selected-correct');
+                    feedbackBox.style.display = 'block';
+                    feedbackBox.style.background = '#f0fff4';
+                    feedbackBox.style.border = '1px solid #c6f6d5';
+                    feedbackBox.style.color = '#22543d';
+                    feedbackBox.innerHTML = '<strong>Respuesta Correcta.</strong> ' + explanationText;
+                } else {
+                    button.classList.add('selected-incorrect');
+                    feedbackBox.style.display = 'block';
+                    feedbackBox.style.background = '#fff5f5';
+                    feedbackBox.style.border = '1px solid #feb2b2';
+                    feedbackBox.style.color = '#9b2c2c';
+                    feedbackBox.innerHTML = '<strong>Respuesta Incorrecta.</strong> ' + explanationText;
+                }
+            } catch (error) {
+                console.error('Error en checkAnswer:', error);
+            }
+        };
+        
+        console.log('Función checkAnswer definida en window');
 
 
 

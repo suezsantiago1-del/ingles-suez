@@ -198,6 +198,13 @@ const dbPromise = (async () => {
         console.log('Contenido HTML (primeros 1000 caracteres):', leccion.contenido_html.substring(0, 1000));
     });
     
+    // Mostrar contenido de la lección 53 específicamente
+    const leccion53 = await adapter.pgPool.query('SELECT id, titulo, contenido_html FROM lecciones WHERE id = 53');
+    if (leccion53.rows.length > 0) {
+        console.log('Contenido de la lección 53:', leccion53.rows[0].titulo);
+        console.log('Contenido HTML completo:', leccion53.rows[0].contenido_html);
+    }
+    
     // También mostrar todas las lecciones para ver el ID correcto
     const todasLasLecciones = await adapter.pgPool.query('SELECT id, titulo FROM lecciones ORDER BY id');
     console.log('Todas las lecciones disponibles:');
