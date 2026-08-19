@@ -392,6 +392,15 @@ export const renderClassroom = async (req, res) => {
                 const ultimasDesbloqueadas = leccionesConEstado.filter(l => l.desbloqueada);
                 leccionActiva = ultimasDesbloqueadas[ultimasDesbloqueadas.length - 1];
             }
+        } else {
+            // Si no hay parámetro leccion, redirigir a la primera lección desbloqueada con el parámetro correcto
+            const primeraDesbloqueada = leccionesConEstado.find(l => l.desbloqueada);
+            if (primeraDesbloqueada) {
+                console.log('Redirigiendo a primera lección desbloqueada:', primeraDesbloqueada.id);
+                return res.redirect(`/classroom/${cursoId}?leccion=${primeraDesbloqueada.id}`);
+            }
+        }
+            }
         }
 
         // Load announcements for this course

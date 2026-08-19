@@ -247,6 +247,11 @@
 
             <!-- Contenido Interactivo -->
             <div class="leccion-body">
+                <div style="margin-bottom: 1.5rem; text-align: right;">
+                    <button onclick="window.resetQuizzes()" style="background: #f7fafc; border: 1px solid #cbd5e0; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.9rem; color: #4a5568;">
+                        🔄 Rehacer Ejercicios
+                    </button>
+                </div>
                 <%- leccionActiva ? leccionActiva.contenido_html : '' %>
             </div>
         </main>
@@ -298,6 +303,36 @@
                     }
                 } catch (error) {
                     console.error('Error en checkAnswer:', error);
+                }
+            };
+
+            // Función para rehacer los multiple choice
+            window.resetQuizzes = function() {
+                console.log('Rehaciendo quizzes...');
+                
+                try {
+                    // Resetear todos los quizzes
+                    const quizQuestions = document.querySelectorAll('.quiz-question');
+                    quizQuestions.forEach(container => {
+                        const buttons = container.querySelectorAll('.option-btn');
+                        const feedbackBox = container.querySelector('div[id^="f"]');
+                        
+                        // Resetear botones
+                        buttons.forEach(btn => {
+                            btn.disabled = false;
+                            btn.classList.remove('selected-correct', 'selected-incorrect');
+                        });
+                        
+                        // Ocultar feedback
+                        if (feedbackBox) {
+                            feedbackBox.style.display = 'none';
+                        }
+                    });
+                    
+                    alert('Los ejercicios de multiple choice han sido reiniciados. Puedes intentar responderlos nuevamente.');
+                } catch (error) {
+                    console.error('Error al reiniciar quizzes:', error);
+                    alert('Error al reiniciar los ejercicios.');
                 }
             };
 
