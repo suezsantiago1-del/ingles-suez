@@ -227,13 +227,21 @@
                 <a href="/profesor/entregas" onclick="toggleMobileMenu()" style="background: #e2ebd5; color: #0b2238; padding: 0.75rem; border-radius: 6px; text-align: center; margin-top: 0.5rem;">Panel Profesor</a>
             <% } %>
 
-            <a href="/messages" onclick="toggleMobileMenu()" style="padding: 0.75rem 0; display: flex; justify-content: space-between; align-items: center;">
-                <span>Mis Mensajes</span>
-                <% if (locals.mensajesNoLeidos && locals.mensajesNoLeidos > 0) { %>
-                    <span style="background: #e53e3e; color: white; border-radius: 50%; padding: 0.2rem 0.5rem; font-size: 0.75rem; font-weight: bold;"><%= locals.mensajesNoLeidos %></span>
-                <% } %>
-            </a>
-            <button type="button" onclick="marcarMensajesLeidos()" style="background: rgba(255,255,255,0.08); color: #e2ebd5; border: none; padding: 0.65rem 0.75rem; border-radius: 6px; cursor: pointer; font-family: 'Tenor Sans', sans-serif; font-size: 0.85rem; width: 100%; text-align: left;">Marcar mensajes como leídos</button>
+            <div style="position: relative;">
+                <a href="/messages" onclick="toggleMobileMenu()" style="padding: 0.75rem 0; display: flex; justify-content: space-between; align-items: center;">
+                    <span>Mis Mensajes</span>
+                    <% if (locals.mensajesNoLeidos && locals.mensajesNoLeidos > 0) { %>
+                        <span style="background: #e53e3e; color: white; border-radius: 50%; padding: 0.2rem 0.5rem; font-size: 0.75rem; font-weight: bold;"><%= locals.mensajesNoLeidos %></span>
+                    <% } %>
+                    <span id="mensajesMenuBtnMobile" onclick="event.stopPropagation(); toggleMensajesMenuMobile()" style="display: flex; align-items: center; cursor: pointer; padding: 0.1rem 0.25rem;">
+                        <svg style="width:0.6rem; height:0.6rem;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6" /></svg>
+                    </span>
+                </a>
+                <div id="mensajesMenuDesplegableMobile" style="display: none; position: absolute; right: 0; top: 100%; background: #ffffff; border: 1px solid #cbd5e0; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); min-width: 190px; z-index: 300; padding: 0.45rem 0;">
+                    <a href="/messages" onclick="toggleMobileMenu()" style="display: block; padding: 0.55rem 1rem; color: #0b2238; text-decoration: none; font-size: 0.9rem;">Ver mensajes</a>
+                    <button type="button" onclick="marcarMensajesLeidos(); toggleMobileMenu();" id="btnMarcarLeidosMenuMobile" style="display: block; width: 100%; text-align: left; background: none; border: none; padding: 0.55rem 1rem; color: #0b2238; font-size: 0.9rem; cursor: pointer;">Marcar como leídos</button>
+                </div>
+            </div>
 
             <a href="/mis-cursos" onclick="toggleMobileMenu()" style="padding: 0.75rem 0;">Mis Cursos</a>
             <a href="/auth/profile" onclick="toggleMobileMenu()" style="padding: 0.75rem 0;">Mi Perfil</a>
@@ -270,6 +278,14 @@ function toggleMensajesMenu() {
     menu.style.display = visible ? 'none' : 'block';
 }
 
+// Menú desplegable de Mis Mensajes para móvil
+function toggleMensajesMenuMobile() {
+    const menu = document.getElementById('mensajesMenuDesplegableMobile');
+    if (!menu) return;
+    const visible = menu.style.display === 'block';
+    menu.style.display = visible ? 'none' : 'block';
+}
+
 document.addEventListener('click', function (e) {
     const btn = document.getElementById('mensajesMenuBtn');
     const menu = document.getElementById('mensajesMenuDesplegable');
@@ -278,6 +294,16 @@ document.addEventListener('click', function (e) {
         toggleMensajesMenu();
     } else if (!menu.contains(e.target)) {
         menu.style.display = 'none';
+    }
+    
+    // Para el menú móvil
+    const btnMobile = document.getElementById('mensajesMenuBtnMobile');
+    const menuMobile = document.getElementById('mensajesMenuDesplegableMobile');
+    if (!btnMobile || !menuMobile) return;
+    if (btnMobile.contains(e.target)) {
+        toggleMensajesMenuMobile();
+    } else if (!menuMobile.contains(e.target)) {
+        menuMobile.style.display = 'none';
     }
 });
 
