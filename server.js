@@ -23,6 +23,7 @@ import {
     renderMensajesAlumno,
     renderMessagesList,
     renderMessagesCourse,
+    marcarMensajesLeidos,
     descargarCertificado,
     renderPrivateClasses,
     guardarConsultaParticulares,
@@ -238,6 +239,7 @@ app.get('/mis-mensajes', (req, res) => {
 // Messages master list and detail per course
 app.get('/messages', renderMessagesList);
 app.get('/messages/:courseId', renderMessagesCourse);
+app.post('/messages/leer', marcarMensajesLeidos);
 
 // Global error handler (catches Multer and body-parser errors and returns JSON)
 app.use((err, req, res, next) => {

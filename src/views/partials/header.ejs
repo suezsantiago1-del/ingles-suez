@@ -175,13 +175,20 @@
                 <a href="/profesor/entregas" style="background: #e2ebd5; color: #0b2238; padding: 0.4rem 0.9rem; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 0.95rem; font-family: 'Tenor Sans', sans-serif;">Panel Profesor</a>
             <% } %>
 
-            <!-- Enlace a Bandeja de Mensajes para Alumnos -->
-            <a href="/messages" style="color: white; text-decoration: none; font-size: 1rem; font-family: 'GFS Didot', serif; position: relative;">
-                Mis Mensajes
-                <% if (locals.mensajesNoLeidos && locals.mensajesNoLeidos > 0) { %>
-                    <span style="background: #e53e3e; color: white; border-radius: 50%; padding: 0.1rem 0.4rem; font-size: 0.75rem; font-weight: bold; margin-left: 0.3rem;"><%= locals.mensajesNoLeidos %></span>
-                <% } %>
-            </a>
+            <!-- Menú desplegable de Mis Mensajes (clic izquierdo: mostrar opciones) -->
+            <div style="position: relative;">
+                <div id="mensajesMenuBtn" style="display: flex; align-items: center; gap: 0.2rem; cursor: pointer;">
+                    <span style="color: white; text-decoration: none; font-size: 1rem; font-family: 'GFS Didot', serif; white-space: nowrap;">Mis Mensajes</span>
+                    <% if (locals.mensajesNoLeidos && locals.mensajesNoLeidos > 0) { %>
+                        <span style="background: #e53e3e; color: white; border-radius: 50%; padding: 0.1rem 0.4rem; font-size: 0.75rem; font-weight: bold;"><%= locals.mensajesNoLeidos %></span>
+                    <% } %>
+                    <svg style="width:0.6rem; height:0.6rem; margin-top:0.2rem;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6" /></svg>
+                </div>
+                <div id="mensajesMenuDesplegable" style="display: none; position: absolute; right: 0; top: 100%; background: #ffffff; border: 1px solid #cbd5e0; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); min-width: 190px; z-index: 300; padding: 0.45rem 0;">
+                    <a href="/messages" style="display: block; padding: 0.55rem 1rem; color: #0b2238; text-decoration: none; font-size: 0.9rem;">Ver mensajes</a>
+                    <button type="button" onclick="marcarMensajesLeidos()" id="btnMarcarLeidosMenu" style="display: block; width: 100%; text-align: left; background: none; border: none; padding: 0.55rem 1rem; color: #0b2238; font-size: 0.9rem; cursor: pointer;">Marcar como leídos</button>
+                </div>
+            </div>
 
             <a href="/mis-cursos" style="color: white; text-decoration: none; font-size: 1rem; font-family: 'GFS Didot', serif;">Mis Cursos</a>
             <a href="/auth/profile" style="color: white; text-decoration: none; font-size: 1rem; font-family: 'GFS Didot', serif;">Mi Perfil</a>
@@ -224,6 +231,7 @@
                     <span style="background: #e53e3e; color: white; border-radius: 50%; padding: 0.2rem 0.5rem; font-size: 0.75rem; font-weight: bold;"><%= locals.mensajesNoLeidos %></span>
                 <% } %>
             </a>
+            <button type="button" onclick="marcarMensajesLeidos()" style="background: rgba(255,255,255,0.08); color: #e2ebd5; border: none; padding: 0.65rem 0.75rem; border-radius: 6px; cursor: pointer; font-family: 'Tenor Sans', sans-serif; font-size: 0.85rem; width: 100%; text-align: left;">Marcar mensajes como leídos</button>
 
             <a href="/mis-cursos" onclick="toggleMobileMenu()" style="padding: 0.75rem 0;">Mis Cursos</a>
             <a href="/auth/profile" onclick="toggleMobileMenu()" style="padding: 0.75rem 0;">Mi Perfil</a>
@@ -250,5 +258,41 @@ function toggleMobileMenu() {
         overlay.classList.add('active');
         document.body.style.overflow = 'hidden';
     }
+}
+
+// Menú desplegable de Mis Mensajes: clic izquierdo muestra opciones
+function toggleMensajesMenu() {
+    const menu = document.getElementById('mensajesMenuDesplegable');
+    if (!menu) return;
+    const visible = menu.style.display === 'block';
+    menu.style.display = visible ? 'none' : 'block';
+}
+
+document.addEventListener('click', function (e) {
+    const btn = document.getElementById('mensajesMenuBtn');
+    const menu = document.getElementById('mensajesMenuDesplegable');
+    if (!btn || !menu) return;
+    if (btn.contains(e.target)) {
+        toggleMensajesMenu();
+    } else if (!menu.contains(e.target)) {
+        menu.style.display = 'none';
+    }
+});
+
+// Marca todas las devoluciones del alumno como leídas y actualiza la UI
+function marcarMensajesLeidos() {
+    const menu = document.getElementById('mensajesMenuDesplegable');
+    fetch('/messages/leer', { method: 'POST' })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                if (menu) menu.style.display = 'none';
+                alert('Mensajes marcados como leídos.');
+                window.location.reload();
+            } else {
+                alert(data.message || 'No se pudieron marcar como leídos.');
+            }
+        })
+        .catch(() => alert('Error de conexión al marcar como leídos.'));
 }
 </script>

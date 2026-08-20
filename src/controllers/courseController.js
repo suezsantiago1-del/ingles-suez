@@ -1282,6 +1282,20 @@ export const renderMessagesList = async (req, res) => {
     }
 };
 
+export const marcarMensajesLeidos = async (req, res) => {
+    if (!req.session.user) {
+        return res.status(401).json({ success: false, message: 'No autenticado' });
+    }
+    try {
+        const db = await dbPromise;
+        await db.run('UPDATE devoluciones SET leida = TRUE WHERE usuario_id = ?', [req.session.user.id]);
+        return res.json({ success: true });
+    } catch (error) {
+        console.error('Error al marcar mensajes como leídos:', error);
+        return res.status(500).json({ success: false, message: 'Error al marcar como leídos' });
+    }
+};
+
 export const renderMessagesCourse = async (req, res) => {
     if (!req.session.user) return res.redirect('/auth/login');
     const usuarioId = req.session.user.id;
