@@ -168,6 +168,20 @@ const dbPromise = (async () => {
         );
     `);
 
+    // Consultas de alumnos al profesor por lección (idempotente)
+    await adapter.pgPool.query(`
+        CREATE TABLE IF NOT EXISTS consultas_leccion (
+            id SERIAL PRIMARY KEY,
+            usuario_id INTEGER NOT NULL,
+            curso_id INTEGER NOT NULL,
+            leccion_id INTEGER NOT NULL,
+            mensaje TEXT NOT NULL,
+            respuesta_profesor TEXT DEFAULT NULL,
+            fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            fecha_respuesta TIMESTAMP DEFAULT NULL
+        );
+    `);
+
     // Cursos iniciales (solo si la tabla está vacía)
     const countRes = await adapter.pgPool.query("SELECT COUNT(*) FROM cursos");
     if (parseInt(countRes.rows[0].count) === 0) {

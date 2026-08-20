@@ -21,6 +21,8 @@ import {
     uploadLessonVideo,
     handleMpWebhook,
     renderMensajesAlumno,
+    guardarConsultaLeccion,
+    responderConsultaLeccion,
     renderMessagesList,
     renderMessagesCourse,
     marcarMensajesLeidos,
@@ -202,6 +204,10 @@ app.post('/profesor/nota', express.json(), saveTeacherNote);
 app.post('/profesor/anuncio', express.json(), createOrUpdateAnnouncement);
 app.delete('/profesor/anuncio', express.json(), deleteAnnouncement);
 app.post('/profesor/leccion/nota', express.json(), updateLessonTeacherNote);
+
+// Consultas de alumnos al profesor por lección
+app.post('/consultas/leccion', express.json(), guardarConsultaLeccion);
+app.post('/profesor/consulta/responder', express.json(), responderConsultaLeccion);
 
 // Multer setup for lesson video uploads
 const storage = multer.diskStorage({

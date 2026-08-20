@@ -405,6 +405,14 @@ export const renderClassroom = async (req, res) => {
         // Load announcements for this course
         const anuncios = await db.all('SELECT id, mensaje, created_at FROM curso_anuncios WHERE curso_id = ? ORDER BY created_at DESC', [cursoId]);
 
+        // Consultas del alumno al profesor para la lección activa
+        const consultas = (leccionActiva && leccionActiva.id)
+            ? await db.all(
+                'SELECT id, mensaje, respuesta_profesor, fecha, fecha_respuesta FROM consultas_leccion WHERE usuario_id = ? AND leccion_id = ? ORDER BY fecha ASC',
+                [usuarioId, leccionActiva.id]
+              )
+            : [];
+
         // Debug: log active lesson and video URLs to help trace missing video issues
         try {
             const activeUrl = leccionActiva && leccionActiva.video_url;
@@ -453,7 +461,8 @@ export const renderClassroom = async (req, res) => {
             curso, 
             lecciones: leccionesConEstado, 
             leccionActiva,
-            anuncios: anuncios || []
+            anuncios: anuncios || [],
+            consultas: consultas || []
         });
 
     } catch (error) {
@@ -579,7 +588,19 @@ export const renderPanelProfesor = async (req, res) => {
         // Load course announcements
         const anuncios = await db.all(`SELECT id, curso_id, mensaje, created_at, updated_at FROM curso_anuncios ORDER BY created_at DESC`);
 
-        return res.render('teacher-panel', { entregas: entregas || [], lecciones: lecciones || [], anuncios: anuncios || [] });
+        // Consultas de alumnos al profesor, por lección
+        const consultas = await db.all(`
+            SELECT c.id, c.usuario_id, c.curso_id, c.leccion_id, c.mensaje, c.respuesta_profesor, c.fecha, c.fecha_respuesta,
+                   u.nombre AS usuario_nombre, u.email AS usuario_email,
+                   co.titulo AS curso_titulo, l.titulo AS leccion_titulo, l.orden
+            FROM consultas_leccion c
+            JOIN usuarios u ON c.usuario_id = u.id
+            JOIN cursos co ON c.curso_id = co.id
+            JOIN lecciones l ON c.leccion_id = l.id
+            ORDER BY c.fecha ASC
+        `);
+
+        return res.render('teacher-panel', { entregas: entregas || [], lecciones: lecciones || [], anuncios: anuncios || [], consultas: consultas || [] });
     } catch (error) {
         console.error('Error al obtener las entregas:', error);
         return res.redirect('/');
@@ -1258,6 +1279,48 @@ export const updateLessonTeacherNote = async (req, res) => {
     } catch (error) {
         console.error('Error guardando nota de la lección:', error);
         return res.status(500).json({ success: false, message: 'Error al guardar nota de la lección' });
+    }
+};
+
+export const guardarConsultaLeccion = async (req, res) => {
+    if (!req.session.user) {
+        return res.status(401).json({ success: false, message: 'No autenticado' });
+    }
+    const { cursoId, leccionId, mensaje } = req.body || {};
+    if (!cursoId || !leccionId || !mensaje || !String(mensaje).trim()) {
+        return res.status(400).json({ success: false, message: 'Faltan datos para la consulta' });
+    }
+    try {
+        const db = await dbPromise;
+        await db.run(
+            'INSERT INTO consultas_leccion (usuario_id, curso_id, leccion_id, mensaje) VALUES (?, ?, ?, ?)',
+            [req.session.user.id, parseInt(cursoId, 10), parseInt(leccionId, 10), String(mensaje).trim()]
+        );
+        return res.json({ success: true });
+    } catch (error) {
+        console.error('Error al guardar consulta de lección:', error);
+        return res.status(500).json({ success: false, message: 'Error al guardar la consulta' });
+    }
+};
+
+export const responderConsultaLeccion = async (req, res) => {
+    if (!req.session.user || req.session.user.email !== EMAIL_PROFESOR) {
+        return res.status(403).json({ success: false, message: 'Acceso denegado' });
+    }
+    const { consultaId, respuesta } = req.body || {};
+    if (!consultaId || !respuesta || !String(respuesta).trim()) {
+        return res.status(400).json({ success: false, message: 'Faltan datos para responder' });
+    }
+    try {
+        const db = await dbPromise;
+        await db.run(
+            'UPDATE consultas_leccion SET respuesta_profesor = ?, fecha_respuesta = CURRENT_TIMESTAMP WHERE id = ?',
+            [String(respuesta).trim(), parseInt(consultaId, 10)]
+        );
+        return res.json({ success: true });
+    } catch (error) {
+        console.error('Error al responder consulta de lección:', error);
+        return res.status(500).json({ success: false, message: 'Error al responder la consulta' });
     }
 };
 

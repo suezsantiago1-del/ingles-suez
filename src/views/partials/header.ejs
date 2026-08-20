@@ -175,14 +175,16 @@
                 <a href="/profesor/entregas" style="background: #e2ebd5; color: #0b2238; padding: 0.4rem 0.9rem; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 0.95rem; font-family: 'Tenor Sans', sans-serif;">Panel Profesor</a>
             <% } %>
 
-            <!-- Menú desplegable de Mis Mensajes (clic izquierdo: mostrar opciones) -->
+            <!-- Menú desplegable de Mis Mensajes: el texto navega directo a /messages, la flechita abre las opciones -->
             <div style="position: relative;">
-                <div id="mensajesMenuBtn" style="display: flex; align-items: center; gap: 0.2rem; cursor: pointer;">
-                    <span style="color: white; text-decoration: none; font-size: 1rem; font-family: 'GFS Didot', serif; white-space: nowrap;">Mis Mensajes</span>
+                <div style="display: flex; align-items: center; gap: 0.2rem;">
+                    <a href="/messages" style="color: white; text-decoration: none; font-size: 1rem; font-family: 'GFS Didot', serif; white-space: nowrap;">Mis Mensajes</a>
                     <% if (locals.mensajesNoLeidos && locals.mensajesNoLeidos > 0) { %>
                         <span style="background: #e53e3e; color: white; border-radius: 50%; padding: 0.1rem 0.4rem; font-size: 0.75rem; font-weight: bold;"><%= locals.mensajesNoLeidos %></span>
                     <% } %>
-                    <svg style="width:0.6rem; height:0.6rem; margin-top:0.2rem;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6" /></svg>
+                    <span id="mensajesMenuBtn" title="Opciones" style="display: flex; align-items: center; cursor: pointer; padding: 0.1rem 0.25rem;">
+                        <svg style="width:0.6rem; height:0.6rem;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6" /></svg>
+                    </span>
                 </div>
                 <div id="mensajesMenuDesplegable" style="display: none; position: absolute; right: 0; top: 100%; background: #ffffff; border: 1px solid #cbd5e0; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); min-width: 190px; z-index: 300; padding: 0.45rem 0;">
                     <a href="/messages" style="display: block; padding: 0.55rem 1rem; color: #0b2238; text-decoration: none; font-size: 0.9rem;">Ver mensajes</a>
@@ -260,7 +262,7 @@ function toggleMobileMenu() {
     }
 }
 
-// Menú desplegable de Mis Mensajes: clic izquierdo muestra opciones
+// Menú desplegable de Mis Mensajes: se abre solo con la flechita
 function toggleMensajesMenu() {
     const menu = document.getElementById('mensajesMenuDesplegable');
     if (!menu) return;
