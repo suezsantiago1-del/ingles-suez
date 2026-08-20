@@ -607,6 +607,54 @@ export const renderPanelProfesor = async (req, res) => {
     }
 };
 
+export const renderGestionCursos = async (req, res) => {
+    if (!req.session.user || req.session.user.email !== EMAIL_PROFESOR) {
+        return res.status(403).send('<h1>403 - Acceso denegado: Solo el profesor puede ver esta sección.</h1>');
+    }
+    try {
+        const db = await dbPromise;
+
+        const lecciones = await db.all(`
+            SELECT l.id as leccion_id, l.titulo as leccion_titulo, l.curso_id, l.orden, l.video_url, l.teacher_note, c.titulo as curso_titulo
+            FROM lecciones l
+            JOIN cursos c ON l.curso_id = c.id
+            ORDER BY c.id, l.orden ASC
+        `);
+
+        const anuncios = await db.all(`SELECT id, curso_id, mensaje, created_at, updated_at FROM curso_anuncios ORDER BY created_at DESC`);
+
+        return res.render('gestion-cursos', { lecciones: lecciones || [], anuncios: anuncios || [] });
+    } catch (error) {
+        console.error('Error al obtener gestión de cursos:', error);
+        return res.redirect('/profesor/entregas');
+    }
+};
+
+export const renderConsultasProfesor = async (req, res) => {
+    if (!req.session.user || req.session.user.email !== EMAIL_PROFESOR) {
+        return res.status(403).send('<h1>403 - Acceso denegado: Solo el profesor puede ver esta sección.</h1>');
+    }
+    try {
+        const db = await dbPromise;
+
+        const consultas = await db.all(`
+            SELECT c.id, c.usuario_id, c.curso_id, c.leccion_id, c.mensaje, c.respuesta_profesor, c.fecha, c.fecha_respuesta,
+                   u.nombre AS usuario_nombre, u.email AS usuario_email,
+                   co.titulo AS curso_titulo, l.titulo AS leccion_titulo, l.orden
+            FROM consultas_leccion c
+            JOIN usuarios u ON c.usuario_id = u.id
+            JOIN cursos co ON c.curso_id = co.id
+            JOIN lecciones l ON c.leccion_id = l.id
+            ORDER BY c.fecha ASC
+        `);
+
+        return res.render('consultas-profesor', { consultas: consultas || [] });
+    } catch (error) {
+        console.error('Error al obtener consultas de alumnos:', error);
+        return res.redirect('/profesor/entregas');
+    }
+};
+
 export const guardarDevolucion = async (req, res) => {
     if (!req.session.user) {
         return res.status(401).json({ success: false, message: 'No autenticado' });

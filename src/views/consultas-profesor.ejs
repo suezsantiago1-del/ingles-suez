@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consultas de Alumnos - INGLÉS SUEZ</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        body { background-color: #f4f7f6; margin: 0; font-family: system-ui, -apple-system, sans-serif; }
+        .teacher-nav-tabs { max-width: 1400px; margin: 1.5rem auto 0 auto; display: flex; gap: 0.5rem; padding: 0 1rem; flex-wrap: wrap; }
+        .teacher-tab { padding: 0.8rem 1.5rem; background: #cbd5e0; color: #0b2238; text-decoration: none; font-weight: bold; border-radius: 8px 8px 0 0; font-size: 0.95rem; transition: background 0.2s, color 0.2s; }
+        .teacher-tab:hover { background: #a0aec0; }
+        .teacher-tab.active { background: #ffffff; color: #184168; border-top: 3px solid #184168; }
+    </style>
+</head>
+<body class="bg-neutral">
+
+    <%- include('partials/header') %>
+
+    <!-- Pestañas de Navegación del Profesor -->
+    <div class="teacher-nav-tabs">
+        <a href="/profesor/entregas" class="teacher-tab">Entregas de Cursos</a>
+        <a href="/profesor/gestion" class="teacher-tab">Gestión de Cursos</a>
+        <a href="/profesor/consultas" class="teacher-tab active">Consultas de Alumnos</a>
+        <a href="/profesor/particulares" class="teacher-tab">Clases Particulares</a>
+    </div>
+
+    <!-- Sección: Consultas de Alumnos al Profesor -->
+    <section style="max-width: 1400px; margin: 0 auto 2.5rem auto; padding: 0 1rem;">
+        <h2 style="color: #0b2238; margin: 0 0 1rem 0; font-size: 1.3rem; border-bottom: 2px solid #0b2238; padding-bottom: 0.6rem;">Consultas de Alumnos por Lección</h2>
+        <p style="color: var(--text-muted); margin: 0 0 1rem 0;">Los alumnos pueden hacer consultas en cada lección del aula virtual. Respondelas desde aquí.</p>
+
+        <div id="consultas-alumnos" style="background:#ffffff; border:1px solid #e2e8f0; border-radius:10px; padding:1.5rem;">
+<% if (consultas && consultas.length > 0) { %>
+                <% consultas.forEach(c => { %>
+                    <div style="border:1px solid #e2e8f0; border-radius:8px; padding:1.2rem; margin-bottom:1rem; background:#fafbfc;">
+                        <div style="display:flex; justify-content:space-between; align-items:baseline; gap:1rem; flex-wrap:wrap; margin-bottom:0.5rem;">
+                            <strong style="color:#184168;"><%= c.usuario_nombre %> <span style="font-weight:400; color:#718096;">(<%= c.usuario_email %>)</span></strong>
+                            <span style="color:#a0aec0; font-size:0.8rem;"><%= c.curso_titulo %> — Clase <%= c.orden %>: <%= c.leccion_titulo %> · <%= new Date(c.fecha).toLocaleString('es-AR') %></span>
+                        </div>
+                        <p style="margin:0 0 0.8rem 0; color:#2d3748; white-space:pre-wrap;"><%= c.mensaje %></p>
+
+                        <% if (c.respuesta_profesor) { %>
+                            <div style="background:#ebf8ff; border-left:4px solid #2b6cb0; padding:0.8rem 1rem; border-radius:4px; margin-bottom:0.8rem;">
+                                <strong style="color:#2b6cb0;">Tu respuesta:</strong>
+                                <p style="margin:0.3rem 0 0 0; color:#2d3748; white-space:pre-wrap;"><%= c.respuesta_profesor %></p>
+                            </div>
+                            <textarea id="respuesta-consulta-<%= c.id %>" placeholder="Editar respuesta..." style="width:100%; height:80px; padding:0.7rem; border:1px solid #cbd5e0; border-radius:6px; font-family:inherit; font-size:0.95rem; margin-bottom:0.6rem;"><%= c.respuesta_profesor %></textarea>
+                            <button type="button" onclick="responderConsulta(<%= c.id %>)" style="background:#2b6cb0; color:white; border:none; padding:0.55rem 1rem; border-radius:6px; cursor:pointer; font-weight:bold;">Actualizar respuesta</button>
+                        <% } else { %>
+                            <textarea id="respuesta-consulta-<%= c.id %>" placeholder="Escribe tu respuesta aquí..." style="width:100%; height:80px; padding:0.7rem; border:1px solid #cbd5e0; border-radius:6px; font-family:inherit; font-size:0.95rem; margin-bottom:0.6rem;"></textarea>
+                            <button type="button" onclick="responderConsulta(<%= c.id %>)" style="background:#184168; color:white; border:none; padding:0.55rem 1rem; border-radius:6px; cursor:pointer; font-weight:bold;">Responder consulta</button>
+                        <% } %>
+                    </div>
+                <% }) %>
+            <% } else { %>
+                <p style="color:#a0aec0; margin:0; text-align:center;">Aún no hay consultas de los alumnos.</p>
+            <% } %>
+        </div>
+    </section>
+
+    <%- include('partials/footer') %>
+
+    <script>
+// Responder/actualizar consultas de alumnos por lección
+        function responderConsulta(consultaId) {
+            const textarea = document.getElementById('respuesta-consulta-' + consultaId);
+            const respuesta = textarea ? textarea.value.trim() : '';
+            if (!respuesta) { alert('Escribe una respuesta antes de enviarla.'); return; }
+            fetch('/profesor/consulta/responder', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ consultaId, respuesta })
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Respuesta guardada.');
+                        window.location.reload();
+                    } else {
+                        alert(data.message || 'No se pudo guardar la respuesta.');
+                    }
+                })
+                .catch(() => alert('Error de conexión al guardar la respuesta.'));
+        }
+    </script>
+</body>
+</html>

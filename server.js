@@ -15,6 +15,8 @@ import {
     renderClassroom,
     guardarEntrega,
     renderPanelProfesor,
+    renderGestionCursos,
+    renderConsultasProfesor,
     guardarDevolucion,
     saveTeacherNote,
     updateLessonTeacherNote,
@@ -199,6 +201,8 @@ app.post('/mercadopago/webhook', express.json(), handleMpWebhook);
 // Entregas de alumnos y panel del profesor para cursos
 app.post('/entregas', guardarEntrega);
 app.get('/profesor/entregas', renderPanelProfesor);
+app.get('/profesor/gestion', renderGestionCursos);
+app.get('/profesor/consultas', renderConsultasProfesor);
 app.post('/profesor/devolucion', guardarDevolucion);
 app.post('/profesor/nota', express.json(), saveTeacherNote);
 app.post('/profesor/anuncio', express.json(), createOrUpdateAnnouncement);

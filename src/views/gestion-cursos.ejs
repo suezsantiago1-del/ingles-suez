@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Cursos - INGLÉS SUEZ</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        body { background-color: #f4f7f6; margin: 0; font-family: system-ui, -apple-system, sans-serif; }
+        .teacher-nav-tabs { max-width: 1400px; margin: 1.5rem auto 0 auto; display: flex; gap: 0.5rem; padding: 0 1rem; flex-wrap: wrap; }
+        .teacher-tab { padding: 0.8rem 1.5rem; background: #cbd5e0; color: #0b2238; text-decoration: none; font-weight: bold; border-radius: 8px 8px 0 0; font-size: 0.95rem; transition: background 0.2s, color 0.2s; }
+        .teacher-tab:hover { background: #a0aec0; }
+        .teacher-tab.active { background: #ffffff; color: #184168; border-top: 3px solid #184168; }
+    </style>
+</head>
+<body class="bg-neutral">
+
+    <%- include('partials/header') %>
+
+    <!-- Pestañas de Navegación del Profesor -->
+    <div class="teacher-nav-tabs">
+        <a href="/profesor/entregas" class="teacher-tab">Entregas de Cursos</a>
+        <a href="/profesor/gestion" class="teacher-tab active">Gestión de Cursos</a>
+        <a href="/profesor/consultas" class="teacher-tab">Consultas de Alumnos</a>
+        <a href="/profesor/particulares" class="teacher-tab">Clases Particulares</a>
+    </div>
+
+    <!-- Sección: Gestión de Cursos -->
+    <section style="max-width: 1400px; margin: 0 auto 2.5rem auto; padding: 0 1rem;">
+        <h2 style="color: #0b2238; margin: 0 0 1rem 0; font-size: 1.3rem; border-bottom: 2px solid #0b2238; padding-bottom: 0.6rem;">Gestión de Cursos</h2>
+
+        <!-- SECTION: Video Management for Lessons (Visible to Professor) -->
+        <div id="video-management" class="card" style="margin-bottom: 2rem;">
+            <h3 style="margin-top: 0; color: var(--primary-navy);">Gestionar Videos de Lecciones</h3>
+            <p style="color: var(--text-muted); margin-top: 0.2rem;">Seleccioná la lección, pega una URL de YouTube/directa o subí un archivo MP4.</p>
+
+            <div style="display:flex; gap:1rem; align-items:flex-start; flex-wrap:wrap;">
+                <select id="select-leccion" class="form-control" style="min-width:320px;">
+                    <option value="">-- Selecciona una lección --</option>
+                </select>
+
+                <input id="input-video-url" class="form-control" type="text" placeholder="https://youtube.com/watch?v=... o URL directa .mp4" style="flex:1; min-width:300px;" />
+
+                <input id="input-video-file" class="form-control" type="file" accept="video/mp4,video/*" style="padding:0.3rem; max-width:220px;" />
+
+                <button id="btn-upload-video" class="btn-primary">Guardar Video</button>
+            </div>
+
+            <div id="video-management-feedback" style="margin-top:0.8rem;color:#22543d;display:none;"></div>
+        </div>
+<!-- SECTION: Course Announcements Management -->
+        <div id="announcements-management" class="card" style="margin-bottom: 2rem;">
+            <h3 style="margin-top: 0; color: var(--primary-navy);">Anuncios del Curso</h3>
+            <p style="color: var(--text-muted); margin-top: 0.2rem;">Seleccioná un curso y publicá un anuncio que verán todos los estudiantes del curso.</p>
+
+            <div style="display:flex; gap:1rem; align-items:flex-start; flex-wrap:wrap; margin-top:0.6rem;">
+                <select id="select-course-ann" class="form-control" style="min-width:320px;"></select>
+                <div style="flex:1; min-width:300px;">
+                    <textarea id="announcement-text" class="form-control" placeholder="Escribe el anuncio público para este curso..." style="height:100px;"></textarea>
+                    <div style="margin-top:0.6rem; display:flex; gap:0.6rem;">
+                        <button id="btn-save-ann" class="btn-primary" style="font-weight:bold;">Guardar Anuncio</button>
+                        <button id="btn-delete-ann" class="btn-outline-danger" style="font-weight:bold;">Eliminar Anuncio</button>
+                    </div>
+                </div>
+            </div>
+            <div id="ann-feedback" style="margin-top:0.6rem; color:#22543d; display:none;"></div>
+        </div>
+
+        <!-- SECTION: Per-Lesson Teacher Notes -->
+        <div id="lesson-note-management" class="card" style="margin-bottom: 2rem;">
+            <h3 style="margin-top: 0; color: var(--primary-navy);">Notas por Lección</h3>
+            <p style="color: var(--text-muted); margin-top: 0.2rem;">Seleccioná una lección y escribí una nota que verán los alumnos dentro de esa lección.</p>
+
+            <div style="display:flex; gap:1rem; align-items:flex-start; flex-wrap:wrap; margin-top:0.6rem;">
+                <select id="select-lesson-note" class="form-control" style="min-width:320px;"></select>
+                <div style="flex:1; min-width:300px;">
+                    <textarea id="lesson-teacher-note" class="form-control" placeholder="Escribe la nota para la lección seleccionada..." style="height:100px;"></textarea>
+                    <div style="margin-top:0.6rem; display:flex; gap:0.6rem;">
+                        <button id="btn-save-lesson-note" class="btn-primary" style="font-weight:bold;">Guardar Nota de Lección</button>
+                    </div>
+                </div>
+            </div>
+            <div id="lesson-note-feedback" style="margin-top:0.6rem; color:#22543d; display:none;"></div>
+        </div>
+    </section>
+
+    <%- include('partials/footer') %>
+
+    <script>
+// Array global recibido de EJS
+        const leccionesGlobal = <%- JSON.stringify(typeof lecciones !== 'undefined' ? lecciones : []) %>;
+        const anunciosGlobal = <%- JSON.stringify(typeof anuncios !== 'undefined' ? anuncios : []) %>;
+
+        (function initVideoManagement(){
+            const select = document.getElementById('select-leccion');
+            if (!select) return;
+
+            leccionesGlobal.forEach(l => {
+                const opt = document.createElement('option');
+                opt.value = l.leccion_id;
+                opt.text = `${l.curso_titulo} — ${l.leccion_titulo} (orden ${l.orden})`;
+                select.appendChild(opt);
+            });
+
+            const btn = document.getElementById('btn-upload-video');
+            btn.addEventListener('click', async () => {
+                const leccionId = select.value;
+                const videoUrl = document.getElementById('input-video-url').value.trim();
+                const fileInput = document.getElementById('input-video-file');
+
+                if (!leccionId) { alert('Selecciona una lección.'); return; }
+
+                const formData = new FormData();
+                formData.append('leccionId', leccionId);
+                if (videoUrl) formData.append('videoUrl', videoUrl);
+                if (fileInput && fileInput.files && fileInput.files[0]) formData.append('videoFile', fileInput.files[0]);
+
+                btn.disabled = true; btn.innerText = 'Guardando...';
+
+                try {
+                    const resp = await fetch('/profesor/leccion/video', { method: 'POST', body: formData });
+                    const data = await resp.json();
+                    const fb = document.getElementById('video-management-feedback');
+
+                    if (data.success) {
+                        fb.style.display = 'block';
+                        fb.style.color = '#22543d';
+                        fb.innerText = 'Video guardado correctamente.';
+                        const found = leccionesGlobal.find(x => x.leccion_id == leccionId);
+                        if (found) found.video_url = data.video_url;
+                    } else {
+                        alert(data.message || 'Error al guardar el video');
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert('Error de conexión al subir el video.');
+                } finally {
+                    btn.disabled = false; btn.innerText = 'Guardar Video';
+                }
+            });
+        })();
+// --- Announcements management logic ---
+        (function initAnnouncements(){
+            const select = document.getElementById('select-course-ann');
+            const textarea = document.getElementById('announcement-text');
+            const btnSave = document.getElementById('btn-save-ann');
+            const btnDelete = document.getElementById('btn-delete-ann');
+            const fb = document.getElementById('ann-feedback');
+
+            if (!select || !textarea || !btnSave || !btnDelete) return;
+
+            const coursesMap = new Map();
+            leccionesGlobal.forEach(l => {
+                if (!coursesMap.has(l.curso_id)) coursesMap.set(l.curso_id, { id: l.curso_id, titulo: l.curso_titulo });
+            });
+
+            coursesMap.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.id;
+                opt.text = c.titulo;
+                select.appendChild(opt);
+            });
+
+            function loadForCourse(courseId) {
+                const found = anunciosGlobal.find(a => parseInt(a.curso_id, 10) === parseInt(courseId, 10));
+                if (found) {
+                    textarea.value = found.mensaje || '';
+                    textarea.dataset.annId = found.id;
+                    btnDelete.disabled = false;
+                } else {
+                    textarea.value = '';
+                    delete textarea.dataset.annId;
+                    btnDelete.disabled = true;
+                }
+            }
+
+            select.addEventListener('change', () => loadForCourse(select.value));
+            if (select.options.length > 0) loadForCourse(select.options[0].value);
+
+            btnSave.addEventListener('click', async () => {
+                const curso_id = select.value;
+                const mensaje = textarea.value.trim();
+                if (!curso_id) { alert('Selecciona un curso'); return; }
+                if (!mensaje) { alert('Escribe el anuncio antes de guardar'); return; }
+                btnSave.disabled = true; btnSave.innerText = 'Guardando...';
+
+                const payload = { curso_id, mensaje };
+                if (textarea.dataset.annId) payload.id = textarea.dataset.annId;
+
+                try {
+                    const resp = await fetch('/profesor/anuncio', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    const data = await resp.json();
+                    if (data.success) {
+                        fb.style.display = 'block'; fb.innerText = data.message || 'Anuncio guardado';
+                        setTimeout(()=>{ fb.style.display='none'; }, 2000);
+                        window.location.reload();
+                    } else {
+                        alert(data.message || 'Error al guardar anuncio');
+                    }
+                } catch (err) {
+                    console.error(err); alert('Error de conexión al guardar anuncio');
+                } finally {
+                    btnSave.disabled = false; btnSave.innerText = 'Guardar Anuncio';
+                }
+            });
+
+            btnDelete.addEventListener('click', async () => {
+                const annId = textarea.dataset.annId;
+                if (!annId) return;
+                if (!confirm('¿Eliminar este anuncio?')) return;
+                btnDelete.disabled = true; btnDelete.innerText = 'Eliminando...';
+                try {
+                    const resp = await fetch('/profesor/anuncio', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: annId }) });
+                    const data = await resp.json();
+                    if (data.success) { window.location.reload(); } else { alert(data.message || 'Error al eliminar anuncio'); }
+                } catch (err) { console.error(err); alert('Error de conexión al eliminar anuncio'); }
+            });
+        })();
+
+        // --- Per-lesson notes management logic ---
+        (function initLessonNotes(){
+const select = document.getElementById('select-lesson-note');
+            const textarea = document.getElementById('lesson-teacher-note');
+            const btnSave = document.getElementById('btn-save-lesson-note');
+            const fb = document.getElementById('lesson-note-feedback');
+
+            if (!select || !textarea || !btnSave) return;
+
+            leccionesGlobal.forEach(l => {
+                const opt = document.createElement('option');
+                opt.value = l.leccion_id;
+                opt.text = `Clase ${l.orden} — ${l.leccion_titulo}`;
+                select.appendChild(opt);
+            });
+
+            function loadSelected() {
+                const sel = select.value;
+                const found = leccionesGlobal.find(x => String(x.leccion_id) === String(sel));
+                textarea.value = found ? (found.teacher_note || '') : '';
+            }
+
+            select.addEventListener('change', loadSelected);
+            if (select.options.length > 0) loadSelected();
+
+            btnSave.addEventListener('click', async () => {
+                const leccionId = select.value;
+                const note = textarea.value.trim();
+                if (!leccionId) { alert('Selecciona una lección'); return; }
+                btnSave.disabled = true; btnSave.innerText = 'Guardando...';
+
+                try {
+                    const resp = await fetch('/profesor/leccion/nota', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ leccionId, note }) });
+                    const data = await resp.json();
+                    if (data.success) {
+                        fb.style.display = 'block'; fb.innerText = data.message || 'Nota guardada';
+                        setTimeout(()=>{ fb.style.display='none'; }, 1500);
+                        const found = leccionesGlobal.find(x => String(x.leccion_id) === String(leccionId));
+                        if (found) found.teacher_note = note;
+                    } else {
+                        alert(data.message || 'Error al guardar la nota de la lección');
+                    }
+                } catch (err) { console.error(err); alert('Error de conexión al guardar la nota'); }
+                finally { btnSave.disabled = false; btnSave.innerText = 'Guardar Nota de Lección'; }
+            });
+        })();
+    </script>
+</body>
+</html>
