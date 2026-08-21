@@ -877,7 +877,7 @@ export const descargarCertificado = async (req, res) => {
 
         // Mes (Alineado tras "del mes de")
         firstPage.drawText(mes, {
-            x: 465,
+            x: 460,
             y: 172,
             size: 11,
             font: fontBold,
