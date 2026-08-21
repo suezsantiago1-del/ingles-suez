@@ -423,9 +423,7 @@ export async function seedLecciones(adapter) {
                                 <textarea placeholder="Escribe aquí tu entrega de texto para la revisión del profesor..." style="width: 100%; height: 120px; padding: 0.8rem; border: 1px solid #cbd5e0; border-radius: 6px; font-family: inherit; font-size: 0.95rem; margin-bottom: 1rem; resize: vertical;"></textarea>
                             
                                 <div style="display: flex; gap: 1rem; justify-content: flex-end; flex-wrap: wrap;">
-                                    <button type="button" style="background: #edf2f7; color: #2d3748; border: 1px solid #cbd5e0; padding: 0.7rem 1.2rem; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.9rem;">
-                                        [ CAJA DE TEXTO / BOTÓN SUBIR AUDIO ]
-                                    </button>
+
                                     <button type="button" style="background: #184168; color: white; border: none; padding: 0.7rem 1.4rem; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.9rem;">
                                         ENVIAR A REVISIÓN MANUAL
                                     </button>
@@ -577,9 +575,7 @@ export async function seedLecciones(adapter) {
                                 <textarea placeholder="Escribe aquí tu entrega de texto para la revisión del profesor..." style="width: 100%; height: 120px; padding: 0.8rem; border: 1px solid #cbd5e0; border-radius: 6px; font-family: inherit; font-size: 0.95rem; margin-bottom: 1rem; resize: vertical;"></textarea>
                             
                                 <div style="display: flex; gap: 1rem; justify-content: flex-end; flex-wrap: wrap;">
-                                    <button type="button" style="background: #edf2f7; color: #2d3748; border: 1px solid #cbd5e0; padding: 0.7rem 1.2rem; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.9rem;">
-                                        [ CAJA DE TEXTO / BOTÓN SUBIR AUDIO ]
-                                    </button>
+
                                     <button type="button" style="background: #184168; color: white; border: none; padding: 0.7rem 1.4rem; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.9rem;">
                                         ENVIAR A REVISIÓN MANUAL
                                     </button>
@@ -720,9 +716,7 @@ export async function seedLecciones(adapter) {
                                 <textarea placeholder="Escribe aquí tu entrega de texto para la revisión del profesor..." style="width: 100%; height: 120px; padding: 0.8rem; border: 1px solid #cbd5e0; border-radius: 6px; font-family: inherit; font-size: 0.95rem; margin-bottom: 1rem; resize: vertical;"></textarea>
                             
                                 <div style="display: flex; gap: 1rem; justify-content: flex-end; flex-wrap: wrap;">
-                                    <button type="button" style="background: #edf2f7; color: #2d3748; border: 1px solid #cbd5e0; padding: 0.7rem 1.2rem; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.9rem;">
-                                        [ CAJA DE TEXTO / BOTÓN SUBIR AUDIO ]
-                                    </button>
+
                                     <button type="button" style="background: #184168; color: white; border: none; padding: 0.7rem 1.4rem; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.9rem;">
                                         ENVIAR A REVISIÓN MANUAL
                                     </button>
@@ -863,9 +857,7 @@ export async function seedLecciones(adapter) {
                                 <textarea placeholder="Escribe aquí tu entrega de texto para la revisión del profesor..." style="width: 100%; height: 120px; padding: 0.8rem; border: 1px solid #cbd5e0; border-radius: 6px; font-family: inherit; font-size: 0.95rem; margin-bottom: 1rem; resize: vertical;"></textarea>
                             
                                 <div style="display: flex; gap: 1rem; justify-content: flex-end; flex-wrap: wrap;">
-                                    <button type="button" style="background: #edf2f7; color: #2d3748; border: 1px solid #cbd5e0; padding: 0.7rem 1.2rem; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.9rem;">
-                                        [ CAJA DE TEXTO / BOTÓN SUBIR AUDIO ]
-                                    </button>
+
                                     <button type="button" style="background: #184168; color: white; border: none; padding: 0.7rem 1.4rem; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.9rem;">
                                         ENVIAR A REVISIÓN MANUAL
                                     </button>
@@ -1006,9 +998,7 @@ export async function seedLecciones(adapter) {
                                 <textarea placeholder="Escribe aquí tu entrega de texto para la revisión del profesor..." style="width: 100%; height: 120px; padding: 0.8rem; border: 1px solid #cbd5e0; border-radius: 6px; font-family: inherit; font-size: 0.95rem; margin-bottom: 1rem; resize: vertical;"></textarea>
                             
                                 <div style="display: flex; gap: 1rem; justify-content: flex-end; flex-wrap: wrap;">
-                                    <button type="button" style="background: #edf2f7; color: #2d3748; border: 1px solid #cbd5e0; padding: 0.7rem 1.2rem; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.9rem;">
-                                        [ CAJA DE TEXTO / BOTÓN SUBIR AUDIO ]
-                                    </button>
+
                                     <button type="button" style="background: #184168; color: white; border: none; padding: 0.7rem 1.4rem; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.9rem;">
                                         ENVIAR A REVISIÓN MANUAL
                                     </button>
@@ -1162,9 +1152,6 @@ export async function seedLecciones(adapter) {
                                 <textarea placeholder="Escribe aquí tu Proyecto Integrador Final de 3 párrafos para la corrección detallada del profesor..." style="width: 100%; height: 180px; padding: 0.8rem; border: 1px solid #cbd5e0; border-radius: 6px; font-family: inherit; font-size: 0.95rem; margin-bottom: 1rem; resize: vertical;"></textarea>
                             
                                 <div style="display: flex; gap: 1rem; justify-content: flex-end; flex-wrap: wrap;">
-                                    <button type="button" style="background: #edf2f7; color: #2d3748; border: 1px solid #cbd5e0; padding: 0.7rem 1.2rem; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.9rem;">
-                                        [ CAJA DE TEXTO EXTENSA / SUBIR DOCUMENTO ]
-                                    </button>
                                     <button type="button" style="background: #184168; color: white; border: none; padding: 0.7rem 1.4rem; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.9rem;">
                                         ENVIAR PROYECTO FINAL A REVISIÓN MANUAL
                                     </button>
