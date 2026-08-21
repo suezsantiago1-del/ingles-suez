@@ -411,25 +411,6 @@ export async function seedLecciones(adapter) {
                             <span style="font-size: 0.85rem; font-weight: bold; color: #a4c4de;">Restante para 100%: +20%</span>
                         </div>
 
-                        <div style="background: white; border: 1px solid #0b2238; border-top: none; border-radius: 0 0 8px 8px; padding: 1.8rem; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
-                                <h4 style="margin: 0; color: #0b2238; font-size: 1.05rem;">Trabajo Práctico Integrador — Clase 5</h4>
-                                <span style="background: #fffaf0; color: #c05621; border: 1px solid #fbd38d; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Estado: Pendiente de Envío</span>
-                            </div>
-
-                            <p style="font-size: 0.95rem; color: #2d3748; line-height: 1.6;"><strong>Consigna:</strong> Redactá un texto sobre tus planes personales o profesionales para los próximos meses de mínimo 6 oraciones...</p>
-
-                            <div style="margin-top: 1.5rem;">
-                                <textarea placeholder="Escribe aquí tu entrega de texto para la revisión del profesor..." style="width: 100%; height: 120px; padding: 0.8rem; border: 1px solid #cbd5e0; border-radius: 6px; font-family: inherit; font-size: 0.95rem; margin-bottom: 1rem; resize: vertical;"></textarea>
-                            
-                                <div style="display: flex; gap: 1rem; justify-content: flex-end; flex-wrap: wrap;">
-
-                                    <button type="button" style="background: #184168; color: white; border: none; padding: 0.7rem 1.4rem; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.9rem;">
-                                        ENVIAR A REVISIÓN MANUAL
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
                     </section>
 
                 </div>
@@ -562,26 +543,6 @@ export async function seedLecciones(adapter) {
                             <h3 style="margin: 0; font-size: 1.1rem; text-transform: uppercase;">ENTREGABLE FINAL (Práctica Manual con Corrección del Profesor)</h3>
                             <span style="font-size: 0.85rem; font-weight: bold; color: #a4c4de;">Restante para 100%: +20%</span>
                         </div>
-
-                        <div style="background: white; border: 1px solid #0b2238; border-top: none; border-radius: 0 0 8px 8px; padding: 1.8rem; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
-                                <h4 style="margin: 0; color: #0b2238; font-size: 1.05rem;">Trabajo Práctico Integrador — Clase 6</h4>
-                                <span style="background: #fffaf0; color: #c05621; border: 1px solid #fbd38d; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Estado: Pendiente de Envío</span>
-                            </div>
-
-                            <p style="font-size: 0.95rem; color: #2d3748; line-height: 1.6;"><strong>Consigna:</strong> Redactá un texto o graba una respuesta de 6 oraciones describiendo qué están haciendo las personas en tu casa u oficina en este instante...</p>
-
-                            <div style="margin-top: 1.5rem;">
-                                <textarea placeholder="Escribe aquí tu entrega de texto para la revisión del profesor..." style="width: 100%; height: 120px; padding: 0.8rem; border: 1px solid #cbd5e0; border-radius: 6px; font-family: inherit; font-size: 0.95rem; margin-bottom: 1rem; resize: vertical;"></textarea>
-                            
-                                <div style="display: flex; gap: 1rem; justify-content: flex-end; flex-wrap: wrap;">
-
-                                    <button type="button" style="background: #184168; color: white; border: none; padding: 0.7rem 1.4rem; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.9rem;">
-                                        ENVIAR A REVISIÓN MANUAL
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
                     </section>
 
                 </div>
@@ -704,25 +665,6 @@ export async function seedLecciones(adapter) {
                             <span style="font-size: 0.85rem; font-weight: bold; color: #a4c4de;">Restante para 100%: +20%</span>
                         </div>
 
-                        <div style="background: white; border: 1px solid #0b2238; border-top: none; border-radius: 0 0 8px 8px; padding: 1.8rem; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
-                                <h4 style="margin: 0; color: #0b2238; font-size: 1.05rem;">Trabajo Práctico Integrador — Clase 7</h4>
-                                <span style="background: #fffaf0; color: #c05621; border: 1px solid #fbd38d; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Estado: Pendiente de Envío</span>
-                            </div>
-
-                            <p style="font-size: 0.95rem; color: #2d3748; line-height: 1.6;"><strong>Consigna:</strong> Escribí una lista estilo perfil profesional de 6 oraciones detallando 3 habilidades que podés hacer en el trabajo (<em>I can...</em>) y 3 que no podés hacer todavía (<em>I can't...</em>):</p>
-
-                            <div style="margin-top: 1.5rem;">
-                                <textarea placeholder="Escribe aquí tu entrega de texto para la revisión del profesor..." style="width: 100%; height: 120px; padding: 0.8rem; border: 1px solid #cbd5e0; border-radius: 6px; font-family: inherit; font-size: 0.95rem; margin-bottom: 1rem; resize: vertical;"></textarea>
-                            
-                                <div style="display: flex; gap: 1rem; justify-content: flex-end; flex-wrap: wrap;">
-
-                                    <button type="button" style="background: #184168; color: white; border: none; padding: 0.7rem 1.4rem; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.9rem;">
-                                        ENVIAR A REVISIÓN MANUAL
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
                     </section>
 
                 </div>
@@ -845,25 +787,6 @@ export async function seedLecciones(adapter) {
                             <span style="font-size: 0.85rem; font-weight: bold; color: #a4c4de;">Restante para 100%: +20%</span>
                         </div>
 
-                        <div style="background: white; border: 1px solid #0b2238; border-top: none; border-radius: 0 0 8px 8px; padding: 1.8rem; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
-                                <h4 style="margin: 0; color: #0b2238; font-size: 1.05rem;">Trabajo Práctico Integrador — Clase 8</h4>
-                                <span style="background: #fffaf0; color: #c05621; border: 1px solid #fbd38d; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Estado: Pendiente de Envío</span>
-                            </div>
-
-                            <p style="font-size: 0.95rem; color: #2d3748; line-height: 1.6;"><strong>Consigna:</strong> Armá tu lista de compras para el supermercado y escribí un texto de 6 oraciones contando qué cosas tenés en tu cocina y qué cosas te faltan comprar (ejemplo: <em>I have some..., I don't have any...</em>):</p>
-
-                            <div style="margin-top: 1.5rem;">
-                                <textarea placeholder="Escribe aquí tu entrega de texto para la revisión del profesor..." style="width: 100%; height: 120px; padding: 0.8rem; border: 1px solid #cbd5e0; border-radius: 6px; font-family: inherit; font-size: 0.95rem; margin-bottom: 1rem; resize: vertical;"></textarea>
-                            
-                                <div style="display: flex; gap: 1rem; justify-content: flex-end; flex-wrap: wrap;">
-
-                                    <button type="button" style="background: #184168; color: white; border: none; padding: 0.7rem 1.4rem; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.9rem;">
-                                        ENVIAR A REVISIÓN MANUAL
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
                     </section>
 
                 </div>
@@ -986,25 +909,6 @@ export async function seedLecciones(adapter) {
                             <span style="font-size: 0.85rem; font-weight: bold; color: #a4c4de;">Restante para 100%: +20%</span>
                         </div>
 
-                        <div style="background: white; border: 1px solid #0b2238; border-top: none; border-radius: 0 0 8px 8px; padding: 1.8rem; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
-                                <h4 style="margin: 0; color: #0b2238; font-size: 1.05rem;">Trabajo Práctico Integrador — Clase 9</h4>
-                                <span style="background: #fffaf0; color: #c05621; border: 1px solid #fbd38d; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Estado: Pendiente de Envío</span>
-                            </div>
-
-                            <p style="font-size: 0.95rem; color: #2d3748; line-height: 1.6;"><strong>Consigna:</strong> Elegí dos celulares, dos ciudades o dos trabajos y escribí un texto comparativo de 6 oraciones usando al menos 3 comparativos y 2 superlativos (ejemplo: <em>is cheaper than, is the most popular...</em>):</p>
-
-                            <div style="margin-top: 1.5rem;">
-                                <textarea placeholder="Escribe aquí tu entrega de texto para la revisión del profesor..." style="width: 100%; height: 120px; padding: 0.8rem; border: 1px solid #cbd5e0; border-radius: 6px; font-family: inherit; font-size: 0.95rem; margin-bottom: 1rem; resize: vertical;"></textarea>
-                            
-                                <div style="display: flex; gap: 1rem; justify-content: flex-end; flex-wrap: wrap;">
-
-                                    <button type="button" style="background: #184168; color: white; border: none; padding: 0.7rem 1.4rem; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.9rem;">
-                                        ENVIAR A REVISIÓN MANUAL
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
                     </section>
 
                 </div>
@@ -1099,66 +1003,7 @@ export async function seedLecciones(adapter) {
                         </div>
                     </section>
 
-                    <!-- ENTREGABLE FINAL CLASE 10: PROYECTO INTEGRADOR DE CIERRE DE NIVEL -->
-                    <section class="bloque-fase" style="margin-bottom: 2rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; background: #0b2238; color: white; padding: 0.8rem 1.2rem; border-radius: 6px 6px 0 0;">
-                            <h3 style="margin: 0; font-size: 1.1rem; text-transform: uppercase;">PROYECTO INTEGRADOR FINAL DE CIERRE DE NIVEL — My Life Journey</h3>
-                            <span style="font-size: 0.85rem; font-weight: bold; color: #a4c4de;">Restante para 100%: +70%</span>
-                        </div>
 
-                        <div style="background: white; border: 1px solid #0b2238; border-top: none; border-radius: 0 0 8px 8px; padding: 1.8rem; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
-                                <h4 style="margin: 0; color: #0b2238; font-size: 1.05rem;">Consigna de Producción Escrita Integradora</h4>
-                                <span style="background: #fffaf0; color: #c05621; border: 1px solid #fbd38d; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Estado: Pendiente de Envío</span>
-                            </div>
-
-                            <p style="font-size: 0.95rem; color: #2d3748; line-height: 1.6;">
-                                Tomando como inspiración el texto de Mateo, redactá tu propia biografía laboral/personal integradora en un ensayo estructurado de mínimo 3 párrafos (entre 120 y 180 palabras en total).
-                            </p>
-                        
-                            <p style="font-size: 0.95rem; color: #2d3748; line-height: 1.6;">
-                                Tu escrito debe estar dividido exactamente en estas tres secciones e incluir todos los elementos gramaticales trabajados durante el curso:
-                            </p>
-
-                            <div style="background: #f7fafc; padding: 1.2rem; border-radius: 6px; border: 1px solid #e2e8f0; margin: 1rem 0;">
-                                <h5 style="margin-top: 0; color: #184168; font-size: 0.95rem;">📄 PÁRRAFO 1: Mi Pasado (My Past)</h5>
-                                <p style="font-size: 0.9rem; color: #4a5568; margin-bottom: 0.5rem;"><strong>Objetivo:</strong> Describir cómo era tu vida hace 1 o 2 años.</p>
-                                <ul style="font-size: 0.88rem; color: #2d3748; line-height: 1.6; margin-bottom: 1rem;">
-                                    <li>Uso del verbo To Be en pasado (<em>was / were</em>).</li>
-                                    <li>Al menos 2 verbos en Pasado Simple (un regular como <em>studied, worked, lived</em> y un irregular como <em>went, bought, had</em>).</li>
-                                    <li>Una oración en negativo con <em>didn't</em>.</li>
-                                    <li>Una habilidad o imposibilidad del pasado usando <em>could</em> o <em>couldn't</em>.</li>
-                                </ul>
-
-                                <h5 style="margin-top: 1rem; color: #184168; font-size: 0.95rem;">📄 PÁRRAFO 2: Mi Presente y Entorno (My Present)</h5>
-                                <p style="font-size: 0.9rem; color: #4a5568; margin-bottom: 0.5rem;"><strong>Objetivo:</strong> Describir tu rutina actual, tu espacio y lo que estás haciendo hoy.</p>
-                                <ul style="font-size: 0.88rem; color: #2d3748; line-height: 1.6; margin-bottom: 1rem;">
-                                    <li>Una oración de rutina en Presente Simple (<em>I work, I study, I live</em>).</li>
-                                    <li>Descripción de existencia de tu entorno usando <em>There is</em> o <em>There are</em>.</li>
-                                    <li>Una cantidad usando <em>some, any, much</em> o <em>many</em>.</li>
-                                    <li>Una oración en Presente Continuo describiendo qué estás haciendo en este período de tu vida (<em>Right now, I am studying English at Inglés Suez...</em>).</li>
-                                </ul>
-
-                                <h5 style="margin-top: 1rem; color: #184168; font-size: 0.95rem;">📄 PÁRRAFO 3: Mis Comparaciones y Planes Futuros (My Future & Goals)</h5>
-                                <p style="font-size: 0.9rem; color: #4a5568; margin-bottom: 0.5rem;"><strong>Objetivo:</strong> Comparar tu situación actual con el pasado y detallar tus próximos proyectos.</p>
-                                <ul style="font-size: 0.88rem; color: #2d3748; line-height: 1.6; margin-bottom: 0;">
-                                    <li>Una comparación entre tu presente y tu pasado usando un adjetivo comparativo (<em>better than, easier than, more interesting than</em>).</li>
-                                    <li>Al menos 2 oraciones con planes futuros usando la estructura <em>be going to</em> (<em>I am going to travel, I am going to apply...</em>).</li>
-                                    <li>Una oración de habilidad actual usando <em>can</em> o <em>can't</em>.</li>
-                                </ul>
-                            </div>
-
-                            <div style="margin-top: 1.5rem;">
-                                <textarea placeholder="Escribe aquí tu Proyecto Integrador Final de 3 párrafos para la corrección detallada del profesor..." style="width: 100%; height: 180px; padding: 0.8rem; border: 1px solid #cbd5e0; border-radius: 6px; font-family: inherit; font-size: 0.95rem; margin-bottom: 1rem; resize: vertical;"></textarea>
-                            
-                                <div style="display: flex; gap: 1rem; justify-content: flex-end; flex-wrap: wrap;">
-                                    <button type="button" style="background: #184168; color: white; border: none; padding: 0.7rem 1.4rem; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.9rem;">
-                                        ENVIAR PROYECTO FINAL A REVISIÓN MANUAL
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
 
                 </div>
             `;
