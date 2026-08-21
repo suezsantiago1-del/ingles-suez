@@ -321,8 +321,11 @@
                 }
 
                 if (isCorrect) {
-                    // Respuesta correcta: deshabilitar todos los botones permanentemente
-                    buttons.forEach(btn => btn.disabled = true);
+                    // Respuesta correcta: limpiar selecciones incorrectas, deshabilitar todos los botones
+                    buttons.forEach(btn => {
+                        btn.classList.remove('selected-incorrect');
+                        btn.disabled = true;
+                    });
                     button.classList.add('selected-correct');
                     feedbackBox.style.display = 'block';
                     feedbackBox.style.background = '#f0fff4';
