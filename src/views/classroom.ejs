@@ -320,16 +320,21 @@
                     return;
                 }
 
-                buttons.forEach(btn => btn.disabled = true);
-
                 if (isCorrect) {
+                    // Respuesta correcta: deshabilitar todos los botones permanentemente
+                    buttons.forEach(btn => btn.disabled = true);
                     button.classList.add('selected-correct');
                     feedbackBox.style.display = 'block';
                     feedbackBox.style.background = '#f0fff4';
                     feedbackBox.style.border = '1px solid #c6f6d5';
                     feedbackBox.style.color = '#22543d';
                     feedbackBox.innerHTML = '<strong>Respuesta Correcta.</strong> ' + explanationText;
+                    
+                    // Marcar el contenedor como completado
+                    container.dataset.completed = 'true';
                 } else {
+                    // Respuesta incorrecta: deshabilitar solo este botón, permitir cambiar a otra opción
+                    button.disabled = true;
                     button.classList.add('selected-incorrect');
                     feedbackBox.style.display = 'block';
                     feedbackBox.style.background = '#fff5f5';
