@@ -120,8 +120,8 @@ export async function seedLecciones(adapter) {
 
                             <div class="quiz-question" style="margin-bottom: 1.5rem;">
                                 <p><strong>2. Querés contar que tus hermanos no comen carne:</strong></p>
-                                <button class="option-btn" onclick="checkAnswer(this, false, 'c2_2', 'Doesn\'t se usa solo para He/She/It. My brothers es plural (They).')">( A ) My brothers doesn't eat meat.</button>
-                                <button class="option-btn" onclick="checkAnswer(this, true, 'c2_2', 'Don\'t es el auxiliar negativo correcto para They.')">( B ) My brothers don't eat meat.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, false, 'c2_2', 'Doesn&amp;apos;t se usa solo para He/She/It. My brothers es plural (They).')">( A ) My brothers doesn't eat meat.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, true, 'c2_2', 'Don&amp;apos;t es el auxiliar negativo correcto para They.')">( B ) My brothers don't eat meat.</button>
                                 <button class="option-btn" onclick="checkAnswer(this, false, 'c2_2', 'Falta el auxiliar do/does para formar la negación.')">( C ) My brothers not eat meat.</button>
                                 <div id="c2_2" style="display:none; padding: 0.8rem; border-radius: 6px; margin-top: 0.5rem; font-size: 0.9rem;"></div>
                             </div>
@@ -182,7 +182,7 @@ export async function seedLecciones(adapter) {
 
                             <div class="quiz-question" style="margin-bottom: 1.5rem;">
                                 <p><strong>3. Buscás tus llaves y tu hermano te avisa que no hay nada debajo de la mesa:</strong></p>
-                                <button class="option-btn" onclick="checkAnswer(this, true, 'c3_3', 'Under es debajo y isn\'t anything evita la doble negación.')">( A ) There isn't anything under the table.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, true, 'c3_3', 'Under es debajo y isn&amp;apos;t anything evita la doble negación.')">( A ) There isn't anything under the table.</button>
                                 <button class="option-btn" onclick="checkAnswer(this, false, 'c3_3', 'Anything va con estructura singular en este contexto.')">( B ) There aren't anything on the table.</button>
                                 <button class="option-btn" onclick="checkAnswer(this, false, 'c3_3', 'Not nothing es una doble negación incorrecta en inglés.')">( C ) There is not nothing under the table.</button>
                                 <div id="f3_3" style="display:none; padding: 0.8rem; border-radius: 6px; margin-top: 0.5rem; font-size: 0.9rem;"></div>
@@ -246,9 +246,9 @@ export async function seedLecciones(adapter) {
 
                             <div class="quiz-question" style="margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #edf2f7;">
                                 <p><strong>3. Querés decir que anoche no dormiste bien:</strong></p>
-                                <button class="option-btn" onclick="checkAnswer(this, false, 'c4_3', 'Tras el auxiliar didn\'t el verbo debe ir en forma base (sleep), no slept.')">( A ) Last night I didn't slept well.</button>
-                                <button class="option-btn" onclick="checkAnswer(this, true, 'c4_3', 'Con didn\'t se utiliza el verbo en forma base (sleep).')">( B ) Last night I didn't sleep well.</button>
-                                <button class="option-btn" onclick="checkAnswer(this, false, 'c4_3', 'Wasn\'t no se utiliza para negar verbos de acción en pasado simple.')">( C ) Last night I wasn't sleep well.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, false, 'c4_3', 'Tras el auxiliar didn&amp;apos;t el verbo debe ir en forma base (sleep), no slept.')">( A ) Last night I didn't slept well.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, true, 'c4_3', 'Con didn&amp;apos;t se utiliza el verbo en forma base (sleep).')">( B ) Last night I didn't sleep well.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, false, 'c4_3', 'Wasn&amp;apos;t no se utiliza para negar verbos de acción en pasado simple.')">( C ) Last night I wasn't sleep well.</button>
                                 <div id="c4_3" style="display:none; padding: 0.8rem; border-radius: 6px; margin-top: 0.5rem; font-size: 0.9rem;"></div>
                             </div>
 
@@ -318,8 +318,8 @@ export async function seedLecciones(adapter) {
 
                             <div class="quiz-question" style="margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #edf2f7;">
                                 <p><strong>2. Le contás a un compañero que Laura no va a asistir a la reunión de mañana:</strong></p>
-                                <button class="option-btn" onclick="checkAnswer(this, true, 'c5_2', 'La negación se realiza sobre el verbo To Be (Laura is not / isn\'t), no con doesn\'t.')">( A ) Laura isn't going to attend the meeting tomorrow.</button>
-                                <button class="option-btn" onclick="checkAnswer(this, false, 'c5_2', 'Doesn\'t no se utiliza con la estructura going to.')">( B ) Laura doesn't going to attend the meeting tomorrow.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, true, 'c5_2', 'La negación se realiza sobre el verbo To Be (Laura is not / isn&amp;apos;t), no con doesn&amp;apos;t.')">( A ) Laura isn't going to attend the meeting tomorrow.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, false, 'c5_2', 'Doesn&amp;apos;t no se utiliza con la estructura going to.')">( B ) Laura doesn't going to attend the meeting tomorrow.</button>
                                 <button class="option-btn" onclick="checkAnswer(this, false, 'c5_2', 'Falta el auxiliar To Be (is) para formar la negación.')">( C ) Laura not going to attend the meeting tomorrow.</button>
                                 <div id="c5_2" style="display:none; padding: 0.8rem; border-radius: 6px; margin-top: 0.5rem; font-size: 0.9rem;"></div>
                             </div>
@@ -342,9 +342,9 @@ export async function seedLecciones(adapter) {
 
                             <div class="quiz-question" style="margin-bottom: 1.5rem;">
                                 <p><strong>5. Querés decir que ustedes no van a trabajar este fin de semana largo:</strong></p>
-                                <button class="option-btn" onclick="checkAnswer(this, false, 'c5_5', 'Don\'t es un auxiliar de presente simple, no de futuro con going to.')">( A ) We don't going to work this long weekend.</button>
-                                <button class="option-btn" onclick="checkAnswer(this, true, 'c5_5', 'We combina obligatoriamente con are not / aren\'t.')">( B ) We aren't going to work this long weekend.</button>
-                                <button class="option-btn" onclick="checkAnswer(this, false, 'c5_5', 'Isn\'t se usa solo con He, She o It.')">( C ) We isn't going to work this long weekend.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, false, 'c5_5', 'Don&amp;apos;t es un auxiliar de presente simple, no de futuro con going to.')">( A ) We don't going to work this long weekend.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, true, 'c5_5', 'We combina obligatoriamente con are not / aren&amp;apos;t.')">( B ) We aren't going to work this long weekend.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, false, 'c5_5', 'Isn&amp;apos;t se usa solo con He, She o It.')">( C ) We isn't going to work this long weekend.</button>
                                 <div id="c5_5" style="display:none; padding: 0.8rem; border-radius: 6px; margin-top: 0.5rem; font-size: 0.9rem;"></div>
                             </div>
                         </div>
@@ -398,8 +398,8 @@ export async function seedLecciones(adapter) {
 
                             <div class="quiz-question" style="margin-top: 1.5rem;">
                                 <p><strong>¿Cuál es la traducción correcta para el diálogo completo?</strong></p>
-                                <button class="option-btn" onclick="checkAnswer(this, true, 'c5_dial', 'Traducción exacta respetando what are you going to do, I\'m not going to work e is your brother going to.')">( A ) A: "What are you going to do this weekend?" / B: "I am going to rest. I'm not going to work on Saturday or Sunday." / A: "And is your brother going to paint the house with you?" / B: "No, he is going to travel to Rosario to visit some friends."</button>
-                                <button class="option-btn" onclick="checkAnswer(this, false, 'c5_dial', 'What you going to do y I don\'t going to work contienen errores de auxilares.')">( B ) A: "What you going to do this weekend?" / B: "I am going to rest. I don't going to work..."</button>
+                                <button class="option-btn" onclick="checkAnswer(this, true, 'c5_dial', 'Traducción exacta respetando what are you going to do, I&amp;apos;m not going to work e is your brother going to.')">( A ) A: "What are you going to do this weekend?" / B: "I am going to rest. I'm not going to work on Saturday or Sunday." / A: "And is your brother going to paint the house with you?" / B: "No, he is going to travel to Rosario to visit some friends."</button>
+                                <button class="option-btn" onclick="checkAnswer(this, false, 'c5_dial', 'What you going to do y I don&amp;apos;t going to work contienen errores de auxilares.')">( B ) A: "What you going to do this weekend?" / B: "I am going to rest. I don't going to work..."</button>
                                 <div id="c5_dial" style="display:none; padding: 0.8rem; border-radius: 6px; margin-top: 0.5rem; font-size: 0.9rem;"></div>
                             </div>
                         </div>
@@ -507,8 +507,8 @@ export async function seedLecciones(adapter) {
 
                             <div class="quiz-question" style="margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #edf2f7;">
                                 <p><strong>3. Avisás que tu hermana no está trabajando hoy porque se pidió el día:</strong></p>
-                                <button class="option-btn" onclick="checkAnswer(this, false, 'c6_3', 'No se usa el auxiliar doesn\'t con el presente continuo.')">( A ) My sister doesn't working today.</button>
-                                <button class="option-btn" onclick="checkAnswer(this, true, 'c6_3', 'La negación del presente continuo se forma con isn\'t / is not.')">( B ) My sister isn't working today.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, false, 'c6_3', 'No se usa el auxiliar doesn&amp;apos;t con el presente continuo.')">( A ) My sister doesn't working today.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, true, 'c6_3', 'La negación del presente continuo se forma con isn&amp;apos;t / is not.')">( B ) My sister isn't working today.</button>
                                 <button class="option-btn" onclick="checkAnswer(this, false, 'c6_3', 'Falta el verbo To Be (is) para formar la negación.')">( C ) My sister not working today.</button>
                                 <div id="c6_3" style="display:none; padding: 0.8rem; border-radius: 6px; margin-top: 0.5rem; font-size: 0.9rem;"></div>
                             </div>
@@ -523,8 +523,8 @@ export async function seedLecciones(adapter) {
 
                             <div class="quiz-question" style="margin-bottom: 1.5rem;">
                                 <p><strong>5. Querés decir que no está lloviendo afuera en este instante:</strong></p>
-                                <button class="option-btn" onclick="checkAnswer(this, true, 'c6_5', 'Estructura correcta para tiempo atmosférico actual: It + isn\'t + raining.')">( A ) It isn't raining outside right now.</button>
-                                <button class="option-btn" onclick="checkAnswer(this, false, 'c6_5', 'Don\'t no se utiliza con el presente continuo.')">( B ) It don't raining outside right now.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, true, 'c6_5', 'Estructura correcta para tiempo atmosférico actual: It + isn&amp;apos;t + raining.')">( A ) It isn't raining outside right now.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, false, 'c6_5', 'Don&amp;apos;t no se utiliza con el presente continuo.')">( B ) It don't raining outside right now.</button>
                                 <button class="option-btn" onclick="checkAnswer(this, false, 'c6_5', 'Falta el auxiliar isn\'t para estructurar la negación.')">( C ) It not raining outside right now.</button>
                                 <div id="c6_5" style="display:none; padding: 0.8rem; border-radius: 6px; margin-top: 0.5rem; font-size: 0.9rem;"></div>
                             </div>
@@ -629,7 +629,7 @@ export async function seedLecciones(adapter) {
                             <div class="quiz-question" style="margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #edf2f7;">
                                 <p><strong>1. Querés decir que sabés hablar inglés pero no sabés hablar alemán:</strong></p>
                                 <button class="option-btn" onclick="checkAnswer(this, true, 'c7_1', 'Can/Can\'t van seguidos directamente del verbo en infinitivo sin to.')">( A ) I can speak English, but I can't speak German.</button>
-                                <button class="option-btn" onclick="checkAnswer(this, false, 'c7_1', 'No debe llevar \'to\' entre can/can\'t y el verbo.')">( B ) I can to speak English, but I can't to speak German.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, false, 'c7_1', 'No debe llevar \'to\' entre can/can&amp;apos;t y el verbo.')">( B ) I can to speak English, but I can't to speak German.</button>
                                 <button class="option-btn" onclick="checkAnswer(this, false, 'c7_1', 'Can es invariable y no agrega \'s\'.')">( C ) I cans speak English, but I can't speak German.</button>
                                 <div id="c7_1" style="display:none; padding: 0.8rem; border-radius: 6px; margin-top: 0.5rem; font-size: 0.9rem;"></div>
                             </div>
@@ -646,9 +646,9 @@ export async function seedLecciones(adapter) {
                             <!-- Pregunta 3 -->
                             <div class="quiz-question" style="margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #edf2f7;">
                                 <p><strong>3. Contás que tu jefe no puede asistir a la reunión de hoy:</strong></p>
-                                <button class="option-btn" onclick="checkAnswer(this, true, 'c7_3', 'Negación correcta sin to: can\'t attend.')">( A ) My boss can't attend the meeting today.</button>
-                                <button class="option-btn" onclick="checkAnswer(this, false, 'c7_3', 'Doesn\'t no se usa junto a can.')">( B ) My boss doesn't can attend the meeting today.</button>
-                                <button class="option-btn" onclick="checkAnswer(this, false, 'c7_3', 'Omitir \'to\' entre can\'t y attend.')">( C ) My boss can't to attend the meeting today.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, true, 'c7_3', 'Negación correcta sin to: can&amp;apos;t attend.')">( A ) My boss can't attend the meeting today.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, false, 'c7_3', 'Doesn&amp;apos;t no se usa junto a can.')">( B ) My boss doesn't can attend the meeting today.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, false, 'c7_3', 'Omitir \'to\' entre can&amp;apos;t y attend.')">( C ) My boss can't to attend the meeting today.</button>
                                 <div id="c7_3" style="display:none; padding: 0.8rem; border-radius: 6px; margin-top: 0.5rem; font-size: 0.9rem;"></div>
                             </div>
 
@@ -664,9 +664,9 @@ export async function seedLecciones(adapter) {
                             <!-- Pregunta 5 -->
                             <div class="quiz-question" style="margin-bottom: 1.5rem;">
                                 <p><strong>5. Avisás que ellos no pueden estacionar el auto acá:</strong></p>
-                                <button class="option-btn" onclick="checkAnswer(this, true, 'c7_5', 'Indica prohibición o imposibilidad directa: can\'t park.')">( A ) They can't park the car here.</button>
-                                <button class="option-btn" onclick="checkAnswer(this, false, 'c7_5', 'No combinar don\'t con can.')">( B ) They don't can park the car here.</button>
-                                <button class="option-btn" onclick="checkAnswer(this, false, 'c7_5', 'Aren\'t no se utiliza antes de can.')">( C ) They aren't can park the car here.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, true, 'c7_5', 'Indica prohibición o imposibilidad directa: can&amp;apos;t park.')">( A ) They can't park the car here.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, false, 'c7_5', 'No combinar don&amp;apos;t con can.')">( B ) They don't can park the car here.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, false, 'c7_5', 'Aren&amp;apos;t no se utiliza antes de can.')">( C ) They aren't can park the car here.</button>
                                 <div id="c7_5" style="display:none; padding: 0.8rem; border-radius: 6px; margin-top: 0.5rem; font-size: 0.9rem;"></div>
                             </div>
                         </div>
