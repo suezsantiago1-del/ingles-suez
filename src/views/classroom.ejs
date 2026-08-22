@@ -295,7 +295,7 @@
             <div class="leccion-body <%= (leccionActiva && leccionActiva.orden === 0) ? 'leccion-bienvenida' : '' %>">
                 <% if (leccionActiva && leccionActiva.orden === 0) { %>
                     <!-- Logo arriba de todo en la lección de bienvenida -->
-                    <img src="/img/logo.jpg" alt="INGLÉS SUEZ" style="max-width: 180px; display: block; margin: 0 auto 1.5rem auto; border-radius: 8px;">
+                    <img src="/img/logo.jpg" alt="INGLÉS SUEZ" style="max-width: 150px; display: block; margin: 0 auto 1.5rem auto; border-radius: 8px;">
                 <% } %>
                 <% if (leccionActiva && leccionActiva.nota !== null && leccionActiva.nota !== undefined && leccionActiva.nota < 7) { %>
                     <!-- Botón global de rehacer: único punto para volver a intentar cuando la nota es < 7 -->
