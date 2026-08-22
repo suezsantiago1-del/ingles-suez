@@ -20,6 +20,7 @@ import {
     guardarDevolucion,
     saveTeacherNote,
     updateLessonTeacherNote,
+    eliminarNotaLeccion,
     uploadLessonVideo,
     handleMpWebhook,
     renderMensajesAlumno,
@@ -208,6 +209,7 @@ app.post('/profesor/nota', express.json(), saveTeacherNote);
 app.post('/profesor/anuncio', express.json(), createOrUpdateAnnouncement);
 app.delete('/profesor/anuncio', express.json(), deleteAnnouncement);
 app.post('/profesor/leccion/nota', express.json(), updateLessonTeacherNote);
+app.post('/profesor/leccion/nota/eliminar', express.json(), eliminarNotaLeccion);
 
 // Consultas de alumnos al profesor por lección
 app.post('/consultas/leccion', express.json(), guardarConsultaLeccion);

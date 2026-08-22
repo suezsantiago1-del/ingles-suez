@@ -82,6 +82,24 @@
                 </div>
             </div>
             <div id="lesson-note-feedback" style="margin-top:0.6rem; color:#22543d; display:none;"></div>
+
+            <div style="margin-top:1.5rem; border-top:1px solid #edf2f7; padding-top:1.2rem;">
+                <h4 style="margin:0 0 0.8rem 0; color:#0b2238; font-size:0.95rem;">Notas guardadas</h4>
+                <% const leccionesConNota = lecciones.filter(l => l.teacher_note); %>
+                <% if (leccionesConNota.length > 0) { %>
+                    <% leccionesConNota.forEach(l => { %>
+                        <div id="nota-item-<%= l.leccion_id %>" style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; background:#f7fafc; border:1px solid #e2e8f0; border-radius:8px; padding:0.8rem 1rem; margin-bottom:0.6rem;">
+                            <div style="flex:1; min-width:0;">
+                                <strong style="color:#184168; font-size:0.9rem;">Clase <%= l.orden %> — <%= l.leccion_titulo %></strong>
+                                <p style="margin:0.3rem 0 0 0; color:#2d3748; font-size:0.85rem; white-space:pre-wrap;"><%= l.teacher_note %></p>
+                            </div>
+                            <button type="button" onclick="eliminarNotaLeccion(<%= l.leccion_id %>)" style="background:#e53e3e; color:white; border:none; padding:0.45rem 0.9rem; border-radius:6px; cursor:pointer; font-weight:bold; font-size:0.8rem; flex-shrink:0;">Remover</button>
+                        </div>
+                    <% }) %>
+                <% } else { %>
+                    <p id="sin-notas-msg" style="margin:0; color:#a0aec0; font-size:0.9rem;">No hay notas guardadas todavía.</p>
+                <% } %>
+            </div>
         </div>
     </section>
 
@@ -264,6 +282,30 @@ const select = document.getElementById('select-lesson-note');
                 finally { btnSave.disabled = false; btnSave.innerText = 'Guardar Nota de Lección'; }
             });
         })();
+
+        // Eliminar la nota de una lección (desde "Notas guardadas")
+        function eliminarNotaLeccion(leccionId) {
+            if (!confirm('¿Eliminar la nota de esta lección?')) return;
+            fetch('/profesor/leccion/nota/eliminar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ leccionId })
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        const item = document.getElementById('nota-item-' + leccionId);
+                        if (item) item.remove();
+                        const msg = document.getElementById('sin-notas-msg');
+                        if (msg) msg.style.display = 'block';
+                        alert('Nota eliminada.');
+                        window.location.reload();
+                    } else {
+                        alert(data.message || 'No se pudo eliminar la nota.');
+                    }
+                })
+                .catch(() => alert('Error de conexión al eliminar la nota.'));
+        }
     </script>
 </body>
 </html>

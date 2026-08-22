@@ -1330,6 +1330,23 @@ export const updateLessonTeacherNote = async (req, res) => {
     }
 };
 
+export const eliminarNotaLeccion = async (req, res) => {
+    if (!req.session.user) return res.status(401).json({ success: false, message: 'No autenticado' });
+    if (req.session.user.email !== EMAIL_PROFESOR) return res.status(403).json({ success: false, message: 'Acceso no autorizado' });
+
+    const { leccionId } = req.body;
+    if (!leccionId) return res.status(400).json({ success: false, message: 'Falta leccionId' });
+
+    try {
+        const db = await dbPromise;
+        await db.run('UPDATE lecciones SET teacher_note = NULL WHERE id = ?', [leccionId]);
+        return res.json({ success: true, message: 'Nota de la lección eliminada' });
+    } catch (error) {
+        console.error('Error eliminando nota de la lección:', error);
+        return res.status(500).json({ success: false, message: 'Error al eliminar nota de la lección' });
+    }
+};
+
 export const guardarConsultaLeccion = async (req, res) => {
     if (!req.session.user) {
         return res.status(401).json({ success: false, message: 'No autenticado' });
