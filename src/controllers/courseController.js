@@ -347,7 +347,7 @@ export const renderClassroom = async (req, res) => {
             mapaEntregas.set(e.leccion_id, { nota: e.nota, entrega_id: e.entrega_id, teacher_notes: e.teacher_notes });
         });
 
-        const leccionesPreviasExamen = lecciones.filter(l => l.orden < 10);
+        const leccionesPreviasExamen = lecciones.filter(l => l.orden > 0 && l.orden < 10);
         const todasPreviasAprobadas = leccionesPreviasExamen.length > 0 && leccionesPreviasExamen.every(l => {
             if (!mapaEntregas.has(l.id)) return false;
             const entregaInfo = mapaEntregas.get(l.id) || {};
@@ -363,7 +363,10 @@ export const renderClassroom = async (req, res) => {
             const teacher_notes = entregaInfo.teacher_notes || null;
             let desbloqueada = false;
 
-            if (leccion.orden === 10) {
+            if (leccion.orden === 0) {
+                // La lección de bienvenida siempre está desbloqueada y no bloquea la Clase 1.
+                desbloqueada = true;
+            } else if (leccion.orden === 10) {
                 desbloqueada = todasPreviasAprobadas;
             } else if (index === 0) {
                 desbloqueada = true;
@@ -371,7 +374,9 @@ export const renderClassroom = async (req, res) => {
                 desbloqueada = leccionAnteriorEntregada;
             }
 
-            leccionAnteriorEntregada = entregada;
+            if (leccion.orden > 0) {
+                leccionAnteriorEntregada = entregada;
+            }
 
             return {
                 ...leccion,
@@ -493,7 +498,7 @@ export const guardarEntrega = async (req, res) => {
         }
 
         if (leccionActual.orden === 10) {
-            const leccionesPrevias = await db.all('SELECT id FROM lecciones WHERE curso_id = ? AND orden < 10', [cursoId]);
+            const leccionesPrevias = await db.all('SELECT id FROM lecciones WHERE curso_id = ? AND orden > 0 AND orden < 10', [cursoId]);
             
             for (const prev of leccionesPrevias) {
                 const entregaPrev = await db.get(`
@@ -615,7 +620,7 @@ export const renderGestionCursos = async (req, res) => {
         const db = await dbPromise;
 
         const lecciones = await db.all(`
-            SELECT l.id as leccion_id, l.titulo as leccion_titulo, l.curso_id, l.orden, l.video_url, l.teacher_note, c.titulo as curso_titulo
+            SELECT l.id as leccion_id, l.titulo as leccion_titulo, l.curso_id, l.orden, l.video_url, l.teacher_note, l.contenido_html, c.titulo as curso_titulo
             FROM lecciones l
             JOIN cursos c ON l.curso_id = c.id
             ORDER BY c.id, l.orden ASC
@@ -1327,6 +1332,23 @@ export const updateLessonTeacherNote = async (req, res) => {
     } catch (error) {
         console.error('Error guardando nota de la lección:', error);
         return res.status(500).json({ success: false, message: 'Error al guardar nota de la lección' });
+    }
+};
+
+export const actualizarContenidoLeccion = async (req, res) => {
+    if (!req.session.user) return res.status(401).json({ success: false, message: 'No autenticado' });
+    if (req.session.user.email !== EMAIL_PROFESOR) return res.status(403).json({ success: false, message: 'Acceso no autorizado' });
+
+    const { leccionId, contenido } = req.body;
+    if (!leccionId || contenido === undefined) return res.status(400).json({ success: false, message: 'Faltan datos' });
+
+    try {
+        const db = await dbPromise;
+        await db.run('UPDATE lecciones SET contenido_html = ? WHERE id = ?', [String(contenido), leccionId]);
+        return res.json({ success: true, message: 'Contenido de la lección actualizado' });
+    } catch (error) {
+        console.error('Error actualizando contenido de lección:', error);
+        return res.status(500).json({ success: false, message: 'Error al actualizar el contenido' });
     }
 };
 

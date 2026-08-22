@@ -134,10 +134,11 @@
             
             <div style="margin-top: 1.5rem;">
                 <% lecciones.forEach(l => { %>
-                    <% const fullLabel = `Clase ${l.orden}: ${l.titulo}`; %>
+                    <% const esBienvenida = (l.orden === 0); %>
+                    <% const fullLabel = esBienvenida ? l.titulo : `Clase ${l.orden}: ${l.titulo}`; %>
                     <% if (l.desbloqueada) { %>
                         <a href="/classroom/<%= curso.id %>?leccion=<%= l.id %>" class="lesson-item <%= (leccionActiva && leccionActiva.id == l.id) ? 'active' : '' %>" title="<%= fullLabel %>" aria-label="<%= fullLabel %>">
-                            <span>Clase <%= l.orden %></span>
+                            <span><%= esBienvenida ? 'Welcome!' : `Clase ${l.orden}` %></span>
                             <% if (l.completada) { %> 
                                 <span title="Clase completada" class="badge" style="margin-left:0.5rem; font-size:0.75rem;">Completada</span>
                             <% } %>

@@ -21,6 +21,7 @@ import {
     saveTeacherNote,
     updateLessonTeacherNote,
     eliminarNotaLeccion,
+    actualizarContenidoLeccion,
     uploadLessonVideo,
     handleMpWebhook,
     renderMensajesAlumno,
@@ -210,6 +211,7 @@ app.post('/profesor/anuncio', express.json(), createOrUpdateAnnouncement);
 app.delete('/profesor/anuncio', express.json(), deleteAnnouncement);
 app.post('/profesor/leccion/nota', express.json(), updateLessonTeacherNote);
 app.post('/profesor/leccion/nota/eliminar', express.json(), eliminarNotaLeccion);
+app.post('/profesor/leccion/contenido', express.json(), actualizarContenidoLeccion);
 
 // Consultas de alumnos al profesor por lección
 app.post('/consultas/leccion', express.json(), guardarConsultaLeccion);

@@ -22,6 +22,33 @@ export async function seedLecciones(adapter) {
             );
         }
 
+        // Lección de bienvenida "Welcome!" (orden 0, antes de la Clase 1).
+        // Se crea si no existe (también en bases ya pobladas donde el bloque
+        // IF COUNT = 0 no vuelve a correr). El texto se edita desde Gestión de Cursos.
+        const bienvenidaExistente = await adapter.pgPool.query("SELECT id FROM lecciones WHERE curso_id = 1 AND orden = 0");
+        if (bienvenidaExistente.rows.length === 0) {
+            const contenidoBienvenida = `
+                <div class="clase-contenido" style="color: #1a202c; font-family: system-ui, -apple-system, sans-serif; text-align: center; padding: 2rem 1rem;">
+                    <h2 style="color: #0b2238; margin: 0 0 1rem 0;">¡Bienvenido/a a INGLÉS SUEZ!</h2>
+                    <p style="font-size: 1.1rem; color: #4a5568; max-width: 640px; margin: 0 auto 1rem auto; line-height: 1.7;">
+                        Nos alegra muchísimo que estés acá. Este curso está diseñado para que aprendas inglés de forma
+                        práctica, desde cero y a tu propio ritmo.
+                    </p>
+                    <p style="font-size: 1rem; color: #4a5568; max-width: 640px; margin: 0 auto 1rem auto; line-height: 1.7;">
+                        Empezá por la clase 1 y avanzá a tu ritmo: cada clase tiene ejercicios interactivos y un
+                        entregable final que el profesor revisa personalmente.
+                    </p>
+                    <p style="font-size: 1rem; color: #184168; font-weight: bold; margin: 0 auto; line-height: 1.7;">
+                        ¡Mucha suerte y a aprender!
+                    </p>
+                </div>
+            `;
+            await adapter.run(`
+                INSERT INTO lecciones (curso_id, titulo, modulo, orden, video_url, contenido_html)
+                VALUES (?, ?, ?, ?, ?, ?)
+            `, [1, 'Welcome!', 'Bienvenida', 0, '', contenidoBienvenida]);
+        }
+
         if (parseInt(countLecciones.rows[0].count) === 0) {
 
             // ==========================================

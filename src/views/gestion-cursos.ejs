@@ -30,6 +30,27 @@
     <section style="max-width: 1400px; margin: 0 auto 2.5rem auto; padding: 0 1rem;">
         <h2 style="color: #0b2238; margin: 0 0 1rem 0; font-size: 1.3rem; border-bottom: 2px solid #0b2238; padding-bottom: 0.6rem;">Gestión de Cursos</h2>
 
+        <% const bienvenida = lecciones.find(l => l.orden === 0); %>
+        <% if (bienvenida) { %>
+        <!-- SECTION: Texto de Bienvenida (lección "Welcome!", orden 0) -->
+        <div id="bienvenida-management" class="card" style="margin-bottom: 2rem;">
+            <h3 style="margin-top: 0; color: var(--primary-navy);">Texto de Bienvenida (Welcome!)</h3>
+            <p style="color: var(--text-muted); margin-top: 0.2rem;">Editá el texto que ven los alumnos al entrar por primera vez al aula virtual (lección "Welcome!").</p>
+
+            <div style="margin-top:0.6rem;">
+                <textarea id="textarea-bienvenida" class="form-control" style="width:100%; min-height:180px; font-family:monospace; font-size:0.9rem;" placeholder="Escribí acá el texto de bienvenida..."><%= bienvenida.contenido_html %></textarea>
+                <div style="margin-top:0.6rem; display:flex; gap:0.6rem; align-items:center;">
+                    <button id="btn-guardar-bienvenida" class="btn-primary" style="font-weight:bold;">Guardar Bienvenida</button>
+                    <span id="bienvenida-feedback" style="color:#22543d; display:none;"></span>
+                </div>
+                <div style="margin-top:0.8rem;">
+                    <strong style="color:#184168; font-size:0.85rem;">Vista previa:</strong>
+                    <div id="vista-previa-bienvenida" style="border:1px dashed #cbd5e0; border-radius:8px; padding:1rem; margin-top:0.4rem;"></div>
+                </div>
+            </div>
+        </div>
+        <% } %>
+
         <!-- SECTION: Video Management for Lessons (Visible to Professor) -->
         <div id="video-management" class="card" style="margin-bottom: 2rem;">
             <h3 style="margin-top: 0; color: var(--primary-navy);">Gestionar Videos de Lecciones</h3>
@@ -109,6 +130,34 @@
 // Array global recibido de EJS
         const leccionesGlobal = <%- JSON.stringify(typeof lecciones !== 'undefined' ? lecciones : []) %>;
         const anunciosGlobal = <%- JSON.stringify(typeof anuncios !== 'undefined' ? anuncios : []) %>;
+
+        // --- Edición del texto de bienvenida (lección orden 0) ---
+        const leccionBienvenidaGlobal = <%- JSON.stringify(typeof lecciones !== 'undefined' ? (lecciones.find(l => l.orden === 0) || null) : null) %>;
+        (function initBienvenida(){
+            if (!leccionBienvenidaGlobal) return;
+            const textarea = document.getElementById('textarea-bienvenida');
+            const btn = document.getElementById('btn-guardar-bienvenida');
+            const fb = document.getElementById('bienvenida-feedback');
+            const prev = document.getElementById('vista-previa-bienvenida');
+            if (!textarea || !btn || !prev) return;
+            function updatePrev(){ prev.innerHTML = textarea.value; }
+            textarea.addEventListener('input', updatePrev);
+            updatePrev();
+            btn.addEventListener('click', async () => {
+                btn.disabled = true; btn.innerText = 'Guardando...';
+                try {
+                    const resp = await fetch('/profesor/leccion/contenido', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ leccionId: leccionBienvenidaGlobal.leccion_id, contenido: textarea.value }) });
+                    const data = await resp.json();
+                    if (data.success) {
+                        fb.style.display = 'inline'; fb.innerText = 'Guardado ✓';
+                        setTimeout(() => { fb.style.display = 'none'; }, 2000);
+                    } else {
+                        alert(data.message || 'Error al guardar el texto de bienvenida.');
+                    }
+                } catch (err) { console.error(err); alert('Error de conexión al guardar.'); }
+                finally { btn.disabled = false; btn.innerText = 'Guardar Bienvenida'; }
+            });
+        })();
 
         (function initVideoManagement(){
             const select = document.getElementById('select-leccion');
