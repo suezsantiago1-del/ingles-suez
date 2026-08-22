@@ -462,6 +462,12 @@ export const renderClassroom = async (req, res) => {
             console.error('renderClassroom: debug log error', dbgErr);
         }
 
+        // Normalizar onclicks de checkAnswer (apóstrofes) para que los multiple
+        // choice respondan al clic aunque el texto de explicación tenga comillas simples.
+        if (leccionActiva && leccionActiva.contenido_html) {
+            leccionActiva.contenido_html = normalizarCheckAnswers(leccionActiva.contenido_html);
+        }
+
         return res.render('classroom', { 
             curso, 
             lecciones: leccionesConEstado, 
@@ -611,6 +617,24 @@ export const renderPanelProfesor = async (req, res) => {
         return res.redirect('/');
     }
 };
+
+// Normaliza los onclick de checkAnswer en el contenido de una lección:
+// re-escribe el 4º argumento (texto de explicación) escapando los apóstrofes,
+// para que botones con 'Can't', &apos;, &amp;apos;, etc. no rompan el JS inline.
+function normalizarCheckAnswers(html) {
+    if (!html || !html.includes('checkAnswer')) return html;
+    return html.replace(/onclick="checkAnswer\(([^"]*?)\)"/g, (m, inner) => {
+        const re = /^\s*this\s*,\s*(true|false)\s*,\s*'([^']*)'\s*,\s*'([\s\S]*)'\s*$/;
+        const mm = inner.match(re);
+        if (!mm) return m;
+        const texto = mm[3]
+            .replace(/&amp;apos;/g, "'")
+            .replace(/&#39;/g, "'")
+            .replace(/&apos;/g, "'")
+            .replace(/'/g, "\\'");
+        return `onclick="checkAnswer(this, ${mm[1]}, '${mm[2]}', '${texto}')"`;
+    });
+}
 
 export const renderGestionCursos = async (req, res) => {
     if (!req.session.user || req.session.user.email !== EMAIL_PROFESOR) {
