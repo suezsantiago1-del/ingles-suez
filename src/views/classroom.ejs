@@ -24,6 +24,34 @@
         .main-content { flex-grow: 1; padding: 2rem 3rem; max-width: 900px; }
         .video-container { background: #000; width: 100%; aspect-ratio: 16/9; border-radius: 10px; overflow: hidden; display: flex; align-items: center; justify-content: center; margin-bottom: 2rem; color: white; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
         .video-placeholder { text-align: center; color: #a4c4de; }
+
+        /* Texto de Bienvenida (lección Welcome!, orden 0) */
+        .leccion-bienvenida {
+            font-size: 1.35rem !important;
+            line-height: 1.9 !important;
+        }
+        .leccion-bienvenida h2 {
+            font-size: 2.2rem !important;
+            margin: 0 0 1.5rem 0;
+        }
+        .leccion-bienvenida p {
+            font-size: 1.35rem !important;
+            line-height: 1.9;
+        }
+        .leccion-bienvenida .clase-contenido,
+        .leccion-bienvenida {
+            animation: bienvenidaEntrada 0.9s ease-out both;
+        }
+        @keyframes bienvenidaEntrada {
+            from {
+                opacity: 0;
+                transform: translateY(24px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
         
         /* Banner Certificado */
         .certificado-banner {
@@ -250,7 +278,7 @@
             <% } %>
 
             <!-- Contenido Interactivo -->
-            <div class="leccion-body">
+            <div class="leccion-body <%= (leccionActiva && leccionActiva.orden === 0) ? 'leccion-bienvenida' : '' %>">
                 <% if (leccionActiva && leccionActiva.nota !== null && leccionActiva.nota !== undefined && leccionActiva.nota < 7) { %>
                     <!-- Botón global de rehacer: único punto para volver a intentar cuando la nota es < 7 -->
                     <div id="rehacerEjerciciosWrap" style="display: flex; justify-content: flex-end; margin-bottom: 1.5rem;">
