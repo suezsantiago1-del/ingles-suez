@@ -221,7 +221,8 @@
                 <% } %>
             <% } %>
 
-            <!-- Reproductor de Video -->
+            <!-- Reproductor de Video (oculto en la lección Welcome!, orden 0) -->
+            <% if (leccionActiva && leccionActiva.orden !== 0) { %>
             <div class="video-container">
                 <% if (leccionActiva && leccionActiva.video_url) { %>
                     <% const url = leccionActiva.video_url; %>
@@ -246,6 +247,7 @@
                     </div>
                 <% } %>
             </div>
+            <% } %>
 
             <!-- Contenido Interactivo -->
             <div class="leccion-body">
@@ -260,7 +262,8 @@
                 <%- leccionActiva ? leccionActiva.contenido_html : '' %>
             </div>
 
-            <!-- Consultas al Profesor (por lección) -->
+            <!-- Consultas al Profesor (oculto en la lección Welcome!, orden 0) -->
+            <% if (leccionActiva && leccionActiva.orden !== 0) { %>
             <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1.5rem; margin-top: 2rem;">
                 <h3 style="color: #184168; margin: 0 0 1rem 0; font-size: 1.1rem;">Consultas al Profesor</h3>
                 <p style="color: var(--text-muted); margin: 0 0 1rem 0; font-size: 0.9rem;">¿Tenés dudas sobre esta lección? Escribí tu consulta y el profesor te va a responder.</p>
@@ -293,6 +296,7 @@
                 <textarea id="textarea-consulta" placeholder="Escribe tu consulta aquí..." style="width: 100%; height: 90px; padding: 0.7rem; border: 1px solid #cbd5e0; border-radius: 6px; font-family: inherit; font-size: 0.95rem; margin-bottom: 0.8rem; resize: vertical;"></textarea>
                 <button type="button" id="btn-enviar-consulta" onclick="enviarConsulta()" style="background: #184168; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 6px; font-weight: bold; cursor: pointer;">Enviar consulta</button>
             </div>
+            <% } %>
         </main>
     </div>
 
