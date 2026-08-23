@@ -468,6 +468,8 @@ export const renderClassroom = async (req, res) => {
             leccionActiva.contenido_html = normalizarCheckAnswers(leccionActiva.contenido_html);
             // Quitar los botones decorativos de "[ CAJA DE TEXTO / BOTÓN SUBIR AUDIO ]"
             leccionActiva.contenido_html = quitarBotonCajaDeTexto(leccionActiva.contenido_html);
+            // Agregar opciones de traducción a la Fase 2 de las clases 6-9 si faltan
+            leccionActiva.contenido_html = inyectarTraduccionFase2(leccionActiva.contenido_html, leccionActiva.orden);
         }
 
         return res.render('classroom', { 
@@ -638,13 +640,62 @@ function normalizarCheckAnswers(html) {
     });
 }
 
-// Elimina los botones de "[ CAJA DE TEXTO / BOTÓN SUBIR AUDIO ]" del contenido.
-// Es un botón decorativo de las secciones de entregable que no hace nada.
+// Elimina los botones decorativos de "[ CAJA DE TEXTO / ... ]" del contenido
+// (variantes: "BOTÓN SUBIR AUDIO", "EXTENSA / SUBIR DOCUMENTO", etc.).
+// Son botones que no hacen nada dentro de las secciones de entregable.
 function quitarBotonCajaDeTexto(html) {
     if (!html) return html;
-    // Patrón: <button ...> [ CAJA DE TEXTO / BOTÓN SUBIR AUDIO ] </button>
-    // (con o sin espacios, corchetes y guiones variables)
-    return html.replace(/<button\b[^>]*>\s*\[\s*CAJA DE TEXTO\s*\/\s*BOT[OÓ]N SUBIR AUDIO\s*\]\s*<\/button>/gi, '');
+    // Patrón genérico: <button ...>[ CAJA DE TEXTO [EXTENSA] / <cualquier texto> ]</button>
+    return html.replace(/<button\b[^>]*>\s*\[\s*CAJA DE TEXTO[\s\S]*?\]\s*<\/button>/gi, '');
+}
+
+// Bloques de opciones de traducción para la Fase 2 (Parte II) de las clases 6-9.
+// Se inyectan en el render si el diálogo existe pero aún no tiene las opciones (_trad),
+// así se arregla el contenido ya guardado en la base sin migrar datos.
+const BLOQUES_TRADUCCION = {
+    6: `<div class="quiz-question" style="margin-top: 1.5rem;">
+        <p><strong>¿Cuál es la traducción correcta para el diálogo completo?</strong></p>
+        <button class="option-btn" onclick="checkAnswer(this, false, 'c6_trad', 'El español de are you doing no es hacer, sino estar haciendo.')">( A ) ¿Qué hacés ahora? / Estoy cocinando la cena y mi hermano está viendo la tele.</button>
+        <button class="option-btn" onclick="checkAnswer(this, true, 'c6_trad', 'Traducción correcta del presente continuo: What are you doing now = Qué estás haciendo ahora.')">( B ) ¿Qué estás haciendo ahora? / Estoy cocinando la cena y mi hermano está mirando la televisión.</button>
+        <button class="option-btn" onclick="checkAnswer(this, false, 'c6_trad', 'Contiene el auxiliar incorrecto para traducir la acción en curso.')">( C ) ¿Qué haces ahora? / Yo cocino la cena y mi hermano ve la televisión.</button>
+        <div id="c6_trad" style="display:none; padding: 0.8rem; border-radius: 6px; margin-top: 0.5rem; font-size: 0.9rem;"></div>
+    </div>`,
+    7: `<div class="quiz-question" style="margin-top: 1.5rem;">
+        <p><strong>¿Cuál es la traducción correcta para el diálogo completo?</strong></p>
+        <button class="option-btn" onclick="checkAnswer(this, true, 'c7_trad', 'Traducción correcta: can you use = ¿sabés usar?, can learn = puede aprender.')">( A ) ¿Podés usar este software de diseño? / No, no puedo usarlo, pero puedo aprender rápido.</button>
+        <button class="option-btn" onclick="checkAnswer(this, false, 'c7_trad', 'Could se usa para cortesía o pasado, no para capacidad presente.')">( B ) ¿Podrías usar este software de diseño? / No, no podría usarlo, pero podría aprender rápido.</button>
+        <button class="option-btn" onclick="checkAnswer(this, false, 'c7_trad', 'Omite el verbo modal can en la segunda parte de la respuesta.')">( C ) ¿Puedes usar este software de diseño? / No lo uso, pero aprendo rápido.</button>
+        <div id="c7_trad" style="display:none; padding: 0.8rem; border-radius: 6px; margin-top: 0.5rem; font-size: 0.9rem;"></div>
+    </div>`,
+    8: `<div class="quiz-question" style="margin-top: 1.5rem;">
+        <p><strong>¿Cuál es la traducción correcta para el diálogo completo?</strong></p>
+        <button class="option-btn" onclick="checkAnswer(this, false, 'c8_trad', 'How much es para sustantivos incontables (café), y la negación lleva any.')">( A ) ¿Cuántos cafés tomás en la mañana? / Tomo muchos cafés, pero no les pongo azúcar.</button>
+        <button class="option-btn" onclick="checkAnswer(this, true, 'c8_trad', 'Traducción correcta: how much coffee = cuánto café, any sugar = nada de azúcar.')">( B ) ¿Cuánto café tomás en la mañana? / Tomo mucho café, pero no le pongo azúcar.</button>
+        <button class="option-btn" onclick="checkAnswer(this, false, 'c8_trad', 'Change el sentido: la respuesta B no toma café en la mañana.')">( C ) ¿Cuánto café tomás en la mañana? / Tomo poco café, pero le pongo mucha azúcar.</button>
+        <div id="c8_trad" style="display:none; padding: 0.8rem; border-radius: 6px; margin-top: 0.5rem; font-size: 0.9rem;"></div>
+    </div>`,
+    9: `<div class="quiz-question" style="margin-top: 1.5rem;">
+        <p><strong>¿Cuál es la traducción correcta para el diálogo completo?</strong></p>
+        <button class="option-btn" onclick="checkAnswer(this, false, 'c9_trad', 'Las comparaciones con adjetivos largos usan more + adjetivo, y el superlativo de the best.')">( A ) ¿Tu nuevo trabajo es más difícil que el anterior? / Sí, es más difícil, pero es el trabajo que tengo.</button>
+        <button class="option-btn" onclick="checkAnswer(this, true, 'c9_trad', 'Traducción correcta: more difficult than = más difícil que, the best job = el mejor trabajo.')">( B ) ¿Tu nuevo trabajo es más difícil que el anterior? / Sí, es más difícil, pero es el mejor trabajo que tuve.</button>
+        <button class="option-btn" onclick="checkAnswer(this, false, 'c9_trad', 'Coloca el comparativo en el lugar equivocado y cambia el superlativo.')">( C ) ¿Es tu trabajo nuevo difícil más que el anterior? / Sí, es más difícil, pero es el trabajo mejor que tenía.</button>
+        <div id="c9_trad" style="display:none; padding: 0.8rem; border-radius: 6px; margin-top: 0.5rem; font-size: 0.9rem;"></div>
+    </div>`
+};
+
+// Inyecta el bloque de opciones de traducción (Fase 2, Parte II) para las clases 6-9
+// si el diálogo ya está en el contenido y aún no tiene las opciones (_trad).
+function inyectarTraduccionFase2(html, orden) {
+    if (!html || !BLOQUES_TRADUCCION[orden] || html.includes('_trad')) return html;
+    const bloque = BLOQUES_TRADUCCION[orden];
+    // Inserta el bloque justo después del cierre del div del diálogo (después del último </div>)
+    // Buscamos dónde termina el diálogo: el patrón del cierre del div de la Parte II.
+    const idx = html.lastIndexOf('Persona B:</strong>');
+    if (idx === -1) return html;
+    const cierre = html.indexOf('</div>', idx);
+    if (cierre === -1) return html;
+    const insertAt = cierre + '</div>'.length;
+    return html.slice(0, insertAt) + '\n' + bloque + html.slice(insertAt);
 }
 
 export const renderGestionCursos = async (req, res) => {

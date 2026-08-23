@@ -562,6 +562,13 @@ export async function seedLecciones(adapter) {
                                 <p style="margin: 0;"><strong>Persona A:</strong> "What are you doing now?"</p>
                                 <p style="margin: 0;"><strong>Persona B:</strong> "I am cooking dinner and my brother is watching TV."</p>
                             </div>
+                            <div class="quiz-question" style="margin-top: 1.5rem;">
+                                <p><strong>¿Cuál es la traducción correcta para el diálogo completo?</strong></p>
+                                <button class="option-btn" onclick="checkAnswer(this, false, 'c6_trad', 'El español de are you doing no es hacer, sino estar haciendo.')">( A ) ¿Qué hacés ahora? / Estoy cocinando la cena y mi hermano está viendo la tele.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, true, 'c6_trad', 'Traducción correcta del presente continuo: What are you doing now = Qué estás haciendo ahora.')">( B ) ¿Qué estás haciendo ahora? / Estoy cocinando la cena y mi hermano está mirando la televisión.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, false, 'c6_trad', 'Contiene el auxiliar incorrecto para traducir la acción en curso.')">( C ) ¿Qué haces ahora? / Yo cocino la cena y mi hermano ve la televisión.</button>
+                                <div id="c6_trad" style="display:none; padding: 0.8rem; border-radius: 6px; margin-top: 0.5rem; font-size: 0.9rem;"></div>
+                            </div>
                         </div>
                     </section>
 
@@ -681,6 +688,13 @@ export async function seedLecciones(adapter) {
                             <div style="background: #f7fafc; border-left: 3px solid #184168; padding: 1rem; border-radius: 4px; line-height: 1.8; color: #2d3748; margin-top: 0.5rem;">
                                 <p style="margin: 0;"><strong>Persona A:</strong> "Can you use this design software?"</p>
                                 <p style="margin: 0;"><strong>Persona B:</strong> "No, I can't use it, but I can learn quickly."</p>
+                            </div>
+                            <div class="quiz-question" style="margin-top: 1.5rem;">
+                                <p><strong>¿Cuál es la traducción correcta para el diálogo completo?</strong></p>
+                                <button class="option-btn" onclick="checkAnswer(this, true, 'c7_trad', 'Traducción correcta: can you use = ¿sabés usar?, can learn = puede aprender.')">( A ) ¿Podés usar este software de diseño? / No, no puedo usarlo, pero puedo aprender rápido.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, false, 'c7_trad', 'Could se usa para cortesía o pasado, no para capacidad presente.')">( B ) ¿Podrías usar este software de diseño? / No, no podría usarlo, pero podría aprender rápido.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, false, 'c7_trad', 'Omite el verbo modal can en la segunda parte de la respuesta.')">( C ) ¿Puedes usar este software de diseño? / No lo uso, pero aprendo rápido.</button>
+                                <div id="c7_trad" style="display:none; padding: 0.8rem; border-radius: 6px; margin-top: 0.5rem; font-size: 0.9rem;"></div>
                             </div>
                         </div>
                     </section>
@@ -804,6 +818,13 @@ export async function seedLecciones(adapter) {
                                 <p style="margin: 0;"><strong>Persona A:</strong> "How much coffee do you drink in the morning?"</p>
                                 <p style="margin: 0;"><strong>Persona B:</strong> "I drink a lot of coffee, but I don't put any sugar in it."</p>
                             </div>
+                            <div class="quiz-question" style="margin-top: 1.5rem;">
+                                <p><strong>¿Cuál es la traducción correcta para el diálogo completo?</strong></p>
+                                <button class="option-btn" onclick="checkAnswer(this, false, 'c8_trad', 'How much es para sustantivos incontables (café), y la negación lleva any.')">( A ) ¿Cuántos cafés tomás en la mañana? / Tomo muchos cafés, pero no les pongo azúcar.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, true, 'c8_trad', 'Traducción correcta: how much coffee = cuánto café, any sugar = nada de azúcar.')">( B ) ¿Cuánto café tomás en la mañana? / Tomo mucho café, pero no le pongo azúcar.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, false, 'c8_trad', 'Change el sentido: la respuesta B no toma café en la mañana.')">( C ) ¿Cuánto café tomás en la mañana? / Tomo poco café, pero le pongo mucha azúcar.</button>
+                                <div id="c8_trad" style="display:none; padding: 0.8rem; border-radius: 6px; margin-top: 0.5rem; font-size: 0.9rem;"></div>
+                            </div>
                         </div>
                     </section>
 
@@ -925,6 +946,13 @@ export async function seedLecciones(adapter) {
                             <div style="background: #f7fafc; border-left: 3px solid #184168; padding: 1rem; border-radius: 4px; line-height: 1.8; color: #2d3748; margin-top: 0.5rem;">
                                 <p style="margin: 0;"><strong>Persona A:</strong> "Is your new job more difficult than the previous one?"</p>
                                 <p style="margin: 0;"><strong>Persona B:</strong> "Yes, it is more difficult, but it is the best job I had."</p>
+                            </div>
+                            <div class="quiz-question" style="margin-top: 1.5rem;">
+                                <p><strong>¿Cuál es la traducción correcta para el diálogo completo?</strong></p>
+                                <button class="option-btn" onclick="checkAnswer(this, false, 'c9_trad', 'Las comparaciones con adjetivos largos usan more + adjetivo, y el superlativo de the best.')">( A ) ¿Tu nuevo trabajo es más difícil que el anterior? / Sí, es más difícil, pero es el trabajo que tengo.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, true, 'c9_trad', 'Traducción correcta: more difficult than = más difícil que, the best job = el mejor trabajo.')">( B ) ¿Tu nuevo trabajo es más difícil que el anterior? / Sí, es más difícil, pero es el mejor trabajo que tuve.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, false, 'c9_trad', 'Coloca el comparativo en el lugar equivocado y cambia el superlativo.')">( C ) ¿Es tu trabajo nuevo difícil más que el anterior? / Sí, es más difícil, pero es el trabajo mejor que tenía.</button>
+                                <div id="c9_trad" style="display:none; padding: 0.8rem; border-radius: 6px; margin-top: 0.5rem; font-size: 0.9rem;"></div>
                             </div>
                         </div>
                     </section>
