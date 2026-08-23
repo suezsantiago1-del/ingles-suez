@@ -466,6 +466,8 @@ export const renderClassroom = async (req, res) => {
         // choice respondan al clic aunque el texto de explicación tenga comillas simples.
         if (leccionActiva && leccionActiva.contenido_html) {
             leccionActiva.contenido_html = normalizarCheckAnswers(leccionActiva.contenido_html);
+            // Quitar los botones decorativos de "[ CAJA DE TEXTO / BOTÓN SUBIR AUDIO ]"
+            leccionActiva.contenido_html = quitarBotonCajaDeTexto(leccionActiva.contenido_html);
         }
 
         return res.render('classroom', { 
@@ -634,6 +636,15 @@ function normalizarCheckAnswers(html) {
             .replace(/'/g, "\\'");
         return `onclick="checkAnswer(this, ${mm[1]}, '${mm[2]}', '${texto}')"`;
     });
+}
+
+// Elimina los botones de "[ CAJA DE TEXTO / BOTÓN SUBIR AUDIO ]" del contenido.
+// Es un botón decorativo de las secciones de entregable que no hace nada.
+function quitarBotonCajaDeTexto(html) {
+    if (!html) return html;
+    // Patrón: <button ...> [ CAJA DE TEXTO / BOTÓN SUBIR AUDIO ] </button>
+    // (con o sin espacios, corchetes y guiones variables)
+    return html.replace(/<button\b[^>]*>\s*\[\s*CAJA DE TEXTO\s*\/\s*BOT[OÓ]N SUBIR AUDIO\s*\]\s*<\/button>/gi, '');
 }
 
 export const renderGestionCursos = async (req, res) => {
