@@ -180,13 +180,13 @@ export async function seedLecciones(adapter) {
                     <section class="bloque-fase" style="margin-bottom: 3rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center; background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
                             <h3 style="margin: 0; color: #0b2238; font-size: 1.1rem; text-transform: uppercase;">FASE 1: Existencia y Ubicación (There is / There are y Preposiciones)</h3>
-                            <span style="font-size: 0.85rem; font-weight: bold; color: #184168;">Impacto en Progreso: +20%</span>
+
                         </div>
 
                         <div class="ejercicio-card" style="background: white; border: 1px solid #c0d4e5; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
                                 <h4 style="margin: 0; color: #0b2238; font-size: 1.05rem;">Ejercicio 1.1: Descripción de Espacios y Objetos (Elección Múltiple)</h4>
-                                <span style="background: #edf2f7; color: #4a5568; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Estado: En Progreso</span>
+
                             </div>
 
                             <p style="font-size: 0.95rem; color: #4a5568; margin-bottom: 1.2rem;"><strong>Indicaciones:</strong> Lee las 5 situaciones e identifica la forma correcta de expresar existencia (there is / there are) y ubicación espacial (in, on, at, under).</p>
@@ -220,7 +220,7 @@ export async function seedLecciones(adapter) {
                     <section class="bloque-fase" style="margin-bottom: 2rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center; background: #0b2238; color: white; padding: 0.8rem 1.2rem; border-radius: 6px 6px 0 0;">
                             <h3 style="margin: 0; font-size: 1.1rem; text-transform: uppercase;">ENTREGABLE FINAL (Práctica Manual con Corrección del Profesor)</h3>
-                            <span style="font-size: 0.85rem; font-weight: bold; color: #a4c4de;">Restante para 100%: +20%</span>
+
                         </div>
 
                         <div style="background: white; border: 1px solid #0b2238; border-top: none; border-radius: 0 0 8px 8px; padding: 1.8rem;">
@@ -244,13 +244,13 @@ export async function seedLecciones(adapter) {
                     <section class="bloque-fase" style="margin-bottom: 3rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center; background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
                             <h3 style="margin: 0; color: #0b2238; font-size: 1.1rem; text-transform: uppercase;">FASE 1: Verbos Regulares e Irregulares en Pasado</h3>
-                            <span style="font-size: 0.85rem; font-weight: bold; color: #184168;">Impacto en Progreso: +20%</span>
+
                         </div>
 
                         <div class="ejercicio-card" style="background: white; border: 1px solid #c0d4e5; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
                                 <h4 style="margin: 0; color: #0b2238; font-size: 1.05rem;">Ejercicio 1.1: Conjugación y Conectores Temporales (Elección Múltiple)</h4>
-                                <span style="background: #edf2f7; color: #4a5568; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Estado: En Progreso</span>
+
                             </div>
 
                             <p style="font-size: 0.95rem; color: #4a5568; margin-bottom: 1.2rem;"><strong>Indicaciones:</strong> Lee las 5 situaciones e identifica la forma verbal en Pasado Simple (Past Simple) y la expresión de tiempo correcta.</p>
@@ -300,7 +300,7 @@ export async function seedLecciones(adapter) {
                     <section class="bloque-fase" style="margin-bottom: 2rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center; background: #0b2238; color: white; padding: 0.8rem 1.2rem; border-radius: 6px 6px 0 0;">
                             <h3 style="margin: 0; font-size: 1.1rem; text-transform: uppercase;">ENTREGABLE FINAL (Práctica Manual con Corrección del Profesor)</h3>
-                            <span style="font-size: 0.85rem; font-weight: bold; color: #a4c4de;">Restante para 100%: +20%</span>
+
                         </div>
 
                         <div style="background: white; border: 1px solid #0b2238; border-top: none; border-radius: 0 0 8px 8px; padding: 1.8rem;">
@@ -324,13 +324,13 @@ export async function seedLecciones(adapter) {
                     <section class="bloque-fase" style="margin-bottom: 3rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center; background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
                             <h3 style="margin: 0; color: #0b2238; font-size: 1.1rem; text-transform: uppercase;">FASE 1: Planes e Intenciones (Be Going To)</h3>
-                            <span style="font-size: 0.85rem; font-weight: bold; color: #184168;">Impacto en Progreso: +20%</span>
+
                         </div>
 
                         <div class="ejercicio-card" style="background: white; border: 1px solid #c0d4e5; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
                                 <h4 style="margin: 0; color: #0b2238; font-size: 1.05rem;">Ejercicio 1.1: Estructura de Planes e Intenciones (Elección Múltiple)</h4>
-                                <span style="background: #edf2f7; color: #4a5568; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Estado: En Progreso</span>
+
                             </div>
 
                             <p style="font-size: 0.95rem; color: #4a5568; margin-bottom: 1.2rem;"><strong>Indicaciones:</strong> Lee las 5 situaciones e identifica la forma correcta de expresar un plan futuro ya decidido usando la estructura Sujeto + Verbo To Be + going to + Verbo base.</p>
@@ -380,13 +380,13 @@ export async function seedLecciones(adapter) {
                     <section class="bloque-fase" style="margin-bottom: 3rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center; background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
                             <h3 style="margin: 0; color: #0b2238; font-size: 1.1rem; text-transform: uppercase;">FASE 2: Laboratorio Intensivo de Planes y Predicciones con Evidencia</h3>
-                            <span style="font-size: 0.85rem; font-weight: bold; color: #184168;">Impacto en Progreso: +60%</span>
+
                         </div>
 
                         <div class="ejercicio-card" style="background: white; border: 1px solid #c0d4e5; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
                                 <h4 style="margin: 0; color: #0b2238; font-size: 1.05rem;">Ejercicio 2.1: Transformación y Detección de Errores Gramaticales</h4>
-                                <span style="background: #edf2f7; color: #4a5568; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Estado: En Progreso</span>
+
                             </div>
 
                             <p style="font-size: 0.95rem; color: #4a5568;"><strong>Indicaciones:</strong> Revisa las respuestas y correcciones gramaticales del laboratorio:</p>
@@ -411,7 +411,7 @@ export async function seedLecciones(adapter) {
                         <div class="ejercicio-card" style="background: white; border: 1px solid #c0d4e5; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
                                 <h4 style="margin: 0; color: #0b2238; font-size: 1.05rem;">Ejercicio 2.2: Traducción Compleja de Planes a Futuro</h4>
-                                <span style="background: #edf2f7; color: #4a5568; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Estado: En Progreso</span>
+
                             </div>
 
                             <p style="font-size: 0.95rem; color: #4a5568;"><strong>Indicaciones:</strong> Traduce este diálogo sobre proyectos futuros aplicando la estructura de be going to en afirmativo, negativo e interrogativo.</p>
@@ -435,7 +435,7 @@ export async function seedLecciones(adapter) {
                     <section class="bloque-fase" style="margin-bottom: 2rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center; background: #0b2238; color: white; padding: 0.8rem 1.2rem; border-radius: 6px 6px 0 0;">
                             <h3 style="margin: 0; font-size: 1.1rem; text-transform: uppercase;">ENTREGABLE FINAL (Práctica Manual con Corrección del Profesor)</h3>
-                            <span style="font-size: 0.85rem; font-weight: bold; color: #a4c4de;">Restante para 100%: +20%</span>
+
                         </div>
 
                     </section>
@@ -484,13 +484,13 @@ export async function seedLecciones(adapter) {
                     <section class="bloque-fase" style="margin-bottom: 3rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center; background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
                             <h3 style="margin: 0; color: #0b2238; font-size: 1.1rem; text-transform: uppercase;">FASE 1: Acciones en el Momento Exacto</h3>
-                            <span style="font-size: 0.85rem; font-weight: bold; color: #184168;">Impacto en Progreso: +20%</span>
+
                         </div>
 
                         <div class="ejercicio-card" style="background: white; border: 1px solid #c0d4e5; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
                                 <h4 style="margin: 0; color: #0b2238; font-size: 1.05rem;">Ejercicio 6.1: Selección de Estructura de Presente Continuo</h4>
-                                <span style="background: #edf2f7; color: #4a5568; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Estado: En Progreso</span>
+
                             </div>
 
                             <p style="font-size: 0.95rem; color: #4a5568; margin-bottom: 1.2rem;"><strong>Indicaciones:</strong> Lee las 5 situaciones e identifica la estructura correcta del Presente Continuo (To Be + Verbo con -ing).</p>
@@ -540,13 +540,13 @@ export async function seedLecciones(adapter) {
                     <section class="bloque-fase" style="margin-bottom: 3rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center; background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
                             <h3 style="margin: 0; color: #0b2238; font-size: 1.1rem; text-transform: uppercase;">FASE 2: Detección de Errores y Contraste</h3>
-                            <span style="font-size: 0.85rem; font-weight: bold; color: #184168;">Impacto en Progreso: +60%</span>
+
                         </div>
 
                         <div class="ejercicio-card" style="background: white; border: 1px solid #c0d4e5; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
                                 <h4 style="margin: 0; color: #0b2238; font-size: 1.05rem;">Ejercicio 6.2: Corrección y Traducción en Tiempo Real</h4>
-                                <span style="background: #edf2f7; color: #4a5568; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Estado: En Progreso</span>
+
                             </div>
 
                             <p style="font-size: 0.95rem; color: #4a5568;"><strong>Indicaciones:</strong> Revisa las correcciones gramaticales y la traducción oficial del ejercicio:</p>
@@ -575,7 +575,7 @@ export async function seedLecciones(adapter) {
                     <section class="bloque-fase" style="margin-bottom: 2rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center; background: #0b2238; color: white; padding: 0.8rem 1.2rem; border-radius: 6px 6px 0 0;">
                             <h3 style="margin: 0; font-size: 1.1rem; text-transform: uppercase;">ENTREGABLE FINAL (Práctica Manual con Corrección del Profesor)</h3>
-                            <span style="font-size: 0.85rem; font-weight: bold; color: #a4c4de;">Restante para 100%: +20%</span>
+
                         </div>
                     </section>
 
@@ -605,13 +605,13 @@ export async function seedLecciones(adapter) {
                     <section class="bloque-fase" style="margin-bottom: 3rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center; background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
                             <h3 style="margin: 0; color: #0b2238; font-size: 1.1rem; text-transform: uppercase;">FASE 1: Habilidades y Peticiones</h3>
-                            <span style="font-size: 0.85rem; font-weight: bold; color: #184168;">Impacto en Progreso: +20%</span>
+
                         </div>
 
                         <div class="ejercicio-card" style="background: white; border: 1px solid #c0d4e5; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
                                 <h4 style="margin: 0; color: #0b2238; font-size: 1.05rem;">Ejercicio 7.1: Selección de Modales Can y Can't</h4>
-                                <span style="background: #edf2f7; color: #4a5568; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Estado: En Progreso</span>
+
                             </div>
 
                             <p style="font-size: 0.95rem; color: #4a5568; margin-bottom: 1.2rem;"><strong>Indicaciones:</strong> Selecciona la respuesta con el uso modal gramaticalmente adecuado:</p>
@@ -667,13 +667,13 @@ export async function seedLecciones(adapter) {
                     <section class="bloque-fase" style="margin-bottom: 3rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center; background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
                             <h3 style="margin: 0; color: #0b2238; font-size: 1.1rem; text-transform: uppercase;">FASE 2: Detección de Errores y Traducción</h3>
-                            <span style="font-size: 0.85rem; font-weight: bold; color: #184168;">Impacto en Progreso: +60%</span>
+
                         </div>
 
                         <div class="ejercicio-card" style="background: white; border: 1px solid #c0d4e5; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
                                 <h4 style="margin: 0; color: #0b2238; font-size: 1.05rem;">Ejercicio 7.2: Detección y Traducción de Habilidades</h4>
-                                <span style="background: #edf2f7; color: #4a5568; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Estado: En Progreso</span>
+
                             </div>
 
                             <p style="font-size: 0.95rem; color: #4a5568;"><strong>Indicaciones:</strong> Revisa las soluciones gramaticales de la Fase 2:</p>
@@ -703,7 +703,7 @@ export async function seedLecciones(adapter) {
                     <section class="bloque-fase" style="margin-bottom: 2rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center; background: #0b2238; color: white; padding: 0.8rem 1.2rem; border-radius: 6px 6px 0 0;">
                             <h3 style="margin: 0; font-size: 1.1rem; text-transform: uppercase;">ENTREGABLE FINAL (Práctica Manual con Corrección del Profesor)</h3>
-                            <span style="font-size: 0.85rem; font-weight: bold; color: #a4c4de;">Restante para 100%: +20%</span>
+
                         </div>
 
                     </section>
@@ -734,13 +734,13 @@ export async function seedLecciones(adapter) {
                     <section class="bloque-fase" style="margin-bottom: 3rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center; background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
                             <h3 style="margin: 0; color: #0b2238; font-size: 1.1rem; text-transform: uppercase;">FASE 1: Cuantificadores y Compras</h3>
-                            <span style="font-size: 0.85rem; font-weight: bold; color: #184168;">Impacto en Progreso: +20%</span>
+
                         </div>
 
                         <div class="ejercicio-card" style="background: white; border: 1px solid #c0d4e5; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
                                 <h4 style="margin: 0; color: #0b2238; font-size: 1.05rem;">Ejercicio 8.1: Selección de Cuantificadores</h4>
-                                <span style="background: #edf2f7; color: #4a5568; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Estado: En Progreso</span>
+
                             </div>
 
                             <p style="font-size: 0.95rem; color: #4a5568; margin-bottom: 1.2rem;"><strong>Indicaciones:</strong> Selecciona la opción adecuada en función del carácter contable o incontable del sustantivo:</p>
@@ -796,13 +796,13 @@ export async function seedLecciones(adapter) {
                     <section class="bloque-fase" style="margin-bottom: 3rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center; background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
                             <h3 style="margin: 0; color: #0b2238; font-size: 1.1rem; text-transform: uppercase;">FASE 2: Detección de Errores y Traducción</h3>
-                            <span style="font-size: 0.85rem; font-weight: bold; color: #184168;">Impacto en Progreso: +60%</span>
+
                         </div>
 
                         <div class="ejercicio-card" style="background: white; border: 1px solid #c0d4e5; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
                                 <h4 style="margin: 0; color: #0b2238; font-size: 1.05rem;">Ejercicio 8.2: Corrección y Traducción de Cantidades</h4>
-                                <span style="background: #edf2f7; color: #4a5568; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Estado: En Progreso</span>
+
                             </div>
 
                             <p style="font-size: 0.95rem; color: #4a5568;"><strong>Indicaciones:</strong> Revisa la validación de errores y la traducción oficial del ejercicio:</p>
@@ -832,7 +832,7 @@ export async function seedLecciones(adapter) {
                     <section class="bloque-fase" style="margin-bottom: 2rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center; background: #0b2238; color: white; padding: 0.8rem 1.2rem; border-radius: 6px 6px 0 0;">
                             <h3 style="margin: 0; font-size: 1.1rem; text-transform: uppercase;">ENTREGABLE FINAL (Práctica Manual con Corrección del Profesor)</h3>
-                            <span style="font-size: 0.85rem; font-weight: bold; color: #a4c4de;">Restante para 100%: +20%</span>
+
                         </div>
 
                     </section>
@@ -863,13 +863,13 @@ export async function seedLecciones(adapter) {
                     <section class="bloque-fase" style="margin-bottom: 3rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center; background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
                             <h3 style="margin: 0; color: #0b2238; font-size: 1.1rem; text-transform: uppercase;">FASE 1: Estructuras de Comparación</h3>
-                            <span style="font-size: 0.85rem; font-weight: bold; color: #184168;">Impacto en Progreso: +20%</span>
+
                         </div>
 
                         <div class="ejercicio-card" style="background: white; border: 1px solid #c0d4e5; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
                                 <h4 style="margin: 0; color: #0b2238; font-size: 1.05rem;">Ejercicio 9.1: Selección de Comparativos y Superlativos</h4>
-                                <span style="background: #edf2f7; color: #4a5568; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Estado: En Progreso</span>
+
                             </div>
 
                             <p style="font-size: 0.95rem; color: #4a5568; margin-bottom: 1.2rem;"><strong>Indicaciones:</strong> Lee las 5 situaciones e identifica la estructura comparativa o superlativa correcta:</p>
@@ -925,13 +925,13 @@ export async function seedLecciones(adapter) {
                     <section class="bloque-fase" style="margin-bottom: 3rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center; background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
                             <h3 style="margin: 0; color: #0b2238; font-size: 1.1rem; text-transform: uppercase;">FASE 2: Detección de Errores y Traducción</h3>
-                            <span style="font-size: 0.85rem; font-weight: bold; color: #184168;">Impacto en Progreso: +60%</span>
+
                         </div>
 
                         <div class="ejercicio-card" style="background: white; border: 1px solid #c0d4e5; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
                                 <h4 style="margin: 0; color: #0b2238; font-size: 1.05rem;">Ejercicio 9.2: Corrección y Traducción de Comparaciones</h4>
-                                <span style="background: #edf2f7; color: #4a5568; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Estado: En Progreso</span>
+
                             </div>
 
                             <p style="font-size: 0.95rem; color: #4a5568;"><strong>Indicaciones:</strong> Revisa la validación de errores y la traducción oficial del ejercicio:</p>
@@ -961,7 +961,7 @@ export async function seedLecciones(adapter) {
                     <section class="bloque-fase" style="margin-bottom: 2rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center; background: #0b2238; color: white; padding: 0.8rem 1.2rem; border-radius: 6px 6px 0 0;">
                             <h3 style="margin: 0; font-size: 1.1rem; text-transform: uppercase;">ENTREGABLE FINAL (Práctica Manual con Corrección del Profesor)</h3>
-                            <span style="font-size: 0.85rem; font-weight: bold; color: #a4c4de;">Restante para 100%: +20%</span>
+
                         </div>
 
                     </section>
@@ -992,13 +992,13 @@ export async function seedLecciones(adapter) {
                     <section class="bloque-fase" style="margin-bottom: 3rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center; background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
                             <h3 style="margin: 0; color: #0b2238; font-size: 1.1rem; text-transform: uppercase;">FASE 1: Lectura Comprensiva y Análisis de Texto (Reading Comprehension)</h3>
-                            <span style="font-size: 0.85rem; font-weight: bold; color: #184168;">Impacto en Progreso: +30%</span>
+
                         </div>
 
                         <div class="ejercicio-card" style="background: white; border: 1px solid #c0d4e5; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
                                 <h4 style="margin: 0; color: #0b2238; font-size: 1.05rem;">Ejercicio 10.1: Comprensión Lectora e Identificación de Tiempos Verbales</h4>
-                                <span style="background: #edf2f7; color: #4a5568; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Estado: En Progreso</span>
+
                             </div>
 
                             <p style="font-size: 0.95rem; color: #4a5568; margin-bottom: 1.2rem;"><strong>Indicaciones:</strong> Lee atentamente el siguiente caso de estudio sobre la historia de Mateo y responde las 5 preguntas de comprensión seleccionando la opción correcta.</p>
