@@ -391,6 +391,9 @@
                     
                     // Marcar el contenedor como completado
                     container.dataset.completed = 'true';
+                    
+                    // Guardar la respuesta correcta para que persista tras recargar la página
+                    window.guardarRespuestaQuiz(feedbackId, feedbackBox.innerHTML);
                 } else {
                     // Respuesta incorrecta: deshabilitar solo este botón, permitir cambiar a otra opción
                     button.disabled = true;
@@ -406,6 +409,53 @@
             }
         };
         
+        // Guarda en localStorage (clave por lección) los ids de las preguntas de multiple
+        // choice respondidas correctamente, junto con el texto de feedback mostrado.
+        // Así la respuesta correcta queda "marcada" de forma permanente y sobrevive a recargas.
+        window.guardarRespuestaQuiz = function (feedbackId, feedbackHtml) {
+            const leccionId = "<%- leccionActiva ? leccionActiva.id : '' %>";
+            if (!leccionId || !feedbackId) return;
+            const key = 'quiz_respuestas_' + leccionId;
+            let guardadas = {};
+            try { guardadas = JSON.parse(localStorage.getItem(key) || '{}'); } catch (e) { guardadas = {}; }
+            guardadas[feedbackId] = feedbackHtml;
+            try { localStorage.setItem(key, JSON.stringify(guardadas)); } catch (e) { console.error('No se pudo persistir la respuesta: ', e); }
+        };
+
+        // Al cargar la página re-marcamos como respondidas (correctas) las preguntas ya guardadas.
+        window.aplicarRespuestasGuardadas = function () {
+            const leccionId = "<%- leccionActiva ? leccionActiva.id : '' %>";
+            if (!leccionId) return;
+            let guardadas = {};
+            try { guardadas = JSON.parse(localStorage.getItem('quiz_respuestas_' + leccionId) || '{}'); } catch (e) { guardadas = {}; }
+            const ids = Object.keys(guardadas);
+            if (ids.length === 0) return;
+
+            document.querySelectorAll('.quiz-question').forEach(container => {
+                const btns = container.querySelectorAll('.option-btn');
+                let btnCorrecto = null;
+                let pregId = null;
+                btns.forEach(btn => {
+                    const oc = btn.getAttribute('onclick') || '';
+                    const match = oc.match(/checkAnswer\(this,\s*true,\s*'([^']+)'/);
+                    if (match) { btnCorrecto = btn; pregId = match[1]; }
+                });
+                if (!btnCorrecto || !pregId || !guardadas[pregId]) return;
+
+                btns.forEach(btn => { btn.disabled = true; btn.classList.remove('selected-incorrect'); });
+                btnCorrecto.classList.add('selected-correct');
+                container.dataset.completed = 'true';
+                const box = document.getElementById(pregId);
+                if (box) {
+                    box.style.display = 'block';
+                    box.style.background = '#f0fff4';
+                    box.style.border = '1px solid #c6f6d5';
+                    box.style.color = '#22543d';
+                    box.innerHTML = guardadas[pregId];
+                }
+            });
+        };
+
         console.log('Función checkAnswer definida en window');
 
         // Envío de consultas al profesor por lección
@@ -516,6 +566,9 @@
             setTimeout(() => {
                 console.log('Iniciando vinculación de botones después de delay');
                 
+                // Restaurar las respuestas correctas ya guardadas (multiple choice persistente)
+                window.aplicarRespuestasGuardadas();
+                
                 // El botón de envío del entregable es el ÚLTIMO botón dentro de
                 // .leccion-body (la sección de entregable es el bloque final).
                 // Así los botones de multiple choice quedan intactos.
@@ -581,6 +634,10 @@
                     const btnRehacer = document.getElementById('btnRehacerEjercicios');
                     if (btnRehacer) {
                         btnRehacer.addEventListener('click', () => {
+                            // Al rehacer, limpiar las respuestas guardadas para empezar de cero
+                            const leccionIdRehacer = "<%- leccionActiva ? leccionActiva.id : '' %>";
+                            if (leccionIdRehacer) { localStorage.removeItem('quiz_respuestas_' + leccionIdRehacer); }
+
                             // Desbloquear y reiniciar el multiple choice
                             document.querySelectorAll('.leccion-body .quiz-question').forEach(pregunta => {
                                 pregunta.querySelectorAll('.option-btn').forEach(b => {
