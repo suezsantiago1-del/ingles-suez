@@ -21,6 +21,28 @@ export async function seedLecciones(adapter) {
                 [h]
             );
         }
+        // Limpieza idempotente: quita los banners de "progreso" del contenido de las lecciones
+        // ("Impacto en Progreso: +XX%", "Restante para 100%: +XX%", etc.). Aplica también a
+        // bases ya pobladas, sin depender del seed condicional (IF COUNT = 0), igual que el
+        // bloque "Ejercicios de Alto Rendimiento" de arriba.
+        try {
+            const leccionesConContenido = await adapter.pgPool.query('SELECT id, contenido_html FROM lecciones');
+            for (const fila of leccionesConContenido.rows) {
+                const htmlOriginal = fila.contenido_html;
+                if (!htmlOriginal) continue;
+                const htmlLimpio = htmlOriginal
+                    .replace(/Impacto en Progreso[^\n]{0,120}?%/gi, '')
+                    .replace(/Restante para 100%[^\n]{0,120}?%/gi, '');
+                if (htmlLimpio !== htmlOriginal) {
+                    await adapter.pgPool.query(
+                        'UPDATE lecciones SET contenido_html = $1 WHERE id = $2',
+                        [htmlLimpio, fila.id]
+                    );
+                }
+            }
+        } catch (errorLimpieza) {
+            console.error('Error al limpiar banners de progreso de las lecciones:', errorLimpieza);
+        }
 
         // Lección de bienvenida "Welcome!" (orden 0, antes de la Clase 1).
         // Se crea si no existe (también en bases ya pobladas donde el bloque
