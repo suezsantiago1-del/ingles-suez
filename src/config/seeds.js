@@ -178,7 +178,7 @@ export async function seedLecciones(adapter) {
                         </header>
 
                     <section class="bloque-fase" style="margin-bottom: 3rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
+                        <div style="background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
                             <h3 style="margin: 0; color: #0b2238; font-size: 1.1rem; text-transform: uppercase;">FASE 1: Existencia y Ubicación (There is / There are y Preposiciones)</h3>
 
                         </div>
@@ -242,7 +242,7 @@ export async function seedLecciones(adapter) {
                         </header>
 
                     <section class="bloque-fase" style="margin-bottom: 3rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
+                        <div style="background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
                             <h3 style="margin: 0; color: #0b2238; font-size: 1.1rem; text-transform: uppercase;">FASE 1: Verbos Regulares e Irregulares en Pasado</h3>
 
                         </div>
@@ -322,7 +322,7 @@ export async function seedLecciones(adapter) {
                         </header>
 
                     <section class="bloque-fase" style="margin-bottom: 3rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
+                        <div style="background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
                             <h3 style="margin: 0; color: #0b2238; font-size: 1.1rem; text-transform: uppercase;">FASE 1: Planes e Intenciones (Be Going To)</h3>
 
                         </div>
@@ -378,7 +378,7 @@ export async function seedLecciones(adapter) {
                     </section>
 
                     <section class="bloque-fase" style="margin-bottom: 3rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
+                        <div style="background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
                             <h3 style="margin: 0; color: #0b2238; font-size: 1.1rem; text-transform: uppercase;">FASE 2: Laboratorio Intensivo de Planes y Predicciones con Evidencia</h3>
 
                         </div>
@@ -482,7 +482,7 @@ export async function seedLecciones(adapter) {
                     </header>
 
                     <section class="bloque-fase" style="margin-bottom: 3rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
+                        <div style="background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
                             <h3 style="margin: 0; color: #0b2238; font-size: 1.1rem; text-transform: uppercase;">FASE 1: Acciones en el Momento Exacto</h3>
 
                         </div>
@@ -538,7 +538,7 @@ export async function seedLecciones(adapter) {
                     </section>
 
                     <section class="bloque-fase" style="margin-bottom: 3rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
+                        <div style="background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
                             <h3 style="margin: 0; color: #0b2238; font-size: 1.1rem; text-transform: uppercase;">FASE 2: Detección de Errores y Contraste</h3>
 
                         </div>
@@ -603,7 +603,7 @@ export async function seedLecciones(adapter) {
 
                     <!-- FASE 1 CLASE 7 -->
                     <section class="bloque-fase" style="margin-bottom: 3rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
+                        <div style="background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
                             <h3 style="margin: 0; color: #0b2238; font-size: 1.1rem; text-transform: uppercase;">FASE 1: Habilidades y Peticiones</h3>
 
                         </div>
@@ -665,7 +665,7 @@ export async function seedLecciones(adapter) {
 
                     <!-- FASE 2 CLASE 7 -->
                     <section class="bloque-fase" style="margin-bottom: 3rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
+                        <div style="background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
                             <h3 style="margin: 0; color: #0b2238; font-size: 1.1rem; text-transform: uppercase;">FASE 2: Detección de Errores y Traducción</h3>
 
                         </div>
@@ -732,7 +732,7 @@ export async function seedLecciones(adapter) {
 
                     <!-- FASE 1 CLASE 8 -->
                     <section class="bloque-fase" style="margin-bottom: 3rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
+                        <div style="background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
                             <h3 style="margin: 0; color: #0b2238; font-size: 1.1rem; text-transform: uppercase;">FASE 1: Cuantificadores y Compras</h3>
 
                         </div>
@@ -794,7 +794,7 @@ export async function seedLecciones(adapter) {
 
                     <!-- FASE 2 CLASE 8 -->
                     <section class="bloque-fase" style="margin-bottom: 3rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
+                        <div style="background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
                             <h3 style="margin: 0; color: #0b2238; font-size: 1.1rem; text-transform: uppercase;">FASE 2: Detección de Errores y Traducción</h3>
 
                         </div>
@@ -861,7 +861,7 @@ export async function seedLecciones(adapter) {
 
                     <!-- FASE 1 CLASE 9 -->
                     <section class="bloque-fase" style="margin-bottom: 3rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
+                        <div style="background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
                             <h3 style="margin: 0; color: #0b2238; font-size: 1.1rem; text-transform: uppercase;">FASE 1: Estructuras de Comparación</h3>
 
                         </div>
@@ -923,7 +923,7 @@ export async function seedLecciones(adapter) {
 
                     <!-- FASE 2 CLASE 9 -->
                     <section class="bloque-fase" style="margin-bottom: 3rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
+                        <div style="background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
                             <h3 style="margin: 0; color: #0b2238; font-size: 1.1rem; text-transform: uppercase;">FASE 2: Detección de Errores y Traducción</h3>
 
                         </div>
@@ -990,7 +990,7 @@ export async function seedLecciones(adapter) {
 
                     <!-- FASE 1 CLASE 10: READING COMPREHENSION -->
                     <section class="bloque-fase" style="margin-bottom: 3rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
+                        <div style="background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
                             <h3 style="margin: 0; color: #0b2238; font-size: 1.1rem; text-transform: uppercase;">FASE 1: Lectura Comprensiva y Análisis de Texto (Reading Comprehension)</h3>
 
                         </div>
