@@ -137,5 +137,21 @@ export async function seedDatosDePrueba(adapter) {
         console.log(`[devSeeds] Notas reseteadas para ${EMAIL_PROFESOR}: ${reset.rowCount}`);
     }
 
+    // ------------------------------------------------------------------
+    // 5. Crear código de descuento de prueba
+    // ------------------------------------------------------------------
+    const codigoExistente = await adapter.pgPool.query(
+        'SELECT id FROM codigos_descuento WHERE codigo = $1',
+        ['DESCUENTO25']
+    );
+    
+    if (codigoExistente.rows.length === 0) {
+        await adapter.pgPool.query(
+            'INSERT INTO codigos_descuento (codigo, porcentaje, usos_maximos, usos_actuales, activo) VALUES ($1, $2, $3, $4, $5)',
+            ['DESCUENTO25', 25, 50, 0, true]
+        );
+        console.log('[devSeeds] Código de descuento creado: DESCUENTO25 (25% off, 50 usos)');
+    }
+
     console.log('[devSeeds] Listo.');
 }

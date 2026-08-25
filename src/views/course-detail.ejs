@@ -113,9 +113,18 @@
                             </a>
                         <% } else { %>
                             <!-- Opción B: Usuario logueado pero no inscripto -->
-                            <form action="/checkout/<%= curso.id %>" method="POST" style="display: inline;">
-                                <button type="submit" class="btn-action btn-success">
-                                    Inscribirme en curso
+                            <div style="margin-bottom: 1rem;">
+                                <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                    <input type="text" id="codigo-descuento" placeholder="Código de descuento" style="flex: 1; padding: 0.7rem; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 0.9rem;">
+                                    <button type="button" onclick="validarCodigo()" style="padding: 0.7rem 1rem; background: #e2ebd5; color: #184168; border: 1px solid #cbd5e0; border-radius: 4px; cursor: pointer; font-size: 0.9rem;">Aplicar</button>
+                                </div>
+                                <div id="descuento-mensaje" style="font-size: 0.85rem; margin-top: 0.3rem;"></div>
+                                <div id="precio-con-descuento" style="font-weight: bold; color: #22543d; margin-top: 0.5rem; display: none;"></div>
+                            </div>
+                            <form action="/checkout/<%= curso.id %>" method="POST" id="checkout-form" style="display: inline;">
+                                <input type="hidden" name="codigo_descuento" id="codigo-descuento-hidden" value="">
+                                <button type="submit" class="btn-action btn-success" id="btn-inscribir">
+                                    Inscribirme en curso - $<%= curso.precio %> ARS
                                 </button>
                             </form>
                         <% } %>
@@ -162,6 +171,57 @@
     </main>
 
     <%- include('partials/footer') %>
+
+    <script>
+        function validarCodigo() {
+            const codigo = document.getElementById('codigo-descuento').value.trim();
+            const mensaje = document.getElementById('descuento-mensaje');
+            const precioConDescuento = document.getElementById('precio-con-descuento');
+            const precioOriginal = <%= curso.precio %>;
+            
+            if (!codigo) {
+                mensaje.textContent = '';
+                mensaje.style.color = '';
+                precioConDescuento.style.display = 'none';
+                document.getElementById('codigo-descuento-hidden').value = '';
+                actualizarBotonPrecio(precioOriginal);
+                return;
+            }
+            
+            // Simular validación (en producción esto sería una llamada AJAX al servidor)
+            // Por ahora, como ejemplo, aceptamos el código DESCUENTO25
+            if (codigo.toUpperCase() === 'DESCUENTO25') {
+                const descuento = 25;
+                const precioFinal = Math.floor(precioOriginal * (1 - descuento / 100));
+                
+                mensaje.textContent = `¡Código aplicado! ${descuento}% de descuento`;
+                mensaje.style.color = '#22543d';
+                precioConDescuento.textContent = `Precio original: $${precioOriginal} ARS | Precio con descuento: $${precioFinal} ARS`;
+                precioConDescuento.style.display = 'block';
+                document.getElementById('codigo-descuento-hidden').value = codigo;
+                actualizarBotonPrecio(precioFinal);
+            } else {
+                mensaje.textContent = 'Código de descuento inválido';
+                mensaje.style.color = '#9b2c2c';
+                precioConDescuento.style.display = 'none';
+                document.getElementById('codigo-descuento-hidden').value = '';
+                actualizarBotonPrecio(precioOriginal);
+            }
+        }
+        
+        function actualizarBotonPrecio(precio) {
+            const btn = document.getElementById('btn-inscribir');
+            btn.textContent = `Inscribirme en curso - $${precio} ARS`;
+        }
+        
+        // Validar cuando el usuario presiona Enter en el campo de código
+        document.getElementById('codigo-descuento').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                validarCodigo();
+            }
+        });
+    </script>
 
 </body>
 </html>

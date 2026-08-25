@@ -52,6 +52,7 @@ export const processCheckout = async (req, res) => {
 
     const { id } = req.params;
     const usuarioId = req.session.user.id;
+    const { codigo_descuento } = req.body;
 
     try {
         const db = await dbPromise;
@@ -73,6 +74,33 @@ export const processCheckout = async (req, res) => {
             return res.redirect(`/classroom/${curso.id}`);
         }
 
+        // Validar y aplicar código de descuento
+        let precioFinal = curso.precio;
+        let descuentoAplicado = null;
+
+        if (codigo_descuento) {
+            const codigo = await db.get(
+                'SELECT * FROM codigos_descuento WHERE codigo = ? AND activo = TRUE',
+                [codigo_descuento.toUpperCase()]
+            );
+
+            if (codigo) {
+                if (codigo.usos_actuales >= codigo.usos_maximos) {
+                    return res.json({ success: false, message: 'El código de descuento ha alcanzado su límite de usos.' });
+                }
+
+                precioFinal = Math.floor(curso.precio * (1 - codigo.porcentaje / 100));
+                descuentoAplicado = {
+                    codigo: codigo.codigo,
+                    porcentaje: codigo.porcentaje,
+                    precioOriginal: curso.precio,
+                    precioFinal: precioFinal
+                };
+            } else {
+                return res.json({ success: false, message: 'Código de descuento inválido.' });
+            }
+        }
+
         // For regular students, create a MercadoPago preference and redirect to payment
         const baseUrl = `${req.protocol}://${req.get('host')}`;
 
@@ -85,7 +113,7 @@ export const processCheckout = async (req, res) => {
                     {
                         title: curso.titulo,
                         quantity: 1,
-                        unit_price: parseFloat(curso.precio) || 0
+                        unit_price: parseFloat(precioFinal) || 0
                     }
                 ],
                 back_urls: {
@@ -93,7 +121,10 @@ export const processCheckout = async (req, res) => {
                     failure: `${baseUrl}/payment/failure`
                 },
                 external_reference: `${curso.id}:${usuarioId}`,
-                auto_return: 'approved'
+                auto_return: 'approved',
+                metadata: {
+                    codigo_descuento: descuentoAplicado ? descuentoAplicado.codigo : null
+                }
             };
 
             console.log('processCheckout: creating MercadoPago preference with body:', JSON.stringify(body));
@@ -202,6 +233,19 @@ export const handleMpWebhook = async (req, res) => {
                 try {
                     await db.run('INSERT INTO compras (usuario_id, curso_id) VALUES (?, ?)', [userId, courseId]);
                     console.log(`Registered purchase for user ${userId} course ${courseId} from MP webhook`);
+                    
+                    // Intentar incrementar contador de código de descuento si se usó uno
+                    // Buscar en metadata del pago o en la preferencia
+                    const metadata = payment.metadata || {};
+                    const codigoUsado = metadata.codigo_descuento || null;
+                    
+                    if (codigoUsado) {
+                        await db.run(
+                            'UPDATE codigos_descuento SET usos_actuales = usos_actuales + 1 WHERE codigo = ?',
+                            [codigoUsado.toUpperCase()]
+                        );
+                        console.log(`Código de descuento ${codigoUsado} incrementado para el pago ${payment.id}`);
+                    }
                 } catch (e) {
                     console.error('Error inserting compra from webhook:', e);
                 }

@@ -129,6 +129,19 @@ const dbPromise = (async () => {
     await adapter.pgPool.query(`ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS verification_token VARCHAR(255);`);
     await adapter.pgPool.query(`ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS verification_token_expires TIMESTAMP;`);
     
+    // Tabla de códigos de descuento
+    await adapter.pgPool.query(`
+        CREATE TABLE IF NOT EXISTS codigos_descuento (
+            id SERIAL PRIMARY KEY,
+            codigo VARCHAR(50) UNIQUE NOT NULL,
+            porcentaje INTEGER NOT NULL,
+            usos_maximos INTEGER NOT NULL,
+            usos_actuales INTEGER DEFAULT 0,
+            activo BOOLEAN DEFAULT TRUE,
+            creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+    `);
+    
     // Forzado explícito de creación de mensajes_particulares
     await adapter.pgPool.query(`
         CREATE TABLE IF NOT EXISTS mensajes_particulares (
