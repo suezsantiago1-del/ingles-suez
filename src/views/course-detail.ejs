@@ -188,25 +188,38 @@
                 return;
             }
             
-            // Simular validación (en producción esto sería una llamada AJAX al servidor)
-            // Por ahora, como ejemplo, aceptamos el código DESCUENTO25
-            if (codigo.toUpperCase() === 'DESCUENTO25') {
-                const descuento = 25;
-                const precioFinal = Math.floor(precioOriginal * (1 - descuento / 100));
-                
-                mensaje.textContent = `¡Código aplicado! ${descuento}% de descuento`;
-                mensaje.style.color = '#22543d';
-                precioConDescuento.textContent = `Precio original: $${precioOriginal} ARS | Precio con descuento: $${precioFinal} ARS`;
-                precioConDescuento.style.display = 'block';
-                document.getElementById('codigo-descuento-hidden').value = codigo;
-                actualizarBotonPrecio(precioFinal);
-            } else {
-                mensaje.textContent = 'Código de descuento inválido';
+            // Validar código con el servidor
+            fetch('/validar-codigo-descuento', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ codigo: codigo })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const precioFinal = Math.floor(precioOriginal * (1 - data.porcentaje / 100));
+                    
+                    mensaje.textContent = data.mensaje;
+                    mensaje.style.color = '#22543d';
+                    precioConDescuento.textContent = `Precio original: $${precioOriginal} ARS | Precio con descuento: $${precioFinal} ARS`;
+                    precioConDescuento.style.display = 'block';
+                    document.getElementById('codigo-descuento-hidden').value = codigo;
+                    actualizarBotonPrecio(precioFinal);
+                } else {
+                    mensaje.textContent = data.message;
+                    mensaje.style.color = '#9b2c2c';
+                    precioConDescuento.style.display = 'none';
+                    document.getElementById('codigo-descuento-hidden').value = '';
+                    actualizarBotonPrecio(precioOriginal);
+                }
+            })
+            .catch(error => {
+                mensaje.textContent = 'Error al validar el código. Intente nuevamente.';
                 mensaje.style.color = '#9b2c2c';
-                precioConDescuento.style.display = 'none';
-                document.getElementById('codigo-descuento-hidden').value = '';
-                actualizarBotonPrecio(precioOriginal);
-            }
+                console.error('Error al validar código:', error);
+            });
         }
         
         function actualizarBotonPrecio(precio) {

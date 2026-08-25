@@ -45,6 +45,43 @@ export const renderCourseDetail = async (req, res) => {
     }
 };
 
+export const validarCodigoDescuento = async (req, res) => {
+    if (!req.session.user) {
+        return res.json({ success: false, message: 'Debes iniciar sesión para usar códigos de descuento.' });
+    }
+
+    const { codigo } = req.body;
+
+    if (!codigo) {
+        return res.json({ success: false, message: 'Por favor ingresa un código de descuento.' });
+    }
+
+    try {
+        const db = await dbPromise;
+        const codigoInfo = await db.get(
+            'SELECT * FROM codigos_descuento WHERE codigo = ? AND activo = TRUE',
+            [codigo.toUpperCase()]
+        );
+
+        if (!codigoInfo) {
+            return res.json({ success: false, message: 'Código de descuento inválido.' });
+        }
+
+        if (codigoInfo.usos_actuales >= codigoInfo.usos_maximos) {
+            return res.json({ success: false, message: 'El código de descuento ha alcanzado su límite de usos.' });
+        }
+
+        return res.json({
+            success: true,
+            porcentaje: codigoInfo.porcentaje,
+            mensaje: `¡Código aplicado! ${codigoInfo.porcentaje}% de descuento`
+        });
+    } catch (error) {
+        console.error('Error al validar código de descuento:', error);
+        return res.json({ success: false, message: 'Error al validar el código.' });
+    }
+};
+
 export const processCheckout = async (req, res) => {
     if (!req.session.user) {
         return res.redirect('/auth/login');

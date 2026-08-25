@@ -9,6 +9,7 @@ import authRoutes from './src/routes/authRoutes.js';
 import { 
     renderCourseDetail, 
     processCheckout, 
+    validarCodigoDescuento,
     paymentSuccess, 
     paymentFailure, 
     renderMyCourses,
@@ -191,6 +192,7 @@ app.get('/', async (req, res) => {
 // Cursos, pagos y aula virtual
 app.get('/course/:id', renderCourseDetail);
 app.post('/checkout/:id', processCheckout);
+app.post('/validar-codigo-descuento', express.json(), validarCodigoDescuento);
 app.get('/payment/success', paymentSuccess);
 app.get('/payment/failure', paymentFailure);
 app.get('/mis-cursos', renderMyCourses);
