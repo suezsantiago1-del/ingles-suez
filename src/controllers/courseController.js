@@ -45,6 +45,46 @@ export const renderCourseDetail = async (req, res) => {
     }
 };
 
+export const obtenerDesafioDiario = async (req, res) => {
+    try {
+        const db = await dbPromise;
+        
+        // Calcular el índice del desafío basado en la fecha actual
+        const hoy = new Date();
+        const diasDesdeInicio = Math.floor((hoy - new Date('2024-01-01')) / (1000 * 60 * 60 * 24));
+        const indiceDesafio = (diasDesdeInicio % 30) + 1; // Ciclo de 30 días
+        
+        const desafio = await db.get(
+            'SELECT * FROM desafios_diarios WHERE orden = ?',
+            [indiceDesafio]
+        );
+        
+        if (!desafio) {
+            return res.json({ success: false, message: 'No hay desafíos disponibles' });
+        }
+        
+        // Verificar si el usuario ya completó este desafío (opcional - puede ser localStorage en frontend)
+        return res.json({
+            success: true,
+            desafio: {
+                id: desafio.id,
+                pregunta: desafio.pregunta,
+                opcion_a: desafio.opcion_a,
+                opcion_b: desafio.opcion_b,
+                opcion_c: desafio.opcion_c,
+                respuesta_correcta: desafio.respuesta_correcta,
+                explicacion: desafio.explicacion,
+                ejemplo: desafio.ejemplo,
+                categoria: desafio.categoria,
+                numero: indiceDesafio
+            }
+        });
+    } catch (error) {
+        console.error('Error al obtener desafío diario:', error);
+        return res.status(500).json({ success: false, message: 'Error al obtener el desafío' });
+    }
+};
+
 export const validarCodigoDescuento = async (req, res) => {
     if (!req.session.user) {
         return res.json({ success: false, message: 'Debes iniciar sesión para usar códigos de descuento.' });
