@@ -160,6 +160,11 @@ app.get('/about', (req, res) => {
     res.render('about');
 });
 
+// Test de nivel de inglés (público, sin login)
+app.get('/test-nivel', (req, res) => {
+    res.render('test-nivel');
+});
+
 // Rutas de Clases Particulares (vista y envíos del alumno)
 app.get('/clases-particulares', renderPrivateClasses);
 app.post('/clases-particulares/enviar', guardarConsultaParticulares);

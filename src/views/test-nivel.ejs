@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <link rel="icon" type="image/png" href="/img/favicon.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test de Nivel de Inglés - INGLÉS SUEZ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=GFS+Didot&family=Tenor+Sans&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        body, p, span, div, a, li, button { font-family: 'GFS Didot', serif; }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Tenor Sans', sans-serif !important; }
+        body { background-color: #e3edf5; margin: 0; padding: 0; color: #1a202c; }
+        .tarjeta { background: #ffffff; border-radius: 12px; padding: 2rem; border: 1px solid #c0d4e5; box-shadow: 0 10px 30px rgba(11,34,56,0.10); }
+        .opcion {
+            background: #ffffff; border: 1px solid #cbd5e0; color: #1a202c;
+            padding: 0.9rem 1.1rem; border-radius: 8px; cursor: pointer;
+            text-align: left; font-size: 1rem; width: 100%;
+            transition: border-color 0.15s, background 0.15s; font-family: 'GFS Didot', serif;
+        }
+        .opcion:hover:not(:disabled) { border-color: #184168; background: #f7fafc; }
+        .opcion:disabled { cursor: default; }
+        .opcion.seleccionada { border: 2px solid #f59e0b; background: #fffbeb; font-weight: bold; }
+        #barra-track { height: 8px; background: #e2e8f0; border-radius: 6px; overflow: hidden; }
+        #barra-progreso { height: 100%; width: 0%; background: #f6e05e; border-radius: 6px; transition: width 0.25s; }
+        @media (max-width: 640px) { .tarjeta { padding: 1.4rem; } }
+    </style>
+</head>
+<body>
+
+<%- include('partials/header') %>
+
+<main style="max-width: 760px; margin: 3rem auto; padding: 0 1.5rem;">
+
+    <!-- Pantalla de bienvenida -->
+    <section id="pantalla-bienvenida" class="tarjeta" style="text-align: center;">
+        <span style="background: #184168; color: white; padding: 0.35rem 0.8rem; border-radius: 4px; font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase;">
+            Test de ubicación
+        </span>
+        <h1 style="color: #0b2238; font-size: 2rem; margin: 1.2rem 0 0.8rem 0;">Test de Nivel de Inglés</h1>
+        <p style="color: #4a5568; font-size: 1.05rem; line-height: 1.7; margin: 0 0 1.2rem 0;">
+            Este test dura aproximadamente <strong>15 minutos</strong> y te dice tu nivel de inglés
+            según el Marco Común Europeo (A1 a C1).
+        </p>
+        <div style="text-align: left; background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1rem 1.2rem; margin-bottom: 1.5rem; font-size: 0.95rem; color: #4a5568;">
+            <p style="margin: 0 0 0.4rem 0;">• Son 30 preguntas de opción múltiple, una por pantalla.</p>
+            <p style="margin: 0 0 0.4rem 0;">• La dificultad aumenta a medida que avanzás.</p>
+            <p style="margin: 0 0 0.4rem 0;">• No podés volver atrás una vez respondida cada pregunta.</p>
+            <p style="margin: 0;">• El cronómetro de 15 minutos es solo de referencia.</p>
+        </div>
+        <button id="btn-comenzar" style="background: #f6e05e; color: #0b2238; font-weight: 800; padding: 0.9rem 2.2rem; border: none; border-radius: 6px; cursor: pointer; font-size: 1rem; font-family: 'Tenor Sans', sans-serif; box-shadow: 0 3px 8px rgba(0,0,0,0.15);">
+            Comenzar el test
+        </button>
+    </section>
+
+    <!-- Pantalla de preguntas -->
+    <section id="pantalla-preguntas" class="tarjeta" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; flex-wrap: wrap; gap: 0.5rem;">
+            <span id="contador" style="color: #718096; font-size: 0.85rem; font-weight: bold;">Pregunta 1 de 30</span>
+            <span style="color: #718096; font-size: 0.85rem;">Tiempo de referencia: <strong id="cronometro">15:00</strong></span>
+        </div>
+        <div id="barra-track" style="margin-bottom: 1.5rem;">
+            <div id="barra-progreso"></div>
+        </div>
+        <h2 id="pregunta-texto" style="color: #0b2238; font-size: 1.25rem; line-height: 1.5; margin: 0 0 1.4rem 0;"></h2>
+        <div id="opciones" style="display: flex; flex-direction: column; gap: 0.7rem;"></div>
+    </section>
+
+    <!-- Pantalla de resultado -->
+    <section id="pantalla-resultado" class="tarjeta" style="display: none; text-align: center;">
+        <div style="background: linear-gradient(135deg, #0b2238 0%, #184168 100%); border-radius: 12px; padding: 2rem 1.5rem; margin-bottom: 1.5rem;">
+            <div style="color: #a4c4de; font-size: 0.8rem; letter-spacing: 1px; text-transform: uppercase;">Tu nivel de inglés es</div>
+            <div id="nivel-badge" style="color: white; font-size: 3.5rem; font-weight: 800; font-family: 'Tenor Sans', sans-serif; line-height: 1.2;">A1</div>
+            <div id="resultado-score" style="color: #cbd5e0; font-size: 0.95rem;"></div>
+        </div>
+        <p id="resultado-descripcion" style="color: #4a5568; font-size: 1.05rem; line-height: 1.7; margin: 0 0 1.5rem 0;"></p>
+        <a id="resultado-cta" href="/cursos-todos" style="display: inline-block; background: #f6e05e; color: #0b2238; font-weight: 800; padding: 0.9rem 2rem; border-radius: 6px; text-decoration: none; font-size: 1rem; font-family: 'Tenor Sans', sans-serif; box-shadow: 0 3px 8px rgba(0,0,0,0.15);">
+            Ver cursos para tu nivel
+        </a>
+        <div style="margin-top: 1.2rem;">
+            <a href="/" style="color: #718096; font-size: 0.9rem;">Volver al inicio</a>
+        </div>
+    </section>
+
+</main>
+
+<%- include('partials/footer') %>
+<script>
+    const PREGUNTAS = [
+        // Nivel A1
+        { id: 1, nivel: 'A1', pregunta: "She ___ a teacher.", opciones: ["am", "is", "are", "be"], correcta: 1 },
+        { id: 2, nivel: 'A1', pregunta: "I ___ two brothers.", opciones: ["has", "have", "having", "haves"], correcta: 1 },
+        { id: 3, nivel: 'A1', pregunta: "What ___ your name?", opciones: ["is", "are", "do", "does"], correcta: 0 },
+        { id: 4, nivel: 'A1', pregunta: "There ___ a cat on the table.", opciones: ["is", "are", "am", "be"], correcta: 0 },
+        { id: 5, nivel: 'A1', pregunta: "He ___ to school every day.", opciones: ["go", "goes", "going", "gone"], correcta: 1 },
+        { id: 6, nivel: 'A1', pregunta: "This is ___ book.", opciones: ["I", "me", "my", "mine"], correcta: 2 },
+        // Nivel A2
+        { id: 7, nivel: 'A2', pregunta: "Yesterday I ___ to the cinema.", opciones: ["go", "goes", "went", "going"], correcta: 2 },
+        { id: 8, nivel: 'A2', pregunta: "She is ___ than her sister.", opciones: ["tall", "taller", "tallest", "more tall"], correcta: 1 },
+        { id: 9, nivel: 'A2', pregunta: "We ___ dinner when the phone rang.", opciones: ["have", "had", "were having", "has"], correcta: 2 },
+        { id: 10, nivel: 'A2', pregunta: "If it rains, I ___ an umbrella.", opciones: ["use", "will use", "used", "using"], correcta: 1 },
+        { id: 11, nivel: 'A2', pregunta: "There isn't ___ milk in the fridge.", opciones: ["some", "any", "a", "many"], correcta: 1 },
+        { id: 12, nivel: 'A2', pregunta: "I ___ to Paris three times.", opciones: ["go", "went", "have been", "am going"], correcta: 2 },
+        // Nivel B1
+        { id: 13, nivel: 'B1', pregunta: "By the time we arrived, the movie ___ already ___.", opciones: ["has / started", "had / started", "was / starting", "have / start"], correcta: 1 },
+        { id: 14, nivel: 'B1', pregunta: "I wish I ___ more time to study.", opciones: ["have", "had", "will have", "having"], correcta: 1 },
+        { id: 15, nivel: 'B1', pregunta: "The book ___ by millions of people.", opciones: ["reads", "has been read", "is reading", "read"], correcta: 1 },
+        { id: 16, nivel: 'B1', pregunta: "She's the woman ___ car was stolen.", opciones: ["who", "which", "whose", "that"], correcta: 2 },
+        { id: 17, nivel: 'B1', pregunta: "He suggested ___ a different approach.", opciones: ["to try", "trying", "tried", "try"], correcta: 1 },
+        { id: 18, nivel: 'B1', pregunta: "Despite ___ hard, he failed the exam.", opciones: ["study", "studied", "studying", "to study"], correcta: 2 },
+        // Nivel B2
+        { id: 19, nivel: 'B2', pregunta: "___ she studied harder, she would have passed.", opciones: ["If", "Had", "Unless", "When"], correcta: 1 },
+        { id: 20, nivel: 'B2', pregunta: "He denied ___ the money.", opciones: ["to steal", "stealing", "stolen", "steal"], correcta: 1 },
+        { id: 21, nivel: 'B2', pregunta: "Not only ___ late, but he also forgot the documents.", opciones: ["he was", "was he", "he is", "is he"], correcta: 1 },
+        { id: 22, nivel: 'B2', pregunta: "It's high time we ___ a decision.", opciones: ["make", "made", "will make", "making"], correcta: 1 },
+        { id: 23, nivel: 'B2', pregunta: "The company's profits have ___ significantly this quarter.", opciones: ["raised", "risen", "rose", "rising"], correcta: 1 },
+        { id: 24, nivel: 'B2', pregunta: "I'd rather you ___ that to anyone.", opciones: ["don't say", "didn't say", "won't say", "not say"], correcta: 1 },
+        // Nivel C1
+        { id: 25, nivel: 'C1', pregunta: "___ the circumstances, I think we made the right call.", opciones: ["Given", "Giving", "To give", "Give"], correcta: 0 },
+        { id: 26, nivel: 'C1', pregunta: "No sooner ___ the building than the fire alarm went off.", opciones: ["he entered", "had he entered", "he had entered", "did he enter"], correcta: 1 },
+        { id: 27, nivel: 'C1', pregunta: "She's not the type of person to ___ criticism lightly.", opciones: ["take", "brush off", "get over", "put up"], correcta: 0 },
+        { id: 28, nivel: 'C1', pregunta: "The proposal was met with ___ skepticism from the board.", opciones: ["considerate", "considerable", "considering", "considered"], correcta: 1 },
+        { id: 29, nivel: 'C1', pregunta: "Were it not ___ his intervention, the deal would have collapsed.", opciones: ["of", "for", "by", "with"], correcta: 1 },
+        { id: 30, nivel: 'C1', pregunta: "The findings ___ to be far more significant than initially thought.", opciones: ["turned out", "turned up", "came out", "worked out"], correcta: 0 }
+    ];
+
+    const DESCRIPCIONES = {
+        A1: 'Principiante: podés entender y usar frases básicas cotidianas.',
+        A2: 'Elemental: podés comunicarte en situaciones simples y directas.',
+        B1: 'Intermedio: podés desenvolverte en la mayoría de las situaciones al viajar o trabajar.',
+        B2: 'Intermedio alto: podés interactuar con fluidez con hablantes nativos sin mucho esfuerzo.',
+        C1: 'Avanzado: podés usar el idioma de forma flexible y efectiva en contextos complejos.'
+    };
+
+    const CTAS = {
+        A1: 'Empezá con el curso desde cero',
+        A2: 'Empezá con el curso desde cero',
+        B1: 'Ver cursos para tu nivel',
+        B2: 'Ver cursos para tu nivel',
+        C1: 'Ver cursos para tu nivel'
+    };
+
+    let indiceActual = 0;
+    let puntaje = 0;
+    let segundosRestantes = 15 * 60;
+    let timerId = null;
+    let finalizado = false;
+
+    function $(id) { return document.getElementById(id); }
+
+    function nivelPorPuntaje(p) {
+        if (p <= 6) return 'A1';
+        if (p <= 12) return 'A2';
+        if (p <= 18) return 'B1';
+        if (p <= 24) return 'B2';
+        return 'C1';
+    }
+
+    function iniciarCronometro() {
+        timerId = setInterval(() => {
+            segundosRestantes--;
+            if (segundosRestantes <= 0) {
+                segundosRestantes = 0;
+                clearInterval(timerId);
+            }
+            const m = String(Math.floor(segundosRestantes / 60)).padStart(2, '0');
+            const s = String(segundosRestantes % 60).padStart(2, '0');
+            $('cronometro').textContent = m + ':' + s;
+        }, 1000);
+    }
+
+    function mostrarPregunta() {
+        const q = PREGUNTAS[indiceActual];
+        $('contador').textContent = 'Pregunta ' + (indiceActual + 1) + ' de ' + PREGUNTAS.length;
+        $('barra-progreso').style.width = (indiceActual / PREGUNTAS.length * 100) + '%';
+        $('pregunta-texto').textContent = q.pregunta;
+        const cont = $('opciones');
+        cont.innerHTML = '';
+        q.opciones.forEach((op, i) => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'opcion';
+            btn.textContent = String.fromCharCode(65 + i) + ') ' + op;
+            btn.addEventListener('click', () => elegirOpcion(i, btn));
+            cont.appendChild(btn);
+        });
+    }
+
+    function elegirOpcion(i, btn) {
+        if (finalizado) return;
+        const q = PREGUNTAS[indiceActual];
+        $('opciones').querySelectorAll('button').forEach(b => { b.disabled = true; });
+        btn.classList.add('seleccionada');
+        if (i === q.correcta) puntaje++;
+        $('barra-progreso').style.width = ((indiceActual + 1) / PREGUNTAS.length * 100) + '%';
+        setTimeout(() => {
+            indiceActual++;
+            if (indiceActual >= PREGUNTAS.length) {
+                terminarTest();
+            } else {
+                mostrarPregunta();
+            }
+        }, 400);
+    }
+
+    function terminarTest() {
+        finalizado = true;
+        if (timerId) clearInterval(timerId);
+        $('pantalla-preguntas').style.display = 'none';
+        const nivel = nivelPorPuntaje(puntaje);
+        $('nivel-badge').textContent = nivel;
+        $('resultado-score').textContent = 'Respondiste bien ' + puntaje + ' de ' + PREGUNTAS.length + ' preguntas.';
+        $('resultado-descripcion').textContent = DESCRIPCIONES[nivel];
+        $('resultado-cta').textContent = CTAS[nivel];
+        $('pantalla-resultado').style.display = 'block';
+        window.scrollTo(0, 0);
+    }
+
+    $('btn-comenzar').addEventListener('click', () => {
+        $('pantalla-bienvenida').style.display = 'none';
+        $('pantalla-preguntas').style.display = 'block';
+        iniciarCronometro();
+        mostrarPregunta();
+    });
+</script>
+
+</body>
+</html>

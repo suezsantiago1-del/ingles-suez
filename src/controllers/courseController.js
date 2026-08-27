@@ -81,6 +81,26 @@ function contarRacha(fechas, fechaInicio) {
     return racha;
 }
 
+// El desafío diario cambia todos los días a las 20:00 de Buenos Aires (UTC-3, sin horario de verano).
+// 20:00 BA = 23:00 UTC. Cada período de 24h desde esa época es un "día de desafío".
+const EPOCA_DESAFIO = Date.parse('2026-08-26T23:00:00.000Z'); // 26/08/2026 20:00 BA
+const FECHA_BASE_DESAFIO = '2026-08-26';
+const MS_POR_DIA = 1000 * 60 * 60 * 24;
+
+// Número de período actual (0 = desde la época inicial hasta la primera rotación de 20:00 BA)
+function periodoActualDesafio() {
+    const periodos = Math.floor((Date.now() - EPOCA_DESAFIO) / MS_POR_DIA);
+    return Math.max(periodos, 0);
+}
+
+// Fecha única que identifica a cada período (días consecutivos desde la época),
+// usada en desafio_completados para que racha/XP respeten el corte de 20:00 BA.
+function fechaPeriodoDesafio(periodo) {
+    const d = new Date(FECHA_BASE_DESAFIO + 'T00:00:00.000Z');
+    d.setUTCDate(d.getUTCDate() + periodo);
+    return d.toISOString().slice(0, 10);
+}
+
 async function calcularStatsUsuario(db, usuarioId, hoyStr) {
     const filas = await db.all(
         'SELECT fecha, xp FROM desafio_completados WHERE usuario_id = ?',
@@ -130,9 +150,8 @@ export const obtenerDesafioDiario = async (req, res) => {
     try {
         const db = await dbPromise;
         
-        // Calcular el índice del desafío basado en la fecha actual
-        const hoy = new Date();
-        const diasDesdeInicio = Math.floor((hoy - new Date('2026-08-26')) / (1000 * 60 * 60 * 24));
+        // Calcular el índice del desafío según el período actual (rota a las 20:00 de Buenos Aires)
+        const periodo = periodoActualDesafio();
 
         // Usar la cantidad real de desafíos cargados para que el ciclo siempre tenga un desafío válido.
         const totalRow = await db.get('SELECT COUNT(*) AS total FROM desafios_diarios');
@@ -140,7 +159,7 @@ export const obtenerDesafioDiario = async (req, res) => {
         if (!totalDesafios) {
             return res.render('desafio-diario', { desafio: null, usuario: null });
         }
-        const indiceDesafio = (diasDesdeInicio % totalDesafios) + 1;
+        const indiceDesafio = (periodo % totalDesafios) + 1;
 
         const desafio = await db.get(
             'SELECT * FROM desafios_diarios WHERE orden = ?',
@@ -164,7 +183,7 @@ export const obtenerDesafioDiario = async (req, res) => {
             // Datos de racha / XP / ranking / recompensas (solo si hay sesión iniciada)
             let datosUsuario = null;
             if (req.session.user) {
-                const hoyStr = fechaAString(new Date());
+                const hoyStr = fechaPeriodoDesafio(periodo);
                 const stats = await calcularStatsUsuario(db, req.session.user.id, hoyStr);
                 // El profesor siempre tiene asignado el rango English Master
                 if (req.session.user.email === EMAIL_PROFESOR) {
@@ -202,35 +221,32 @@ export const obtenerDesafioDiario = async (req, res) => {
     }
 };
 
-// Registra que el usuario completó el desafío de hoy y otorga XP
+// Registra que el usuario completó el desafío del período actual y otorga XP
 export const completarDesafio = async (req, res) => {
     if (!req.session.user) {
         return res.status(401).json({ success: false, message: 'Debes iniciar sesión' });
     }
     try {
         const db = await dbPromise;
-        const hoyStr = fechaAString(new Date());
+        const fechaPeriodo = fechaPeriodoDesafio(periodoActualDesafio());
 
-        // Detectar racha previa (sin contar hoy) para saber si al completar se desbloquea un hito
-        const filas = await db.all(
-            'SELECT fecha FROM desafio_completados WHERE usuario_id = ?',
-            [req.session.user.id]
-        );
-        const fechas = new Set(filas.map(f => fechaAString(f.fecha)));
-        const rachaPrevia = contarRacha(fechas, hoyStr);
-
-        const yaCompletado = fechas.has(hoyStr);
+        const yaCompletado = !!(await db.get(
+            'SELECT id FROM desafio_completados WHERE usuario_id = ? AND fecha = ?',
+            [req.session.user.id, fechaPeriodo]
+        ));
         let xpOtorgada = 0;
         if (!yaCompletado) {
             await db.run(
                 'INSERT INTO desafio_completados (usuario_id, fecha, xp) VALUES (?, ?, ?) ON CONFLICT (usuario_id, fecha) DO NOTHING',
-                [req.session.user.id, hoyStr, 10]
+                [req.session.user.id, fechaPeriodo, 10]
             );
             xpOtorgada = 10;
         }
 
-        const stats = await calcularStatsUsuario(db, req.session.user.id, hoyStr);
+        const stats = await calcularStatsUsuario(db, req.session.user.id, fechaPeriodo);
         const hito = hitoPorRacha(stats.racha);
+        // Racha previa al período actual: si recién se completó, es la actual menos 1.
+        const rachaPrevia = yaCompletado ? stats.racha : Math.max(stats.racha - 1, 0);
         let desbloqueo = null;
         if (!yaCompletado && hito && rachaPrevia < hito.minimo) {
             desbloqueo = { emoji: hito.emoji, nombre: hito.nombre, minimo: hito.minimo };
@@ -257,7 +273,7 @@ export const renderProfesorRachas = async (req, res) => {
     }
     try {
         const db = await dbPromise;
-        const hoyStr = fechaAString(new Date());
+        const hoyStr = fechaPeriodoDesafio(periodoActualDesafio());
         const usuarios = await db.all('SELECT id, nombre, email FROM usuarios ORDER BY id ASC');
 
         const filasRachas = [];
