@@ -70,7 +70,7 @@
 
     <!-- Recompensas por hitos -->
     <section style="background: #ffffff; border: 1px solid #c0d4e5; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 4px 12px rgba(11,34,56,0.08);">
-        <h3 style="color: #0b2238; margin: 0 0 1rem 0; font-size: 1.1rem;">🎯 Recompensas por hitos</h3>
+        <h3 style="color: #0b2238; margin: 0 0 1rem 0; font-size: 1.1rem;">Rangos de racha</h3>
         <div id="hitos-lista" style="display: flex; flex-wrap: wrap; gap: 0.8rem;"></div>
     </section>
     <% } %>
@@ -118,7 +118,7 @@
     <% if (usuario) { %>
     <!-- Ranking semanal -->
     <section style="background: #ffffff; border: 1px solid #c0d4e5; border-radius: 12px; padding: 1.5rem; margin-top: 1.5rem; box-shadow: 0 4px 12px rgba(11,34,56,0.08);">
-        <h3 style="color: #0b2238; margin: 0 0 1rem 0; font-size: 1.1rem;">🏆 Ranking de esta semana</h3>
+        <h3 style="color: #0b2238; margin: 0 0 1rem 0; font-size: 1.1rem;">Ranking de esta semana</h3>
         <div style="display: flex; flex-direction: column; gap: 0.5rem;">
             <% if (usuario.ranking && usuario.ranking.length) { %>
                 <% usuario.ranking.forEach(r => { %>
@@ -135,7 +135,7 @@
 
     <!-- Recompensas personalizadas del profesor -->
     <section style="background: #ffffff; border: 1px solid #c0d4e5; border-radius: 12px; padding: 1.5rem; margin-top: 1.5rem; box-shadow: 0 4px 12px rgba(11,34,56,0.08);">
-        <h3 style="color: #0b2238; margin: 0 0 1rem 0; font-size: 1.1rem;">🎁 Recompensas del profesor</h3>
+        <h3 style="color: #0b2238; margin: 0 0 1rem 0; font-size: 1.1rem;">Recompensas del profesor</h3>
         <% if (usuario.recompensas && usuario.recompensas.length) { %>
             <% usuario.recompensas.forEach(r => { %>
                 <div style="background:#f0fff4; border-left: 4px solid #38a169; padding: 0.8rem 1rem; border-radius: 6px; margin-bottom: 0.6rem;">
