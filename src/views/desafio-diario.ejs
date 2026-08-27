@@ -183,7 +183,7 @@
             const alcanzado = racha >= h.minimo;
             const esActual = estadoUsuario.hito && estadoUsuario.hito.minimo === h.minimo;
             return `<div style="flex:1; min-width:140px; text-align:center; padding:0.9rem 1rem; border-radius:10px; border:2px solid ${alcanzado ? '#16a169' : '#e2e8f0'}; background:${alcanzado ? '#f0fff4' : '#f7fafc'}; opacity:${alcanzado ? 1 : 0.6};">
-                <div style="font-size:1.6rem;"><img src="${h.logo}" alt="${h.nombre}" style="width:64px; height:64px; object-fit:contain; display:block; margin:0 auto;"></div>
+                <div><img src="${h.logo}" alt="${h.nombre}" style="width:110px; height:110px; object-fit:contain; display:block; margin:0 auto; border-radius:18px;"></div>
                 <div style="font-weight:bold; color:#0b2238;">${h.nombre}${esActual ? ' ✅' : ''}</div>
                 <div style="font-size:0.8rem; color:#718096;">${h.minimo} días</div>
             </div>`;
