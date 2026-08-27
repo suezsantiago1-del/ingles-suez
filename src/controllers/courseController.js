@@ -166,6 +166,10 @@ export const obtenerDesafioDiario = async (req, res) => {
             if (req.session.user) {
                 const hoyStr = fechaAString(new Date());
                 const stats = await calcularStatsUsuario(db, req.session.user.id, hoyStr);
+                // El profesor siempre tiene asignado el rango English Master
+                if (req.session.user.email === EMAIL_PROFESOR) {
+                    stats.hito = { emoji: '💎', nombre: 'English Master', minimo: 100 };
+                }
                 const ranking = await obtenerRankingSemanal(db, req.session.user.id);
                 const recompensas = await db.all(
                     'SELECT texto, creado_en FROM desafio_recompensas WHERE usuario_id = ? ORDER BY creado_en DESC',
@@ -259,6 +263,10 @@ export const renderProfesorRachas = async (req, res) => {
         const filasRachas = [];
         for (const u of usuarios) {
             const stats = await calcularStatsUsuario(db, u.id, hoyStr);
+            // El profesor siempre tiene asignado el rango English Master
+            if (u.email === EMAIL_PROFESOR) {
+                stats.hito = { emoji: '💎', nombre: 'English Master', minimo: 100 };
+            }
             filasRachas.push({
                 id: u.id,
                 nombre: u.nombre,
