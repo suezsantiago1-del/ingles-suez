@@ -169,6 +169,8 @@
     <div class="nav-links-right" style="display: flex; gap: 1.8rem; align-items: center;">
         <a href="/" style="color: white; text-decoration: none; font-size: 1rem; font-family: 'GFS Didot', serif;">Inicio</a>
         
+        <a href="/desafio-diario" style="background: #f6e05e; color: #0b2238; padding: 0.45rem 1rem; border-radius: 6px; text-decoration: none; font-weight: 800; font-size: 0.9rem; font-family: 'Tenor Sans', sans-serif; box-shadow: 0 2px 6px rgba(0,0,0,0.2); white-space: nowrap;">Abrir desafío del día →</a>
+        
         <% if (locals.user) { %>
             <% if (locals.user.email === 'suezsantiago1@gmail.com') { %>
                 <!-- Botón exclusivo para el Profesor -->
@@ -216,6 +218,7 @@
     
     <div style="display: flex; flex-direction: column; gap: 0.5rem;">
         <a href="/" onclick="toggleMobileMenu()" style="padding: 0.75rem 0;">Inicio</a>
+        <a href="/desafio-diario" onclick="toggleMobileMenu()" style="background: #f6e05e; color: #0b2238; padding: 0.75rem; border-radius: 6px; text-align: center; font-weight: 800; font-family: 'Tenor Sans', sans-serif;">Abrir desafío del día →</a>
         <a href="/cursos-todos" onclick="toggleMobileMenu()" style="padding: 0.75rem 0;">Cursos</a>
         <a href="/clases-particulares" onclick="toggleMobileMenu()" style="padding: 0.75rem 0;">Clases Particulares</a>
         <a href="/about" onclick="toggleMobileMenu()" style="padding: 0.75rem 0;">Acerca de</a>
