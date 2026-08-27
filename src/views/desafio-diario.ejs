@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <link rel="icon" type="image/png" href="/img/favicon.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desafío del día - INGLÉS SUEZ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=GFS+Didot&family=Tenor+Sans&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        body, p, span, div, a, li, button { font-family: 'GFS Didot', serif; }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Tenor Sans', sans-serif !important; }
+        body { background-color: #e3edf5; margin: 0; padding: 0; color: #1a202c; }
+        .desafio-opcion {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: left;
+            font-size: 1rem;
+            transition: all 0.2s;
+            font-family: 'GFS Didot', serif;
+            width: 100%;
+        }
+        .desafio-opcion:hover:not(:disabled) {
+            background: rgba(255,255,255,0.2);
+            border-color: rgba(255,255,255,0.3);
+        }
+        .desafio-opcion:disabled { cursor: not-allowed; opacity: 0.7; }
+        .desafio-opcion.correcta {
+            background: #c6f6d5 !important;
+            border-color: #38a169 !important;
+            color: #22543d !important;
+            font-weight: bold;
+        }
+        .desafio-opcion.incorrecta {
+            background: #fed7d7 !important;
+            border-color: #e53e3e !important;
+            color: #742a2a !important;
+        }
+        @media (max-width: 768px) {
+            #desafio-del-dia { margin: 2rem 1rem; padding: 1.5rem; }
+            #desafio-del-dia h2 { font-size: 1.2rem; }
+            .desafio-opcion { font-size: 0.9rem; padding: 0.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+<%- include('partials/header') %>
+
+<main style="max-width: 900px; margin: 3rem auto; padding: 0 1.5rem;">
+    <% if (desafio) { %>
+    <section id="desafio-del-dia">
+        <div style="background: linear-gradient(135deg, #0b2238 0%, #184168 100%); border-radius: 12px; padding: 2rem; box-shadow: 0 4px 15px rgba(11, 34, 56, 0.1);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <span style="background: rgba(255,255,255,0.15); color: #a4c4de; padding: 0.35rem 0.8rem; border-radius: 4px; font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase;">
+                        🔥 Desafío de hoy
+                    </span>
+                    <h2 style="color: white; margin: 0.5rem 0 0 0; font-size: 1.5rem;">Desafío #<span id="desafio-numero"><%= desafio.numero %></span></h2>
+                </div>
+                <span id="desafio-categoria" style="background: rgba(255,255,255,0.1); color: #cbd5e0; padding: 0.3rem 0.8rem; border-radius: 4px; font-size: 0.8rem; font-weight: 600;"><%= desafio.categoria %></span>
+            </div>
+
+            <div id="desafio-contenido" style="color: white;">
+                <p style="font-size: 1.1rem; margin-bottom: 1.5rem; line-height: 1.6;"><%= desafio.pregunta %></p>
+                <div class="desafio-opciones" style="display: flex; flex-direction: column; gap: 0.8rem;">
+                    <button type="button" class="desafio-opcion" onclick="responderDesafio(this, 'A')" data-opcion="A">
+                        <span>A) <%= desafio.opcion_a %></span>
+                    </button>
+                    <button type="button" class="desafio-opcion" onclick="responderDesafio(this, 'B')" data-opcion="B">
+                        <span>B) <%= desafio.opcion_b %></span>
+                    </button>
+                    <button type="button" class="desafio-opcion" onclick="responderDesafio(this, 'C')" data-opcion="C">
+                        <span>C) <%= desafio.opcion_c %></span>
+                    </button>
+                </div>
+                <div id="desafio-feedback" style="display: none; margin-top: 1.5rem; padding: 1rem; border-radius: 8px; background: #c6f6d5; border: 1px solid #38a169; color: #22543d;"></div>
+            </div>
+        </div>
+    </section>
+    <% } else { %>
+    <section style="background: white; border-radius: 12px; padding: 3rem; box-shadow: 0 15px 35px rgba(11, 34, 56, 0.15), 0 5px 15px rgba(0, 0, 0, 0.05); border: 1px solid #c0d4e5; text-align: center;">
+        <h1 style="color: #0b2238; margin: 0 0 1rem 0;">Desafío del día</h1>
+        <p style="color: #4a5568; font-size: 1.05rem; line-height: 1.7; margin: 0 0 1.5rem 0;">
+            No se encontró un desafío disponible para hoy. Intentá de nuevo más tarde.
+        </p>
+        <a href="/" style="display: inline-block; background: #0b2238; color: white; padding: 0.85rem 1.8rem; border-radius: 6px; text-decoration: none; font-size: 0.95rem; font-family: 'Tenor Sans', sans-serif;">Volver al inicio</a>
+    </section>
+    <% } %>
+</main>
+
+<%- include('partials/footer') %>
+<script>
+    const desafioActual = <%- JSON.stringify(desafio) %>;
+
+    function responderDesafio(boton, opcion) {
+        const opciones = document.querySelectorAll('.desafio-opcion');
+        const feedback = document.getElementById('desafio-feedback');
+        const correcta = desafioActual.respuesta_correcta;
+
+        opciones.forEach(op => op.disabled = true);
+
+        if (opcion === correcta) {
+            boton.classList.add('correcta');
+            feedback.style.display = 'block';
+            feedback.style.background = '#c6f6d5';
+            feedback.style.border = '1px solid #38a169';
+            feedback.style.color = '#22543d';
+            feedback.innerHTML = `
+                <strong>¡Correcto! 🎉</strong>
+                <p style="margin: 0.5rem 0 0 0;">${document.querySelector('.desafio-opcion[data-opcion="' + correcta + '"]').textContent}</p>
+                <p style="margin: 0.5rem 0 0.5rem 0; font-size: 0.9rem;"><strong>Explicación:</strong> ${desafioActual.explicacion}</p>
+                <p style="margin: 0; font-size: 0.9rem;"><strong>Ejemplo:</strong> ${desafioActual.ejemplo}</p>
+            `;
+
+            const hoy = new Date().toDateString();
+            const numeroDesafio = document.getElementById('desafio-numero').textContent;
+            localStorage.setItem('desafio_completado_' + hoy, numeroDesafio);
+
+            document.querySelector('#desafio-del-dia h2').innerHTML = `Desafío #${numeroDesafio} ✅`;
+        } else {
+            boton.classList.add('incorrecta');
+            feedback.style.display = 'block';
+            feedback.style.background = '#fed7d7';
+            feedback.style.border = '1px solid #e53e3e';
+            feedback.style.color = '#742a2a';
+            feedback.innerHTML = `
+                <strong>Incorrecto ❌</strong>
+                <p style="margin: 0.5rem 0 0 0;">La respuesta correcta era: <strong>${correcta})</strong></p>
+                <p style="margin: 0.5rem 0 0.5rem 0; font-size: 0.9rem;"><strong>Explicación:</strong> ${desafioActual.explicacion}</p>
+                <p style="margin: 0; font-size: 0.9rem;"><strong>Ejemplo:</strong> ${desafioActual.ejemplo}</p>
+            `;
+        }
+    }
+
+    function marcarComoCompletado() {
+        const opciones = document.querySelectorAll('.desafio-opcion');
+        opciones.forEach(op => {
+            op.disabled = true;
+            if (op.getAttribute('data-opcion') === desafioActual.respuesta_correcta) {
+                op.classList.add('correcta');
+            }
+        });
+
+        document.querySelector('#desafio-del-dia h2').innerHTML = `Desafío #${desafioActual.numero} ✅`;
+
+        const feedback = document.getElementById('desafio-feedback');
+        feedback.style.display = 'block';
+        feedback.style.background = '#c6f6d5';
+        feedback.style.border = '1px solid #38a169';
+        feedback.style.color = '#22543d';
+        feedback.innerHTML = '<strong>¡Ya completaste este desafío hoy! 🎉</strong><p style="margin: 0.5rem 0 0 0;">Vuelve mañana para un nuevo desafío.</p>';
+    }
+
+    // Al cargar, si el usuario ya lo completó hoy, mostrarlo como completado.
+    if (desafioActual) {
+        const hoy = new Date().toDateString();
+        const completadoHoy = localStorage.getItem('desafio_completado_' + hoy);
+        if (completadoHoy === desafioActual.numero.toString()) {
+            marcarComoCompletado();
+        }
+    }
+</script>
+
+</body>
+</html>

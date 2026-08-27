@@ -59,14 +59,8 @@ export const obtenerDesafioDiario = async (req, res) => {
             [indiceDesafio]
         );
         
-        if (!desafio) {
-            return res.json({ success: false, message: 'No hay desafíos disponibles' });
-        }
-        
-        // Verificar si el usuario ya completó este desafío (opcional - puede ser localStorage en frontend)
-        return res.json({
-            success: true,
-            desafio: {
+        if (desafio) {
+            const datosDesafio = {
                 id: desafio.id,
                 pregunta: desafio.pregunta,
                 opcion_a: desafio.opcion_a,
@@ -77,11 +71,18 @@ export const obtenerDesafioDiario = async (req, res) => {
                 ejemplo: desafio.ejemplo,
                 categoria: desafio.categoria,
                 numero: indiceDesafio
-            }
-        });
+            };
+            // Renderizar la página del desafío del día de forma server-side (sin fetch).
+            // Así nunca se queda "cargando" en el frontend.
+            return res.render('desafio-diario', { desafio: datosDesafio });
+        }
+
+        // Si no hay desafío disponible, renderizamos igual la página con un mensaje claro.
+        return res.render('desafio-diario', { desafio: null });
     } catch (error) {
         console.error('Error al obtener desafío diario:', error);
-        return res.status(500).json({ success: false, message: 'Error al obtener el desafío' });
+        // Ante un error de base también mostramos la página con mensaje amigable.
+        return res.render('desafio-diario', { desafio: null });
     }
 };
 
