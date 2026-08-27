@@ -164,6 +164,13 @@
 
     <%- include('partials/header') %>
 
+    <!-- Botón del desafío del día (arriba de todo) -->
+    <div style="display: flex; justify-content: center; padding: 1.5rem 1.5rem 0 1.5rem; position: relative; z-index: 5;">
+        <a href="/desafio-diario" style="display: inline-block; background: #f6e05e; color: #0b2238; font-weight: 800; padding: 0.85rem 2rem; border-radius: 6px; text-decoration: none; font-size: 1rem; font-family: 'Tenor Sans', sans-serif; box-shadow: 0 3px 8px rgba(0,0,0,0.2);">
+            Abrir desafío del día →
+        </a>
+    </div>
+
     <header class="hero-section">
         <div class="hero-card-dark">
             <span style="background: rgba(255,255,255,0.12); color: #a4c4de; padding: 0.35rem 0.8rem; border-radius: 4px; font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase;">
@@ -247,24 +254,6 @@
             <% } %>
         </div>
     </main>
-
-    <!-- Desafío de inglés del día -->
-    <section style="max-width: 900px; margin: 3rem auto; padding: 0 1.5rem;">
-        <div style="background: linear-gradient(135deg, #0b2238 0%, #184168 100%); border-radius: 12px; padding: 2rem 2.5rem; box-shadow: 0 4px 15px rgba(11, 34, 56, 0.1); text-align: center;">
-            <span style="background: rgba(255,255,255,0.15); color: #a4c4de; padding: 0.35rem 0.8rem; border-radius: 4px; font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase;">
-                🔥 Desafío de hoy
-            </span>
-            <h2 style="color: white; margin: 1rem 0 0.75rem 0; font-size: 1.6rem;">
-                Ponete a prueba con un desafío diario de inglés
-            </h2>
-            <p style="color: #cbd5e0; margin: 0 0 1.5rem 0; font-size: 1rem;">
-                Un ejercicio de elección múltiple por día para practicar sin parar.
-            </p>
-            <a href="/desafio-diario" style="display: inline-block; background: #f6e05e; color: #0b2238; font-weight: 800; padding: 0.85rem 2rem; border-radius: 6px; text-decoration: none; font-size: 1rem; font-family: 'Tenor Sans', sans-serif; box-shadow: 0 3px 8px rgba(0,0,0,0.2);">
-                Abrir desafío del día →
-            </a>
-        </div>
-    </section>
 
     <%- include('partials/footer') %>
 
