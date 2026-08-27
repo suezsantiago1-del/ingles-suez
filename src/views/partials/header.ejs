@@ -156,6 +156,7 @@
             <a href="/clases-particulares" style="color: white; text-decoration: none; font-size: 1.05rem; opacity: 0.45; font-family: 'GFS Didot', serif; transition: opacity 0.2s ease;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.45'">Clases Particulares</a>
             <a href="/about" style="color: white; text-decoration: none; font-size: 1.05rem; opacity: 0.45; font-family: 'GFS Didot', serif; transition: opacity 0.2s ease;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.45'">Acerca de</a>
             <a href="/test-nivel" style="color: white; text-decoration: none; font-size: 1.05rem; opacity: 0.45; font-family: 'GFS Didot', serif; transition: opacity 0.2s ease;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.45'">Test de Nivel</a>
+            <a href="/desafio-diario" style="color: white; text-decoration: none; font-size: 1.05rem; opacity: 0.45; font-family: 'GFS Didot', serif; transition: opacity 0.2s ease;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.45'">Desafío del día</a>
         </div>
     </div>
     
@@ -224,11 +225,12 @@
         <a href="/clases-particulares" onclick="toggleMobileMenu()" style="padding: 0.75rem 0;">Clases Particulares</a>
         <a href="/about" onclick="toggleMobileMenu()" style="padding: 0.75rem 0;">Acerca de</a>
         <a href="/test-nivel" onclick="toggleMobileMenu()" style="padding: 0.75rem 0;">Test de Nivel</a>
+        <a href="/desafio-diario" onclick="toggleMobileMenu()" style="padding: 0.75rem 0;">Desafío del día</a>
         
         <% if (locals.user) { %>
             <div style="border-top: 1px solid rgba(255,255,255,0.1); margin: 1rem 0;"></div>
             
-            <a href="/desafio-diario" onclick="toggleMobileMenu()" style="background: #f6e05e; color: #0b2238; padding: 0.75rem; border-radius: 6px; text-align: center; font-weight: 800; font-family: 'Tenor Sans', sans-serif;">Abrir desafío del día →</a>
+            
 
             <% if (locals.user.email === 'suezsantiago1@gmail.com') { %>
                 <a href="/profesor/entregas" onclick="toggleMobileMenu()" style="background: #e2ebd5; color: #0b2238; padding: 0.75rem; border-radius: 6px; text-align: center; margin-top: 0.5rem;">Panel Profesor</a>
