@@ -60,9 +60,9 @@
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
                 <div>
                     <span style="background: rgba(255,255,255,0.15); color: #a4c4de; padding: 0.35rem 0.8rem; border-radius: 4px; font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase;">
-                        🔥 Desafío de hoy
+                        Desafío del día
                     </span>
-                    <h2 style="color: white; margin: 0.5rem 0 0 0; font-size: 1.5rem;">Desafío #<span id="desafio-numero"><%= desafio.numero %></span></h2>
+                    <h2 style="color: white; margin: 0.5rem 0 0 0; font-size: 1.5rem;">Resolvé el desafío de hoy</h2>
                 </div>
                 <span id="desafio-categoria" style="background: rgba(255,255,255,0.1); color: #cbd5e0; padding: 0.3rem 0.8rem; border-radius: 4px; font-size: 0.8rem; font-weight: 600;"><%= desafio.categoria %></span>
             </div>
@@ -120,10 +120,9 @@
             `;
 
             const hoy = new Date().toDateString();
-            const numeroDesafio = document.getElementById('desafio-numero').textContent;
-            localStorage.setItem('desafio_completado_' + hoy, numeroDesafio);
+            localStorage.setItem('desafio_completado_' + hoy, String(desafioActual.numero));
 
-            document.querySelector('#desafio-del-dia h2').innerHTML = `Desafío #${numeroDesafio} ✅`;
+            document.querySelector('#desafio-del-dia h2').innerHTML = `Resolvé el desafío de hoy ✅`;
         } else {
             boton.classList.add('incorrecta');
             feedback.style.display = 'block';
@@ -148,7 +147,7 @@
             }
         });
 
-        document.querySelector('#desafio-del-dia h2').innerHTML = `Desafío #${desafioActual.numero} ✅`;
+        document.querySelector('#desafio-del-dia h2').innerHTML = `Resolvé el desafío de hoy ✅`;
 
         const feedback = document.getElementById('desafio-feedback');
         feedback.style.display = 'block';
