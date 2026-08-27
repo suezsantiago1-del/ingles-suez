@@ -45,6 +45,87 @@ export const renderCourseDetail = async (req, res) => {
     }
 };
 
+// ---------- Utilidades de rachas, XP y ranking del desafío diario ----------
+
+function fechaAString(valor) {
+    if (valor instanceof Date) {
+        const y = valor.getFullYear();
+        const m = String(valor.getMonth() + 1).padStart(2, '0');
+        const dia = String(valor.getDate()).padStart(2, '0');
+        return y + '-' + m + '-' + dia;
+    }
+    return String(valor).slice(0, 10);
+}
+
+const HITOS_RACHA = [
+    { minimo: 100, emoji: '💎', nombre: 'English Master' },
+    { minimo: 30, emoji: '🥇', nombre: 'English Streak' },
+    { minimo: 7, emoji: '🥈', nombre: 'Consistent' },
+    { minimo: 3, emoji: '🥉', nombre: 'Beginner' }
+];
+
+function hitoPorRacha(racha) {
+    for (const h of HITOS_RACHA) {
+        if (racha >= h.minimo) return { emoji: h.emoji, nombre: h.nombre, minimo: h.minimo };
+    }
+    return null;
+}
+
+function contarRacha(fechas, fechaInicio) {
+    let racha = 0;
+    let f = new Date(fechaInicio + 'T00:00:00');
+    while (fechas.has(fechaAString(f))) {
+        racha++;
+        f.setDate(f.getDate() - 1);
+    }
+    return racha;
+}
+
+async function calcularStatsUsuario(db, usuarioId, hoyStr) {
+    const filas = await db.all(
+        'SELECT fecha, xp FROM desafio_completados WHERE usuario_id = ?',
+        [usuarioId]
+    );
+    const fechas = new Set(filas.map(f => fechaAString(f.fecha)));
+    let xpTotal = 0;
+    filas.forEach(f => { xpTotal += parseInt(f.xp, 10); });
+
+    let racha = 0;
+    if (fechas.has(hoyStr)) {
+        racha = contarRacha(fechas, hoyStr);
+    } else {
+        const ayer = new Date(hoyStr + 'T00:00:00');
+        ayer.setDate(ayer.getDate() - 1);
+        racha = contarRacha(fechas, fechaAString(ayer));
+    }
+    return { racha, xpTotal, hito: hitoPorRacha(racha) };
+}
+
+async function obtenerRankingSemanal(db, usuarioId) {
+    const now = new Date();
+    const dia = now.getDay();
+    const diff = dia === 0 ? 6 : dia - 1; // días desde el lunes
+    const lunes = new Date(now);
+    lunes.setDate(now.getDate() - diff);
+    lunes.setHours(0, 0, 0, 0);
+    const domingo = new Date(lunes);
+    domingo.setDate(lunes.getDate() + 7);
+
+    const filas = await db.all(
+        `SELECT d.usuario_id AS uid, u.nombre, COALESCE(SUM(d.xp), 0) AS total
+         FROM desafio_completados d
+         JOIN usuarios u ON u.id = d.usuario_id
+         WHERE d.fecha >= ? AND d.fecha < ?
+         GROUP BY d.usuario_id, u.nombre
+         ORDER BY total DESC`,
+        [fechaAString(lunes), fechaAString(domingo)]
+    );
+    return filas.map(r => ({
+        nombre: r.nombre,
+        puntos: parseInt(r.total, 10),
+        esYo: parseInt(r.uid, 10) === parseInt(usuarioId, 10)
+    }));
+}
 export const obtenerDesafioDiario = async (req, res) => {
     try {
         const db = await dbPromise;
@@ -57,7 +138,7 @@ export const obtenerDesafioDiario = async (req, res) => {
         const totalRow = await db.get('SELECT COUNT(*) AS total FROM desafios_diarios');
         const totalDesafios = totalRow ? parseInt(totalRow.total, 10) : 0;
         if (!totalDesafios) {
-            return res.render('desafio-diario', { desafio: null });
+            return res.render('desafio-diario', { desafio: null, usuario: null });
         }
         const indiceDesafio = (diasDesdeInicio % totalDesafios) + 1;
 
@@ -79,20 +160,154 @@ export const obtenerDesafioDiario = async (req, res) => {
                 categoria: desafio.categoria,
                 numero: indiceDesafio
             };
-            // Renderizar la página del desafío del día de forma server-side (sin fetch).
-            // Así nunca se queda "cargando" en el frontend.
-            return res.render('desafio-diario', { desafio: datosDesafio });
+
+            // Datos de racha / XP / ranking / recompensas (solo si hay sesión iniciada)
+            let datosUsuario = null;
+            if (req.session.user) {
+                const hoyStr = fechaAString(new Date());
+                const stats = await calcularStatsUsuario(db, req.session.user.id, hoyStr);
+                const ranking = await obtenerRankingSemanal(db, req.session.user.id);
+                const recompensas = await db.all(
+                    'SELECT texto, creado_en FROM desafio_recompensas WHERE usuario_id = ? ORDER BY creado_en DESC',
+                    [req.session.user.id]
+                );
+                const completadoHoy = !!(await db.get(
+                    'SELECT id FROM desafio_completados WHERE usuario_id = ? AND fecha = ?',
+                    [req.session.user.id, hoyStr]
+                ));
+                datosUsuario = {
+                    racha: stats.racha,
+                    xpTotal: stats.xpTotal,
+                    hito: stats.hito,
+                    completadoHoy,
+                    ranking,
+                    recompensas,
+                    esProfes: req.session.user.email === EMAIL_PROFESOR
+                };
+            }
+
+            return res.render('desafio-diario', { desafio: datosDesafio, usuario: datosUsuario });
         }
 
         // Si no hay desafío disponible, renderizamos igual la página con un mensaje claro.
-        return res.render('desafio-diario', { desafio: null });
+        return res.render('desafio-diario', { desafio: null, usuario: null });
     } catch (error) {
         console.error('Error al obtener desafío diario:', error);
         // Ante un error de base también mostramos la página con mensaje amigable.
-        return res.render('desafio-diario', { desafio: null });
+        return res.render('desafio-diario', { desafio: null, usuario: null });
     }
 };
 
+// Registra que el usuario completó el desafío de hoy y otorga XP
+export const completarDesafio = async (req, res) => {
+    if (!req.session.user) {
+        return res.status(401).json({ success: false, message: 'Debes iniciar sesión' });
+    }
+    try {
+        const db = await dbPromise;
+        const hoyStr = fechaAString(new Date());
+
+        // Detectar racha previa (sin contar hoy) para saber si al completar se desbloquea un hito
+        const filas = await db.all(
+            'SELECT fecha FROM desafio_completados WHERE usuario_id = ?',
+            [req.session.user.id]
+        );
+        const fechas = new Set(filas.map(f => fechaAString(f.fecha)));
+        const rachaPrevia = contarRacha(fechas, hoyStr);
+
+        const yaCompletado = fechas.has(hoyStr);
+        let xpOtorgada = 0;
+        if (!yaCompletado) {
+            await db.run(
+                'INSERT INTO desafio_completados (usuario_id, fecha, xp) VALUES (?, ?, ?) ON CONFLICT (usuario_id, fecha) DO NOTHING',
+                [req.session.user.id, hoyStr, 10]
+            );
+            xpOtorgada = 10;
+        }
+
+        const stats = await calcularStatsUsuario(db, req.session.user.id, hoyStr);
+        const hito = hitoPorRacha(stats.racha);
+        let desbloqueo = null;
+        if (!yaCompletado && hito && rachaPrevia < hito.minimo) {
+            desbloqueo = { emoji: hito.emoji, nombre: hito.nombre, minimo: hito.minimo };
+        }
+
+        return res.json({
+            success: true,
+            xp: xpOtorgada,
+            racha: stats.racha,
+            xpTotal: stats.xpTotal,
+            hito: stats.hito,
+            desbloqueo
+        });
+    } catch (error) {
+        console.error('Error al completar desafío:', error);
+        return res.status(500).json({ success: false, message: 'Error interno del servidor.' });
+    }
+};
+
+// Panel del profesor: listado de rachas y gestión de recompensas
+export const renderProfesorRachas = async (req, res) => {
+    if (!req.session.user || req.session.user.email !== EMAIL_PROFESOR) {
+        return res.status(403).send('<h1>403 - Acceso denegado: solo el profesor puede ver esta sección.</h1>');
+    }
+    try {
+        const db = await dbPromise;
+        const hoyStr = fechaAString(new Date());
+        const usuarios = await db.all('SELECT id, nombre, email FROM usuarios ORDER BY id ASC');
+
+        const filasRachas = [];
+        for (const u of usuarios) {
+            const stats = await calcularStatsUsuario(db, u.id, hoyStr);
+            filasRachas.push({
+                id: u.id,
+                nombre: u.nombre,
+                email: u.email,
+                racha: stats.racha,
+                xpTotal: stats.xpTotal,
+                hito: stats.hito
+            });
+        }
+        filasRachas.sort((a, b) => b.xpTotal - a.xpTotal);
+
+        const recompensas = await db.all(
+            `SELECT r.id, r.texto, r.creado_en, u.nombre, u.email
+             FROM desafio_recompensas r
+             JOIN usuarios u ON u.id = r.usuario_id
+             ORDER BY r.creado_en DESC
+             LIMIT 100`
+        );
+
+        return res.render('teacher-rachas', { usuarios: filasRachas, recompensas });
+    } catch (error) {
+        console.error('Error al renderizar panel de rachas:', error);
+        return res.redirect('/profesor/entregas');
+    }
+};
+
+// El profesor envía una recompensa personalizada por texto a un alumno
+export const enviarRecompensaUsuario = async (req, res) => {
+    if (!req.session.user || req.session.user.email !== EMAIL_PROFESOR) {
+        return res.status(403).json({ success: false, message: 'Acceso no autorizado' });
+    }
+    const body = req.body || {};
+    const usuarioId = parseInt(body.usuarioId, 10);
+    const texto = body.texto ? String(body.texto).trim() : '';
+    if (!usuarioId || !texto) {
+        return res.status(400).json({ success: false, message: 'Faltan datos para enviar la recompensa.' });
+    }
+    try {
+        const db = await dbPromise;
+        await db.run(
+            'INSERT INTO desafio_recompensas (usuario_id, texto) VALUES (?, ?)',
+            [usuarioId, texto]
+        );
+        return res.json({ success: true, message: 'Recompensa enviada.' });
+    } catch (error) {
+        console.error('Error al enviar recompensa:', error);
+        return res.status(500).json({ success: false, message: 'Error interno del servidor.' });
+    }
+};
 export const validarCodigoDescuento = async (req, res) => {
     if (!req.session.user) {
         return res.json({ success: false, message: 'Debes iniciar sesión para usar códigos de descuento.' });

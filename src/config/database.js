@@ -172,6 +172,27 @@ const dbPromise = (async () => {
         );
     `);
 
+    // Tabla de completados del desafío diario (para racha y XP)
+    await adapter.pgPool.query(`
+        CREATE TABLE IF NOT EXISTS desafio_completados (
+            id SERIAL PRIMARY KEY,
+            usuario_id INTEGER NOT NULL,
+            fecha DATE NOT NULL,
+            xp INTEGER NOT NULL DEFAULT 10,
+            UNIQUE (usuario_id, fecha)
+        );
+    `);
+
+    // Tabla de recompensas personalizadas que envía el profesor
+    await adapter.pgPool.query(`
+        CREATE TABLE IF NOT EXISTS desafio_recompensas (
+            id SERIAL PRIMARY KEY,
+            usuario_id INTEGER NOT NULL,
+            texto TEXT NOT NULL,
+            creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+    `);
+
     // Sincronizar siempre los 20 desafíos diarios (contenido fijo)
     await adapter.pgPool.query('DELETE FROM desafios_diarios');
     {

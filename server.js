@@ -37,7 +37,10 @@ import {
     guardarConsultaParticulares,
     enviarMensajeAlumnoChat,
     renderPanelParticularesProfesor,
-    guardarRespuestaParticular
+    guardarRespuestaParticular,
+    completarDesafio,
+    renderProfesorRachas,
+    enviarRecompensaUsuario
 } from './src/controllers/courseController.js';
 import { createOrUpdateAnnouncement, deleteAnnouncement } from './src/controllers/courseController.js';
 import multer from 'multer';
@@ -195,6 +198,9 @@ app.get('/course/:id', renderCourseDetail);
 app.post('/checkout/:id', processCheckout);
 app.post('/validar-codigo-descuento', express.json(), validarCodigoDescuento);
 app.get('/desafio-diario', obtenerDesafioDiario);
+app.post('/desafio-diario/completar', completarDesafio);
+app.get('/profesor/rachas', renderProfesorRachas);
+app.post('/profesor/rachas/recompensar', enviarRecompensaUsuario);
 app.get('/payment/success', paymentSuccess);
 app.get('/payment/failure', paymentFailure);
 app.get('/mis-cursos', renderMyCourses);

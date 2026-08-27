@@ -175,6 +175,7 @@
             <% if (locals.user.email === 'suezsantiago1@gmail.com') { %>
                 <!-- Botón exclusivo para el Profesor -->
                 <a href="/profesor/entregas" style="background: #e2ebd5; color: #0b2238; padding: 0.4rem 0.9rem; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 0.95rem; font-family: 'Tenor Sans', sans-serif;">Panel Profesor</a>
+                <a href="/profesor/rachas" style="background: #fbd38d; color: #7c2d12; padding: 0.4rem 0.9rem; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 0.95rem; font-family: 'Tenor Sans', sans-serif;">Rachas</a>
             <% } %>
 
             <!-- Menú desplegable de Mis Mensajes: el texto navega directo a /messages, la flechita abre las opciones -->
@@ -229,6 +230,7 @@
 
             <% if (locals.user.email === 'suezsantiago1@gmail.com') { %>
                 <a href="/profesor/entregas" onclick="toggleMobileMenu()" style="background: #e2ebd5; color: #0b2238; padding: 0.75rem; border-radius: 6px; text-align: center; margin-top: 0.5rem;">Panel Profesor</a>
+                <a href="/profesor/rachas" onclick="toggleMobileMenu()" style="background: #fbd38d; color: #7c2d12; padding: 0.75rem; border-radius: 6px; text-align: center; margin-top: 0.5rem;">Rachas</a>
             <% } %>
 
             <div style="position: relative;">
