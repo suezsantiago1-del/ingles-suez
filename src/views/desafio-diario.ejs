@@ -157,10 +157,10 @@
     const usuarioSesion = <%- JSON.stringify(usuario) %>;
 
     const HITOS_RACHA_UI = [
-        { minimo: 3, emoji: '🥉', nombre: 'Beginner' },
-        { minimo: 7, emoji: '🥈', nombre: 'Consistent' },
-        { minimo: 30, emoji: '🥇', nombre: 'English Streak' },
-        { minimo: 100, emoji: '💎', nombre: 'English Master' }
+        { minimo: 3, emoji: '🥉', nombre: 'Beginner', logo: '/logosracha/beginner.png' },
+        { minimo: 7, emoji: '🥈', nombre: 'Consistent', logo: '/logosracha/consistent.png' },
+        { minimo: 30, emoji: '🥇', nombre: 'English Streak', logo: '/logosracha/englishstreak.png' },
+        { minimo: 100, emoji: '💎', nombre: 'English Master', logo: '/logosracha/englishmaster.png' }
     ];
 
     let estadoUsuario = usuarioSesion
@@ -183,7 +183,7 @@
             const alcanzado = racha >= h.minimo;
             const esActual = estadoUsuario.hito && estadoUsuario.hito.minimo === h.minimo;
             return `<div style="flex:1; min-width:140px; text-align:center; padding:0.9rem 1rem; border-radius:10px; border:2px solid ${alcanzado ? '#16a169' : '#e2e8f0'}; background:${alcanzado ? '#f0fff4' : '#f7fafc'}; opacity:${alcanzado ? 1 : 0.6};">
-                <div style="font-size:1.6rem;">${h.emoji}</div>
+                <div style="font-size:1.6rem;"><img src="${h.logo}" alt="${h.nombre}" style="width:64px; height:64px; object-fit:contain; display:block; margin:0 auto;"></div>
                 <div style="font-weight:bold; color:#0b2238;">${h.nombre}${esActual ? ' ✅' : ''}</div>
                 <div style="font-size:0.8rem; color:#718096;">${h.minimo} días</div>
             </div>`;
