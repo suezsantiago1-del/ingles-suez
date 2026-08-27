@@ -70,12 +70,6 @@
 
     <!-- Aviso flotante de XP al completar -->
     <div id="toast-xp" style="display:none; position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%); background: #38a169; color: white; padding: 1rem 1.6rem; border-radius: 10px; font-weight: 800; font-size: 1.05rem; box-shadow: 0 8px 20px rgba(0,0,0,0.25); z-index: 400; font-family: 'Tenor Sans', sans-serif;"></div>
-
-    <!-- Recompensas por hitos -->
-    <section style="background: #ffffff; border: 1px solid #c0d4e5; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 4px 12px rgba(11,34,56,0.08);">
-        <h3 style="color: #0b2238; margin: 0 0 1rem 0; font-size: 1.1rem;">Rangos de racha</h3>
-        <div id="hitos-lista" style="display: flex; flex-wrap: wrap; gap: 0.8rem;"></div>
-    </section>
     <% } %>
 
     <% if (desafio) { %>
@@ -191,16 +185,6 @@
             img.style.display = 'none';
             nomEl.textContent = 'Sin rango';
         }
-
-        const cont = document.getElementById('hitos-lista');
-        if (!cont) return;
-        cont.innerHTML = HITOS_RACHA_UI.map(h => {
-            const alcanzado = racha >= h.minimo;
-            const esActual = estadoUsuario.hito && estadoUsuario.hito.minimo === h.minimo;
-            return `<div style="flex:1; min-width:140px; aspect-ratio:1 / 1; overflow:hidden; border-radius:10px; border:2px solid ${alcanzado ? '#16a169' : '#e2e8f0'}; background:${alcanzado ? '#f0fff4' : '#f7fafc'}; opacity:${alcanzado ? 1 : 0.6};">
-                <img src="${h.logo}" alt="${h.nombre}" title="${h.nombre}" style="width:100%; height:100%; object-fit:contain; display:block;">
-            </div>`;
-        }).join('');
     }
 
     function mostrarToastAviso(mensaje) {
