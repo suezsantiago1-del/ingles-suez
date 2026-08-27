@@ -52,8 +52,15 @@ export const obtenerDesafioDiario = async (req, res) => {
         // Calcular el índice del desafío basado en la fecha actual
         const hoy = new Date();
         const diasDesdeInicio = Math.floor((hoy - new Date('2024-01-01')) / (1000 * 60 * 60 * 24));
-        const indiceDesafio = (diasDesdeInicio % 30) + 1; // Ciclo de 30 días
-        
+
+        // Usar la cantidad real de desafíos cargados para que el ciclo siempre tenga un desafío válido.
+        const totalRow = await db.get('SELECT COUNT(*) AS total FROM desafios_diarios');
+        const totalDesafios = totalRow ? parseInt(totalRow.total, 10) : 0;
+        if (!totalDesafios) {
+            return res.render('desafio-diario', { desafio: null });
+        }
+        const indiceDesafio = (diasDesdeInicio % totalDesafios) + 1;
+
         const desafio = await db.get(
             'SELECT * FROM desafios_diarios WHERE orden = ?',
             [indiceDesafio]
