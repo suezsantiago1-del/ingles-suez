@@ -6,7 +6,7 @@ servidor. Este repo se clona en `/opt/apps/inglesuez/` y se levanta con su
 propio `docker-compose.prod.yml`.
 
 Dos contenedores y nada más: `inglesuez-web` (Node) e `inglesuez-db`
-(Postgres 17).
+(Postgres 18).
 
 ---
 

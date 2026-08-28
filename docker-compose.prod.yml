@@ -23,7 +23,11 @@ services:
   # Postgres
   # -------------------------------------------------------------------------
   db:
-    image: postgres:17-alpine
+    # 18 y no 17 como el resto de las apps del servidor: la base de la que se
+    # migra, en Render, corre 18.4, y un dump de 18 no se restaura en un
+    # servidor 17. Cada app tiene su propio contenedor de base, así que la
+    # diferencia de versión entre proyectos no molesta a nadie.
+    image: postgres:18-alpine
     container_name: inglesuez-db
     restart: unless-stopped
     environment:
