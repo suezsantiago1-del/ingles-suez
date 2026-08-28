@@ -55,12 +55,21 @@ Si la variable cargada es la de producción, no levantes el servidor y avisá.
 Si no hay una `DATABASE_URL` de desarrollo, verificá el cambio con `node --check`
 y lectura de código, sin arrancar la app.
 
-Variables de entorno (`.env`):
+Variables de entorno (`.env`, todas documentadas en `.env.example`):
 - `DATABASE_URL` — PostgreSQL. **Obligatoria**, la app no arranca sin esto.
+  En el VPS no se escribe a mano: la arma `docker-compose.prod.yml` con
+  `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB`.
+- `DATABASE_SSL` — `'true'` solo si la base está afuera (Render, Neon). Contra
+  el Postgres del compose va en `'false'`, que es el default.
+- `SESSION_SECRET` — firma las cookies. Con `NODE_ENV=production` la app **no
+  arranca** si falta.
 - `MP_ACCESS_TOKEN` — MercadoPago. Sin esto el checkout falla pero la app levanta.
-- `SESSION_SECRET` — secreto de sesión.
-- `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` / `EMAIL_FROM` — Brevo.
+- `BREVO_API_KEY` — API HTTP de Brevo (no SMTP). `SMTP_PASS` sigue funcionando
+  como fallback por compatibilidad con el deploy viejo.
 - `EMAIL_PROFESOR` (opcional) — cuenta con permisos de profesor.
+- `ALLOW_LOCAL_VIDEO_UPLOAD` (opcional) — en `'true'` reaparece el input de
+  archivo del panel. Default `false`: los videos van por YouTube.
+- `MAX_VIDEO_MB` (opcional) — default 500. Solo si la anterior está en `'true'`.
 - `SEED_TEST_DATA` (opcional) — en `'true'` carga usuarios de prueba. Solo dev.
 - `UPLOADS_DIR` (opcional) — carpeta de videos. Default: `public/videos`.
 - `PORT` (opcional) — default 3000.
@@ -74,7 +83,9 @@ Variables de entorno (`.env`):
 - Node.js + **Express 4**, ESM (`"type": "module"` — usar `import`, nunca `require`)
 - **EJS** para vistas (server-side rendering, sin framework de frontend)
 - **PostgreSQL** con `pg` directo. **Sin ORM, sin migraciones formales.**
-- `express-session` (store en memoria — las sesiones se pierden en cada redeploy)
+- `express-session` con store en Postgres (`connect-pg-simple`, tabla `session`,
+  la crea sola). Antes era el store en memoria, que perdía todas las sesiones en
+  cada redeploy y no purgaba las vencidas.
 - `bcrypt`, `multer` (videos), `pdf-lib` (certificados), `mercadopago`, `sib-api-v3-sdk` (Brevo)
 - CSS plano en `public/css/styles.css`. Sin Tailwind, sin build step, sin bundler.
 
@@ -83,16 +94,20 @@ Variables de entorno (`.env`):
 ## Mapa del repo
 
 ```
-server.js                        (306)   Express, sesión, middleware global, multer,
+server.js                        (362)   Express, sesión, middleware global, multer,
                                  TODAS las rutas menos las de /auth
-src/config/database.js           (192)   adapter pg + schema + seed de cursos
+Dockerfile                       (~60)   imagen de producción (node:22-alpine)
+docker-compose.prod.yml          (~120)  stack del VPS: web + db. Ver DEPLOY.md
+DEPLOY.md                                cómo se despliega y cómo se actualiza
+src/config/database.js           (215)   pool pg (exportado) + adapter + schema
+                                 + índices + seed de cursos
 src/config/seeds.js              (1171)  ⚠️ NO ABRIR ENTERO. Solo el HTML de las
                                  lecciones iniciales. Se corre si la tabla está vacía.
 src/config/devSeeds.js           (135)   usuarios y datos de prueba. Solo corre con
                                  SEED_TEST_DATA=true y nunca en producción.
 src/routes/authRoutes.js         (67)    rutas montadas en /auth
 src/controllers/authController.js    (540)   login, registro, perfil, verificación, reset
-src/controllers/courseController.js  (1417)  cursos, pagos, classroom, entregas,
+src/controllers/courseController.js  (1349)  cursos, pagos, classroom, entregas,
                                      mensajes, certificados, particulares
 src/services/emailService.js     (175)   sendVerificationEmail, sendEmail (Brevo)
 src/views/*.ejs                  17 vistas + partials/header.ejs, partials/footer.ejs
@@ -110,23 +125,23 @@ public/css/styles.css            (~16 KB) todo el CSS del sitio
 | 266 | `paymentFailure` | |
 | 275 | `renderMyCourses` | mis cursos |
 | 296 | `renderClassroom` | **aula virtual** (lecciones, entregas, anuncios) |
-| 465 | `guardarEntrega` | alumno entrega una tarea |
-| 535 | `renderPanelProfesor` | panel de entregas del profesor |
-| 589 | `guardarDevolucion` | corrección + nota |
-| 632 | `saveTeacherNote` | |
-| 654 | `renderMensajesAlumno` | ⚠️ exportada e importada pero SIN ruta asignada |
-| 727 | `descargarCertificado` | genera el PDF con pdf-lib |
-| 853 | `renderPrivateClasses` | clases particulares (alumno) |
-| 896 | `guardarConsultaParticulares` | |
-| 948 | `enviarMensajeAlumnoChat` | |
-| 978 | `renderPanelParticularesProfesor` | |
-| 1031 | `guardarRespuestaParticular` | |
-| 1077 | `uploadLessonVideo` | subida de video (multer, límite 2 GB) |
-| 1206 | `createOrUpdateAnnouncement` | |
-| 1229 | `deleteAnnouncement` | |
-| 1247 | `updateLessonTeacherNote` | |
-| 1264 | `renderMessagesList` | |
-| 1285 | `renderMessagesCourse` | |
+| 421 | `guardarEntrega` | alumno entrega una tarea |
+| 491 | `renderPanelProfesor` | panel de entregas del profesor |
+| 545 | `guardarDevolucion` | corrección + nota |
+| 588 | `saveTeacherNote` | |
+| 610 | `renderMensajesAlumno` | ⚠️ exportada e importada pero SIN ruta asignada |
+| 683 | `descargarCertificado` | genera el PDF con pdf-lib |
+| 809 | `renderPrivateClasses` | clases particulares (alumno) |
+| 852 | `guardarConsultaParticulares` | |
+| 904 | `enviarMensajeAlumnoChat` | |
+| 934 | `renderPanelParticularesProfesor` | |
+| 987 | `guardarRespuestaParticular` | |
+| 1033 | `uploadLessonVideo` | guarda el video de la lección: URL de YouTube (normal) o archivo subido (solo con ALLOW_LOCAL_VIDEO_UPLOAD) |
+| 1138 | `createOrUpdateAnnouncement` | |
+| 1161 | `deleteAnnouncement` | |
+| 1179 | `updateLessonTeacherNote` | |
+| 1196 | `renderMessagesList` | |
+| 1217 | `renderMessagesCourse` | |
 
 ### Índice de funciones — `src/controllers/authController.js`
 
