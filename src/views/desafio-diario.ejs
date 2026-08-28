@@ -82,11 +82,19 @@
                     </span>
                     <h2 style="color: white; margin: 0.5rem 0 0 0; font-size: 1.5rem;">Resolvé el desafío de hoy</h2>
                 </div>
-                <span id="desafio-categoria" style="background: rgba(255,255,255,0.1); color: #cbd5e0; padding: 0.3rem 0.8rem; border-radius: 4px; font-size: 0.8rem; font-weight: 600;"><%= desafio.categoria %></span>
+                <span id="desafio-categoria" style="background: rgba(255,255,255,0.1); color: #cbd5e0; padding: 0.3rem 0.8rem; border-radius: 4px; font-size: 0.8rem; font-weight: 600;"><%= ({ quiz: 'Quiz', situacion: 'Situación conversacional', error: 'Detectá el error', real: 'English real', conversacion: 'Completar conversación', dificil: 'Desafío difícil', listening: 'Listening', listening_corto: 'Escuchá y elegí' })[desafio.tipo] || desafio.categoria %></span>
             </div>
 
             <div id="desafio-contenido" style="color: white;">
                 <p style="font-size: 1.1rem; margin-bottom: 1.5rem; line-height: 1.6;"><%= desafio.pregunta %></p>
+                <% if (desafio.tipo === 'listening' || desafio.tipo === 'listening_corto') { %>
+                <div style="margin-bottom: 1.2rem;">
+                    <button type="button" id="btn-escuchar" onclick="reproducirAudio()" style="background: #f6e05e; color: #0b2238; padding: 0.75rem 1.6rem; border: none; border-radius: 6px; font-weight: 800; font-size: 1rem; cursor: pointer; font-family: 'Tenor Sans', sans-serif;">
+                        Escuchar
+                    </button>
+                    <span id="escuchar-ayuda" style="display: inline-block; color: #cbd5e0; font-size: 0.85rem; margin-left: 0.8rem;">Presioná el botón para escuchar la frase antes de responder.</span>
+                </div>
+                <% } %>
                 <div class="desafio-opciones" style="display: flex; flex-direction: column; gap: 0.8rem;">
                     <button type="button" class="desafio-opcion" onclick="responderDesafio(this, 'A')" data-opcion="A">
                         <span>A) <%= desafio.opcion_a %></span>
@@ -217,6 +225,43 @@
         } catch (e) { console.error('Error al registrar el desafío:', e); }
     }
 
+    let audioEscuchado = false;
+
+    function esDesafioAudio() {
+        return !!(desafioActual && (desafioActual.tipo === 'listening' || desafioActual.tipo === 'listening_corto'));
+    }
+
+    function reproducirAudio() {
+        if (!('speechSynthesis' in window)) { return; }
+        const texto = (desafioActual && (desafioActual.texto_audio || desafioActual.pregunta)) || '';
+        if (!texto) { return; }
+
+        // Cargar voces de forma asíncrona por si aún no están disponibles.
+        if (window.speechSynthesis.getVoices().length === 0) {
+            window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+        }
+        const voces = window.speechSynthesis.getVoices();
+        const utt = new SpeechSynthesisUtterance(texto);
+        utt.lang = 'en-US';
+        const voz = voces.find(v => v.lang && v.lang.includes('en-US'));
+        if (voz) utt.voice = voz;
+        utt.rate = 0.9;
+
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utt);
+
+        audioEscuchado = true;
+        const btn = document.getElementById('btn-escuchar');
+        if (btn) btn.textContent = 'Escuchar de nuevo';
+        const ayuda = document.getElementById('escuchar-ayuda');
+        if (ayuda) ayuda.style.display = 'none';
+        habilitarOpciones();
+    }
+
+    function habilitarOpciones() {
+        document.querySelectorAll('.desafio-opcion').forEach(op => { op.disabled = false; });
+    }
+
     function responderDesafio(boton, opcion) {
         const opciones = document.querySelectorAll('.desafio-opcion');
         const feedback = document.getElementById('desafio-feedback');
@@ -280,6 +325,10 @@
     // Al cargar: render del panel de racha/hitos y verificar si ya completó hoy
     renderPanelDatos();
     if (desafioActual) {
+        // Para tipos de listening, las opciones quedan bloqueadas hasta que se reproduzca el audio.
+        if (esDesafioAudio()) {
+            document.querySelectorAll('.desafio-opcion').forEach(op => { op.disabled = true; });
+        }
         const hoy = new Date().toDateString();
         const completadoHoy = localStorage.getItem('desafio_completado_' + hoy);
         if (completadoHoy === desafioActual.numero.toString() || (usuarioSesion && usuarioSesion.completadoHoy)) {

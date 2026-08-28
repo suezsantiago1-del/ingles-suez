@@ -84,7 +84,6 @@ function contarRacha(fechas, fechaInicio) {
 // El desafío diario cambia todos los días a las 20:00 de Buenos Aires (UTC-3, sin horario de verano).
 // 20:00 BA = 23:00 UTC. Cada período de 24h desde esa época es un "día de desafío".
 const EPOCA_DESAFIO = Date.parse('2026-08-26T23:00:00.000Z'); // 26/08/2026 20:00 BA
-const FECHA_BASE_DESAFIO = '2026-08-26';
 const MS_POR_DIA = 1000 * 60 * 60 * 24;
 
 // Número de período actual (0 = desde la época inicial hasta la primera rotación de 20:00 BA)
@@ -93,12 +92,12 @@ function periodoActualDesafio() {
     return Math.max(periodos, 0);
 }
 
-// Fecha única que identifica a cada período (días consecutivos desde la época),
-// usada en desafio_completados para que racha/XP respeten el corte de 20:00 BA.
-function fechaPeriodoDesafio(periodo) {
-    const d = new Date(FECHA_BASE_DESAFIO + 'T00:00:00.000Z');
-    d.setUTCDate(d.getUTCDate() + periodo);
-    return d.toISOString().slice(0, 10);
+function fechaPeriodoDesafio() {
+    // Fecha civil calendario en Buenos Aires (UTC-3, sin horario de verano).
+    // Se usa como etiqueta de día en desafio_completados para racha/XP, de modo que
+    // la fecha guardada coincida con el día calendario que ve el alumno en Argentina.
+    // La rotación del desafío (qué pregunta toca) sigue controlada por EPOCA_DESAFIO (20:00 BA).
+    return new Date(Date.now() - 3 * 3600000).toISOString().slice(0, 10);
 }
 
 async function calcularStatsUsuario(db, usuarioId, hoyStr) {
@@ -159,7 +158,24 @@ export const obtenerDesafioDiario = async (req, res) => {
         if (!totalDesafios) {
             return res.render('desafio-diario', { desafio: null, usuario: null });
         }
-        const indiceDesafio = (periodo % totalDesafios) + 1;
+
+        // Forzar variedad de tipo: el desafío de hoy no puede ser del mismo tipo que el de ayer.
+        // Estrategia determinística: cálculo el tipo del desafío de ayer (por orden) y, si coinciden,
+        // avanzo al siguiente orden cuyo tipo sea distinto, hasta recorrer todos si es necesario.
+        const ordenAyer = (Math.max(periodo - 1, 0) % totalDesafios) + 1;
+        const desafioAyer = await db.get(
+            'SELECT tipo FROM desafios_diarios WHERE orden = ?',
+            [ordenAyer]
+        );
+        const tipoAyer = desafioAyer ? desafioAyer.tipo : null;
+        let indiceDesafio = (periodo % totalDesafios) + 1;
+        if (tipoAyer && totalDesafios > 1) {
+            for (let intento = 0; intento < totalDesafios; intento++) {
+                const cand = await db.get('SELECT tipo FROM desafios_diarios WHERE orden = ?', [indiceDesafio]);
+                if (!cand || cand.tipo !== tipoAyer) break;
+                indiceDesafio = (indiceDesafio % totalDesafios) + 1;
+            }
+        }
 
         const desafio = await db.get(
             'SELECT * FROM desafios_diarios WHERE orden = ?',
@@ -177,6 +193,8 @@ export const obtenerDesafioDiario = async (req, res) => {
                 explicacion: desafio.explicacion,
                 ejemplo: desafio.ejemplo,
                 categoria: desafio.categoria,
+                tipo: desafio.tipo,
+                texto_audio: desafio.texto_audio || desafio.pregunta,
                 numero: indiceDesafio
             };
 
