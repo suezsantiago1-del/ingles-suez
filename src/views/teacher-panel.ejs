@@ -106,7 +106,7 @@
                 <!-- SECTION: Video Management for Lessons (Visible to Professor) -->
                 <div id="video-management" class="card" style="margin-bottom: 2rem;">
                     <h3 style="margin-top: 0; color: var(--primary-navy);">Gestionar Videos de Lecciones</h3>
-                    <p style="color: var(--text-muted); margin-top: 0.2rem;">Seleccioná la lección, pega una URL de YouTube/directa o subí un archivo MP4.</p>
+                    <p style="color: var(--text-muted); margin-top: 0.2rem;">Seleccioná la lección y pegá el link de YouTube del video.<% if (allowLocalVideoUpload) { %> También podés subir un archivo MP4.<% } %></p>
 
                     <div style="display:flex; gap:1rem; align-items:flex-start; flex-wrap:wrap;">
                         <select id="select-leccion" class="form-control" style="min-width:320px;">
@@ -115,7 +115,9 @@
 
                         <input id="input-video-url" class="form-control" type="text" placeholder="https://youtube.com/watch?v=... o URL directa .mp4" style="flex:1; min-width:300px;" />
 
+                        <% if (allowLocalVideoUpload) { %>
                         <input id="input-video-file" class="form-control" type="file" accept="video/mp4,video/*" style="padding:0.3rem; max-width:220px;" />
+                        <% } %>
 
                         <button id="btn-upload-video" class="btn-primary">Guardar Video</button>
                     </div>
