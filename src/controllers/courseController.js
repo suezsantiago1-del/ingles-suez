@@ -19,9 +19,6 @@ const EMAIL_PROFESOR = process.env.EMAIL_PROFESOR || 'suezsantiago1@gmail.com';
 export const renderCourseDetail = async (req, res) => {
     const { id } = req.params;
     try {
-        console.log('uploadLessonVideo: session user=', req.session && req.session.user ? req.session.user.email : null);
-        console.log('uploadLessonVideo: req.body=', req.body);
-        console.log('uploadLessonVideo: req.file=', req.file);
         const db = await dbPromise;
         const curso = await db.get('SELECT * FROM cursos WHERE id = ?', [id]);
         
@@ -45,6 +42,348 @@ export const renderCourseDetail = async (req, res) => {
     }
 };
 
+// ---------- Utilidades de rachas, XP y ranking del desafío diario ----------
+
+function fechaAString(valor) {
+    if (valor instanceof Date) {
+        const y = valor.getFullYear();
+        const m = String(valor.getMonth() + 1).padStart(2, '0');
+        const dia = String(valor.getDate()).padStart(2, '0');
+        return y + '-' + m + '-' + dia;
+    }
+    return String(valor).slice(0, 10);
+}
+
+const HITOS_RACHA = [
+    { minimo: 100, emoji: '💎', nombre: 'English Master' },
+    { minimo: 30, emoji: '🥇', nombre: 'English Streak' },
+    { minimo: 7, emoji: '🥈', nombre: 'Consistent' },
+    { minimo: 3, emoji: '🥉', nombre: 'Beginner' }
+];
+
+function hitoPorRacha(racha) {
+    for (const h of HITOS_RACHA) {
+        if (racha >= h.minimo) return { emoji: h.emoji, nombre: h.nombre, minimo: h.minimo };
+    }
+    return null;
+}
+
+function contarRacha(fechas, fechaInicio) {
+    let racha = 0;
+    let f = new Date(fechaInicio + 'T00:00:00');
+    while (fechas.has(fechaAString(f))) {
+        racha++;
+        f.setDate(f.getDate() - 1);
+    }
+    return racha;
+}
+
+// El desafío diario cambia todos los días a las 20:00 de Buenos Aires (UTC-3, sin horario de verano).
+// 20:00 BA = 23:00 UTC. Cada período de 24h desde esa época es un "día de desafío".
+const EPOCA_DESAFIO = Date.parse('2026-08-26T23:00:00.000Z'); // 26/08/2026 20:00 BA
+const MS_POR_DIA = 1000 * 60 * 60 * 24;
+
+// Número de período actual (0 = desde la época inicial hasta la primera rotación de 20:00 BA)
+function periodoActualDesafio() {
+    const periodos = Math.floor((Date.now() - EPOCA_DESAFIO) / MS_POR_DIA);
+    return Math.max(periodos, 0);
+}
+
+function fechaPeriodoDesafio() {
+    // Fecha civil calendario en Buenos Aires (UTC-3, sin horario de verano).
+    // Se usa como etiqueta de día en desafio_completados para racha/XP, de modo que
+    // la fecha guardada coincida con el día calendario que ve el alumno en Argentina.
+    // La rotación del desafío (qué pregunta toca) sigue controlada por EPOCA_DESAFIO (20:00 BA).
+    return new Date(Date.now() - 3 * 3600000).toISOString().slice(0, 10);
+}
+
+async function calcularStatsUsuario(db, usuarioId, hoyStr) {
+    const filas = await db.all(
+        'SELECT fecha, xp FROM desafio_completados WHERE usuario_id = ?',
+        [usuarioId]
+    );
+    const fechas = new Set(filas.map(f => fechaAString(f.fecha)));
+    let xpTotal = 0;
+    filas.forEach(f => { xpTotal += parseInt(f.xp, 10); });
+
+    let racha = 0;
+    if (fechas.has(hoyStr)) {
+        racha = contarRacha(fechas, hoyStr);
+    } else {
+        const ayer = new Date(hoyStr + 'T00:00:00');
+        ayer.setDate(ayer.getDate() - 1);
+        racha = contarRacha(fechas, fechaAString(ayer));
+    }
+    return { racha, xpTotal, hito: hitoPorRacha(racha) };
+}
+
+async function obtenerRankingSemanal(db, usuarioId) {
+    const now = new Date();
+    const dia = now.getDay();
+    const diff = dia === 0 ? 6 : dia - 1; // días desde el lunes
+    const lunes = new Date(now);
+    lunes.setDate(now.getDate() - diff);
+    lunes.setHours(0, 0, 0, 0);
+    const domingo = new Date(lunes);
+    domingo.setDate(lunes.getDate() + 7);
+
+    const filas = await db.all(
+        `SELECT d.usuario_id AS uid, u.nombre, COALESCE(SUM(d.xp), 0) AS total
+         FROM desafio_completados d
+         JOIN usuarios u ON u.id = d.usuario_id
+         WHERE d.fecha >= ? AND d.fecha < ?
+         GROUP BY d.usuario_id, u.nombre
+         ORDER BY total DESC`,
+        [fechaAString(lunes), fechaAString(domingo)]
+    );
+    return filas.map(r => ({
+        nombre: r.nombre,
+        puntos: parseInt(r.total, 10),
+        esYo: parseInt(r.uid, 10) === parseInt(usuarioId, 10)
+    }));
+}
+export const obtenerDesafioDiario = async (req, res) => {
+    try {
+        const db = await dbPromise;
+        
+        // Calcular el índice del desafío según el período actual (rota a las 20:00 de Buenos Aires)
+        const periodo = periodoActualDesafio();
+
+        // Usar la cantidad real de desafíos cargados para que el ciclo siempre tenga un desafío válido.
+        const totalRow = await db.get('SELECT COUNT(*) AS total FROM desafios_diarios');
+        const totalDesafios = totalRow ? parseInt(totalRow.total, 10) : 0;
+        if (!totalDesafios) {
+            return res.render('desafio-diario', { desafio: null, usuario: null });
+        }
+
+        // Forzar variedad de tipo: el desafío de hoy no puede ser del mismo tipo que el de ayer.
+        // Estrategia determinística: cálculo el tipo del desafío de ayer (por orden) y, si coinciden,
+        // avanzo al siguiente orden cuyo tipo sea distinto, hasta recorrer todos si es necesario.
+        const ordenAyer = (Math.max(periodo - 1, 0) % totalDesafios) + 1;
+        const desafioAyer = await db.get(
+            'SELECT tipo FROM desafios_diarios WHERE orden = ?',
+            [ordenAyer]
+        );
+        const tipoAyer = desafioAyer ? desafioAyer.tipo : null;
+        let indiceDesafio = (periodo % totalDesafios) + 1;
+        if (tipoAyer && totalDesafios > 1) {
+            for (let intento = 0; intento < totalDesafios; intento++) {
+                const cand = await db.get('SELECT tipo FROM desafios_diarios WHERE orden = ?', [indiceDesafio]);
+                if (!cand || cand.tipo !== tipoAyer) break;
+                indiceDesafio = (indiceDesafio % totalDesafios) + 1;
+            }
+        }
+
+        const desafio = await db.get(
+            'SELECT * FROM desafios_diarios WHERE orden = ?',
+            [indiceDesafio]
+        );
+        
+        if (desafio) {
+            const datosDesafio = {
+                id: desafio.id,
+                pregunta: desafio.pregunta,
+                opcion_a: desafio.opcion_a,
+                opcion_b: desafio.opcion_b,
+                opcion_c: desafio.opcion_c,
+                respuesta_correcta: desafio.respuesta_correcta,
+                explicacion: desafio.explicacion,
+                ejemplo: desafio.ejemplo,
+                categoria: desafio.categoria,
+                tipo: desafio.tipo,
+                texto_audio: desafio.texto_audio || desafio.pregunta,
+                numero: indiceDesafio
+            };
+
+            // Datos de racha / XP / ranking / recompensas (solo si hay sesión iniciada)
+            let datosUsuario = null;
+            if (req.session.user) {
+                const hoyStr = fechaPeriodoDesafio(periodo);
+                const stats = await calcularStatsUsuario(db, req.session.user.id, hoyStr);
+                // El profesor siempre tiene asignado el rango English Master
+                if (req.session.user.email === EMAIL_PROFESOR) {
+                    stats.hito = { emoji: '💎', nombre: 'English Master', minimo: 100 };
+                }
+                const ranking = await obtenerRankingSemanal(db, req.session.user.id);
+                const recompensas = await db.all(
+                    'SELECT texto, creado_en FROM desafio_recompensas WHERE usuario_id = ? ORDER BY creado_en DESC',
+                    [req.session.user.id]
+                );
+                const completadoHoy = !!(await db.get(
+                    'SELECT id FROM desafio_completados WHERE usuario_id = ? AND fecha = ?',
+                    [req.session.user.id, hoyStr]
+                ));
+                datosUsuario = {
+                    racha: stats.racha,
+                    xpTotal: stats.xpTotal,
+                    hito: stats.hito,
+                    completadoHoy,
+                    ranking,
+                    recompensas,
+                    esProfes: req.session.user.email === EMAIL_PROFESOR
+                };
+            }
+
+            return res.render('desafio-diario', { desafio: datosDesafio, usuario: datosUsuario });
+        }
+
+        // Si no hay desafío disponible, renderizamos igual la página con un mensaje claro.
+        return res.render('desafio-diario', { desafio: null, usuario: null });
+    } catch (error) {
+        console.error('Error al obtener desafío diario:', error);
+        // Ante un error de base también mostramos la página con mensaje amigable.
+        return res.render('desafio-diario', { desafio: null, usuario: null });
+    }
+};
+
+// Registra que el usuario completó el desafío del período actual y otorga XP
+export const completarDesafio = async (req, res) => {
+    if (!req.session.user) {
+        return res.status(401).json({ success: false, message: 'Debes iniciar sesión' });
+    }
+    try {
+        const db = await dbPromise;
+        const fechaPeriodo = fechaPeriodoDesafio(periodoActualDesafio());
+
+        const yaCompletado = !!(await db.get(
+            'SELECT id FROM desafio_completados WHERE usuario_id = ? AND fecha = ?',
+            [req.session.user.id, fechaPeriodo]
+        ));
+        let xpOtorgada = 0;
+        if (!yaCompletado) {
+            await db.run(
+                'INSERT INTO desafio_completados (usuario_id, fecha, xp) VALUES (?, ?, ?) ON CONFLICT (usuario_id, fecha) DO NOTHING',
+                [req.session.user.id, fechaPeriodo, 10]
+            );
+            xpOtorgada = 10;
+        }
+
+        const stats = await calcularStatsUsuario(db, req.session.user.id, fechaPeriodo);
+        const hito = hitoPorRacha(stats.racha);
+        // Racha previa al período actual: si recién se completó, es la actual menos 1.
+        const rachaPrevia = yaCompletado ? stats.racha : Math.max(stats.racha - 1, 0);
+        let desbloqueo = null;
+        if (!yaCompletado && hito && rachaPrevia < hito.minimo) {
+            desbloqueo = { emoji: hito.emoji, nombre: hito.nombre, minimo: hito.minimo };
+        }
+
+        return res.json({
+            success: true,
+            xp: xpOtorgada,
+            racha: stats.racha,
+            xpTotal: stats.xpTotal,
+            hito: stats.hito,
+            desbloqueo
+        });
+    } catch (error) {
+        console.error('Error al completar desafío:', error);
+        return res.status(500).json({ success: false, message: 'Error interno del servidor.' });
+    }
+};
+
+// Panel del profesor: listado de rachas y gestión de recompensas
+export const renderProfesorRachas = async (req, res) => {
+    if (!req.session.user || req.session.user.email !== EMAIL_PROFESOR) {
+        return res.status(403).send('<h1>403 - Acceso denegado: solo el profesor puede ver esta sección.</h1>');
+    }
+    try {
+        const db = await dbPromise;
+        const hoyStr = fechaPeriodoDesafio(periodoActualDesafio());
+        const usuarios = await db.all('SELECT id, nombre, email FROM usuarios ORDER BY id ASC');
+
+        const filasRachas = [];
+        for (const u of usuarios) {
+            const stats = await calcularStatsUsuario(db, u.id, hoyStr);
+            // El profesor siempre tiene asignado el rango English Master
+            if (u.email === EMAIL_PROFESOR) {
+                stats.hito = { emoji: '💎', nombre: 'English Master', minimo: 100 };
+            }
+            filasRachas.push({
+                id: u.id,
+                nombre: u.nombre,
+                email: u.email,
+                racha: stats.racha,
+                xpTotal: stats.xpTotal,
+                hito: stats.hito
+            });
+        }
+        filasRachas.sort((a, b) => b.xpTotal - a.xpTotal);
+
+        const recompensas = await db.all(
+            `SELECT r.id, r.texto, r.creado_en, u.nombre, u.email
+             FROM desafio_recompensas r
+             JOIN usuarios u ON u.id = r.usuario_id
+             ORDER BY r.creado_en DESC
+             LIMIT 100`
+        );
+
+        return res.render('teacher-rachas', { usuarios: filasRachas, recompensas });
+    } catch (error) {
+        console.error('Error al renderizar panel de rachas:', error);
+        return res.redirect('/profesor/entregas');
+    }
+};
+
+// El profesor envía una recompensa personalizada por texto a un alumno
+export const enviarRecompensaUsuario = async (req, res) => {
+    if (!req.session.user || req.session.user.email !== EMAIL_PROFESOR) {
+        return res.status(403).json({ success: false, message: 'Acceso no autorizado' });
+    }
+    const body = req.body || {};
+    const usuarioId = parseInt(body.usuarioId, 10);
+    const texto = body.texto ? String(body.texto).trim() : '';
+    if (!usuarioId || !texto) {
+        return res.status(400).json({ success: false, message: 'Faltan datos para enviar la recompensa.' });
+    }
+    try {
+        const db = await dbPromise;
+        await db.run(
+            'INSERT INTO desafio_recompensas (usuario_id, texto) VALUES (?, ?)',
+            [usuarioId, texto]
+        );
+        return res.json({ success: true, message: 'Recompensa enviada.' });
+    } catch (error) {
+        console.error('Error al enviar recompensa:', error);
+        return res.status(500).json({ success: false, message: 'Error interno del servidor.' });
+    }
+};
+export const validarCodigoDescuento = async (req, res) => {
+    if (!req.session.user) {
+        return res.json({ success: false, message: 'Debes iniciar sesión para usar códigos de descuento.' });
+    }
+
+    const { codigo } = req.body;
+
+    if (!codigo) {
+        return res.json({ success: false, message: 'Por favor ingresa un código de descuento.' });
+    }
+
+    try {
+        const db = await dbPromise;
+        const codigoInfo = await db.get(
+            'SELECT * FROM codigos_descuento WHERE codigo = ? AND activo = TRUE',
+            [codigo.toUpperCase()]
+        );
+
+        if (!codigoInfo) {
+            return res.json({ success: false, message: 'Código de descuento inválido.' });
+        }
+
+        if (codigoInfo.usos_actuales >= codigoInfo.usos_maximos) {
+            return res.json({ success: false, message: 'El código de descuento ha alcanzado su límite de usos.' });
+        }
+
+        return res.json({
+            success: true,
+            porcentaje: codigoInfo.porcentaje,
+            mensaje: `¡Código aplicado! ${codigoInfo.porcentaje}% de descuento`
+        });
+    } catch (error) {
+        console.error('Error al validar código de descuento:', error);
+        return res.json({ success: false, message: 'Error al validar el código.' });
+    }
+};
+
 export const processCheckout = async (req, res) => {
     if (!req.session.user) {
         return res.redirect('/auth/login');
@@ -52,6 +391,7 @@ export const processCheckout = async (req, res) => {
 
     const { id } = req.params;
     const usuarioId = req.session.user.id;
+    const { codigo_descuento } = req.body;
 
     try {
         const db = await dbPromise;
@@ -73,6 +413,33 @@ export const processCheckout = async (req, res) => {
             return res.redirect(`/classroom/${curso.id}`);
         }
 
+        // Validar y aplicar código de descuento
+        let precioFinal = curso.precio;
+        let descuentoAplicado = null;
+
+        if (codigo_descuento) {
+            const codigo = await db.get(
+                'SELECT * FROM codigos_descuento WHERE codigo = ? AND activo = TRUE',
+                [codigo_descuento.toUpperCase()]
+            );
+
+            if (codigo) {
+                if (codigo.usos_actuales >= codigo.usos_maximos) {
+                    return res.json({ success: false, message: 'El código de descuento ha alcanzado su límite de usos.' });
+                }
+
+                precioFinal = Math.floor(curso.precio * (1 - codigo.porcentaje / 100));
+                descuentoAplicado = {
+                    codigo: codigo.codigo,
+                    porcentaje: codigo.porcentaje,
+                    precioOriginal: curso.precio,
+                    precioFinal: precioFinal
+                };
+            } else {
+                return res.json({ success: false, message: 'Código de descuento inválido.' });
+            }
+        }
+
         // For regular students, create a MercadoPago preference and redirect to payment
         const baseUrl = `${req.protocol}://${req.get('host')}`;
 
@@ -85,7 +452,7 @@ export const processCheckout = async (req, res) => {
                     {
                         title: curso.titulo,
                         quantity: 1,
-                        unit_price: parseFloat(curso.precio) || 0
+                        unit_price: parseFloat(precioFinal) || 0
                     }
                 ],
                 back_urls: {
@@ -93,7 +460,10 @@ export const processCheckout = async (req, res) => {
                     failure: `${baseUrl}/payment/failure`
                 },
                 external_reference: `${curso.id}:${usuarioId}`,
-                auto_return: 'approved'
+                auto_return: 'approved',
+                metadata: {
+                    codigo_descuento: descuentoAplicado ? descuentoAplicado.codigo : null
+                }
             };
 
             console.log('processCheckout: creating MercadoPago preference with body:', JSON.stringify(body));
@@ -202,6 +572,19 @@ export const handleMpWebhook = async (req, res) => {
                 try {
                     await db.run('INSERT INTO compras (usuario_id, curso_id) VALUES (?, ?)', [userId, courseId]);
                     console.log(`Registered purchase for user ${userId} course ${courseId} from MP webhook`);
+                    
+                    // Intentar incrementar contador de código de descuento si se usó uno
+                    // Buscar en metadata del pago o en la preferencia
+                    const metadata = payment.metadata || {};
+                    const codigoUsado = metadata.codigo_descuento || null;
+                    
+                    if (codigoUsado) {
+                        await db.run(
+                            'UPDATE codigos_descuento SET usos_actuales = usos_actuales + 1 WHERE codigo = ?',
+                            [codigoUsado.toUpperCase()]
+                        );
+                        console.log(`Código de descuento ${codigoUsado} incrementado para el pago ${payment.id}`);
+                    }
                 } catch (e) {
                     console.error('Error inserting compra from webhook:', e);
                 }
@@ -347,12 +730,12 @@ export const renderClassroom = async (req, res) => {
             mapaEntregas.set(e.leccion_id, { nota: e.nota, entrega_id: e.entrega_id, teacher_notes: e.teacher_notes });
         });
 
-        const leccionesPreviasExamen = lecciones.filter(l => l.orden < 10);
+        const leccionesPreviasExamen = lecciones.filter(l => l.orden > 0 && l.orden < 10);
         const todasPreviasAprobadas = leccionesPreviasExamen.length > 0 && leccionesPreviasExamen.every(l => {
             if (!mapaEntregas.has(l.id)) return false;
             const entregaInfo = mapaEntregas.get(l.id) || {};
             const notaVal = entregaInfo.nota;
-            return notaVal !== null && notaVal !== undefined && parseInt(notaVal, 10) >= 6;
+            return notaVal !== null && notaVal !== undefined && parseInt(notaVal, 10) >= 7;
         });
 
         let leccionAnteriorEntregada = true;
@@ -363,7 +746,10 @@ export const renderClassroom = async (req, res) => {
             const teacher_notes = entregaInfo.teacher_notes || null;
             let desbloqueada = false;
 
-            if (leccion.orden === 10) {
+            if (leccion.orden === 0) {
+                // La lección de bienvenida siempre está desbloqueada y no bloquea la Clase 1.
+                desbloqueada = true;
+            } else if (leccion.orden === 10) {
                 desbloqueada = todasPreviasAprobadas;
             } else if (index === 0) {
                 desbloqueada = true;
@@ -371,7 +757,9 @@ export const renderClassroom = async (req, res) => {
                 desbloqueada = leccionAnteriorEntregada;
             }
 
-            leccionAnteriorEntregada = entregada;
+            if (leccion.orden > 0) {
+                leccionAnteriorEntregada = entregada;
+            }
 
             return {
                 ...leccion,
@@ -405,55 +793,30 @@ export const renderClassroom = async (req, res) => {
         // Load announcements for this course
         const anuncios = await db.all('SELECT id, mensaje, created_at FROM curso_anuncios WHERE curso_id = ? ORDER BY created_at DESC', [cursoId]);
 
-        // Debug: log active lesson and video URLs to help trace missing video issues
-        try {
-            const activeUrl = leccionActiva && leccionActiva.video_url;
-            console.log('renderClassroom: leccionActiva id=', leccionActiva && leccionActiva.id, 'video_url=', activeUrl);
-            console.log('renderClassroom: lecciones with video_url:', leccionesConEstado.map(l => ({ id: l.id, orden: l.orden, video_url: l.video_url })));
+        // Consultas del alumno al profesor para la lección activa
+        const consultas = (leccionActiva && leccionActiva.id)
+            ? await db.all(
+                'SELECT id, mensaje, respuesta_profesor, fecha, fecha_respuesta FROM consultas_leccion WHERE usuario_id = ? AND leccion_id = ? ORDER BY fecha ASC',
+                [usuarioId, leccionActiva.id]
+              )
+            : [];
 
-            // If the active lesson has a local-looking URL, check for file existence on disk.
-            if (activeUrl && typeof activeUrl === 'string' && !activeUrl.startsWith('http')) {
-                const candidates = [];
-                // Candidate under public (e.g. /videos/xxx.mp4)
-                try { candidates.push(path.join(__dirname, '../../public', activeUrl.replace(/^[\\/]+/, ''))); } catch(e){}
-                // Candidate if exposed at /uploads -> map to project root + activeUrl
-                try { candidates.push(path.join(process.cwd(), activeUrl.replace(/^[\\/]+/, ''))); } catch(e){}
-                // Candidate directly using value if it's an absolute path
-                try { candidates.push(activeUrl); } catch(e){}
-
-                let found = false;
-                for (const c of candidates) {
-                    try {
-                        if (c && fs.existsSync(c)) {
-                            console.log('renderClassroom: video file exists on disk at:', c);
-                            found = true;
-                            break;
-                        } else {
-                            console.log('renderClassroom: video candidate not found:', c);
-                        }
-                    } catch (ex) {
-                        console.warn('renderClassroom: error checking file candidate', c, ex && ex.stack ? ex.stack : ex);
-                    }
-                }
-
-                if (!found) {
-                    // Detect suspicious DB-stored absolute/temp paths
-                    if (activeUrl.includes('tmp') || activeUrl.includes('temp') || /[A-Za-z]:[\\/]/.test(activeUrl) || activeUrl.startsWith('/tmp') ) {
-                        console.warn('renderClassroom: video_url appears to be a temporary or absolute filesystem path. Consider storing a relative public URL (/videos/...) or using persistent storage. video_url=', activeUrl);
-                    } else {
-                        console.warn('renderClassroom: video_url does not map to an existing file on disk. video_url=', activeUrl);
-                    }
-                }
-            }
-        } catch (dbgErr) {
-            console.error('renderClassroom: debug log error', dbgErr);
+        // Normalizar onclicks de checkAnswer (apóstrofes) para que los multiple
+        // choice respondan al clic aunque el texto de explicación tenga comillas simples.
+        if (leccionActiva && leccionActiva.contenido_html) {
+            leccionActiva.contenido_html = normalizarCheckAnswers(leccionActiva.contenido_html);
+            // Quitar los botones decorativos de "[ CAJA DE TEXTO / BOTÓN SUBIR AUDIO ]"
+            leccionActiva.contenido_html = quitarBotonCajaDeTexto(leccionActiva.contenido_html);
+            // Agregar opciones de traducción a la Fase 2 de las clases 6-9 si faltan
+            leccionActiva.contenido_html = inyectarTraduccionFase2(leccionActiva.contenido_html, leccionActiva.orden);
         }
 
         return res.render('classroom', { 
             curso, 
             lecciones: leccionesConEstado, 
             leccionActiva,
-            anuncios: anuncios || []
+            anuncios: anuncios || [],
+            consultas: consultas || []
         });
 
     } catch (error) {
@@ -484,7 +847,7 @@ export const guardarEntrega = async (req, res) => {
         }
 
         if (leccionActual.orden === 10) {
-            const leccionesPrevias = await db.all('SELECT id FROM lecciones WHERE curso_id = ? AND orden < 10', [cursoId]);
+            const leccionesPrevias = await db.all('SELECT id FROM lecciones WHERE curso_id = ? AND orden > 0 AND orden < 10', [cursoId]);
             
             for (const prev of leccionesPrevias) {
                 const entregaPrev = await db.get(`
@@ -495,7 +858,7 @@ export const guardarEntrega = async (req, res) => {
                     ORDER BY e.id DESC LIMIT 1
                 `, [usuarioId, prev.id]);
 
-                if (!entregaPrev || entregaPrev.nota === null || parseInt(entregaPrev.nota, 10) < 6) {
+                if (!entregaPrev || entregaPrev.nota === null || parseInt(entregaPrev.nota, 10) < 7) {
                     return res.status(403).json({ 
                         success: false, 
                         message: 'Debes tener aprobadas las clases 1 a 9 para enviar el Proyecto Integrador.' 
@@ -513,7 +876,7 @@ export const guardarEntrega = async (req, res) => {
             LIMIT 1
         `, [usuarioId, leccionId]);
 
-        if (ultimaEntrega && ultimaEntrega.nota !== null && parseInt(ultimaEntrega.nota, 10) >= 6) {
+        if (ultimaEntrega && ultimaEntrega.nota !== null && parseInt(ultimaEntrega.nota, 10) >= 7) {
             return res.status(400).json({ 
                 success: false, 
                 message: 'Esta clase/proyecto ya se encuentra aprobado y no permite más envíos.' 
@@ -579,10 +942,146 @@ export const renderPanelProfesor = async (req, res) => {
         // Load course announcements
         const anuncios = await db.all(`SELECT id, curso_id, mensaje, created_at, updated_at FROM curso_anuncios ORDER BY created_at DESC`);
 
-        return res.render('teacher-panel', { entregas: entregas || [], lecciones: lecciones || [], anuncios: anuncios || [] });
+        // Consultas de alumnos al profesor, por lección
+        const consultas = await db.all(`
+            SELECT c.id, c.usuario_id, c.curso_id, c.leccion_id, c.mensaje, c.respuesta_profesor, c.fecha, c.fecha_respuesta,
+                   u.nombre AS usuario_nombre, u.email AS usuario_email,
+                   co.titulo AS curso_titulo, l.titulo AS leccion_titulo, l.orden
+            FROM consultas_leccion c
+            JOIN usuarios u ON c.usuario_id = u.id
+            JOIN cursos co ON c.curso_id = co.id
+            JOIN lecciones l ON c.leccion_id = l.id
+            ORDER BY c.fecha ASC
+        `);
+
+        return res.render('teacher-panel', { entregas: entregas || [], lecciones: lecciones || [], anuncios: anuncios || [], consultas: consultas || [] });
     } catch (error) {
         console.error('Error al obtener las entregas:', error);
         return res.redirect('/');
+    }
+};
+
+// Normaliza los onclick de checkAnswer en el contenido de una lección:
+// re-escribe el 4º argumento (texto de explicación) escapando los apóstrofes,
+// para que botones con 'Can't', &apos;, &amp;apos;, etc. no rompan el JS inline.
+function normalizarCheckAnswers(html) {
+    if (!html || !html.includes('checkAnswer')) return html;
+    return html.replace(/onclick="checkAnswer\(([^"]*?)\)"/g, (m, inner) => {
+        const re = /^\s*this\s*,\s*(true|false)\s*,\s*'([^']*)'\s*,\s*'([\s\S]*)'\s*$/;
+        const mm = inner.match(re);
+        if (!mm) return m;
+        const texto = mm[3]
+            .replace(/&amp;apos;/g, "'")
+            .replace(/&#39;/g, "'")
+            .replace(/&apos;/g, "'")
+            .replace(/'/g, "\\'");
+        return `onclick="checkAnswer(this, ${mm[1]}, '${mm[2]}', '${texto}')"`;
+    });
+}
+
+// Elimina los botones decorativos de "[ CAJA DE TEXTO / ... ]" del contenido
+// (variantes: "BOTÓN SUBIR AUDIO", "EXTENSA / SUBIR DOCUMENTO", etc.).
+// Son botones que no hacen nada dentro de las secciones de entregable.
+function quitarBotonCajaDeTexto(html) {
+    if (!html) return html;
+    // Patrón genérico: <button ...>[ CAJA DE TEXTO [EXTENSA] / <cualquier texto> ]</button>
+    return html.replace(/<button\b[^>]*>\s*\[\s*CAJA DE TEXTO[\s\S]*?\]\s*<\/button>/gi, '');
+}
+
+// Bloques de opciones de traducción para la Fase 2 (Parte II) de las clases 6-9.
+// Se inyectan en el render si el diálogo existe pero aún no tiene las opciones (_trad),
+// así se arregla el contenido ya guardado en la base sin migrar datos.
+const BLOQUES_TRADUCCION = {
+    6: `<div class="quiz-question" style="margin-top: 1.5rem;">
+        <p><strong>¿Cuál es la traducción correcta para el diálogo completo?</strong></p>
+        <button class="option-btn" onclick="checkAnswer(this, false, 'c6_trad', 'El español de are you doing no es hacer, sino estar haciendo.')">( A ) ¿Qué hacés ahora? / Estoy cocinando la cena y mi hermano está viendo la tele.</button>
+        <button class="option-btn" onclick="checkAnswer(this, true, 'c6_trad', 'Traducción correcta del presente continuo: What are you doing now = Qué estás haciendo ahora.')">( B ) ¿Qué estás haciendo ahora? / Estoy cocinando la cena y mi hermano está mirando la televisión.</button>
+        <button class="option-btn" onclick="checkAnswer(this, false, 'c6_trad', 'Contiene el auxiliar incorrecto para traducir la acción en curso.')">( C ) ¿Qué haces ahora? / Yo cocino la cena y mi hermano ve la televisión.</button>
+        <div id="c6_trad" style="display:none; padding: 0.8rem; border-radius: 6px; margin-top: 0.5rem; font-size: 0.9rem;"></div>
+    </div>`,
+    7: `<div class="quiz-question" style="margin-top: 1.5rem;">
+        <p><strong>¿Cuál es la traducción correcta para el diálogo completo?</strong></p>
+        <button class="option-btn" onclick="checkAnswer(this, true, 'c7_trad', 'Traducción correcta: can you use = ¿sabés usar?, can learn = puede aprender.')">( A ) ¿Podés usar este software de diseño? / No, no puedo usarlo, pero puedo aprender rápido.</button>
+        <button class="option-btn" onclick="checkAnswer(this, false, 'c7_trad', 'Could se usa para cortesía o pasado, no para capacidad presente.')">( B ) ¿Podrías usar este software de diseño? / No, no podría usarlo, pero podría aprender rápido.</button>
+        <button class="option-btn" onclick="checkAnswer(this, false, 'c7_trad', 'Omite el verbo modal can en la segunda parte de la respuesta.')">( C ) ¿Puedes usar este software de diseño? / No lo uso, pero aprendo rápido.</button>
+        <div id="c7_trad" style="display:none; padding: 0.8rem; border-radius: 6px; margin-top: 0.5rem; font-size: 0.9rem;"></div>
+    </div>`,
+    8: `<div class="quiz-question" style="margin-top: 1.5rem;">
+        <p><strong>¿Cuál es la traducción correcta para el diálogo completo?</strong></p>
+        <button class="option-btn" onclick="checkAnswer(this, false, 'c8_trad', 'How much es para sustantivos incontables (café), y la negación lleva any.')">( A ) ¿Cuántos cafés tomás en la mañana? / Tomo muchos cafés, pero no les pongo azúcar.</button>
+        <button class="option-btn" onclick="checkAnswer(this, true, 'c8_trad', 'Traducción correcta: how much coffee = cuánto café, any sugar = nada de azúcar.')">( B ) ¿Cuánto café tomás en la mañana? / Tomo mucho café, pero no le pongo azúcar.</button>
+        <button class="option-btn" onclick="checkAnswer(this, false, 'c8_trad', 'Change el sentido: la respuesta B no toma café en la mañana.')">( C ) ¿Cuánto café tomás en la mañana? / Tomo poco café, pero le pongo mucha azúcar.</button>
+        <div id="c8_trad" style="display:none; padding: 0.8rem; border-radius: 6px; margin-top: 0.5rem; font-size: 0.9rem;"></div>
+    </div>`,
+    9: `<div class="quiz-question" style="margin-top: 1.5rem;">
+        <p><strong>¿Cuál es la traducción correcta para el diálogo completo?</strong></p>
+        <button class="option-btn" onclick="checkAnswer(this, false, 'c9_trad', 'Las comparaciones con adjetivos largos usan more + adjetivo, y el superlativo de the best.')">( A ) ¿Tu nuevo trabajo es más difícil que el anterior? / Sí, es más difícil, pero es el trabajo que tengo.</button>
+        <button class="option-btn" onclick="checkAnswer(this, true, 'c9_trad', 'Traducción correcta: more difficult than = más difícil que, the best job = el mejor trabajo.')">( B ) ¿Tu nuevo trabajo es más difícil que el anterior? / Sí, es más difícil, pero es el mejor trabajo que tuve.</button>
+        <button class="option-btn" onclick="checkAnswer(this, false, 'c9_trad', 'Coloca el comparativo en el lugar equivocado y cambia el superlativo.')">( C ) ¿Es tu trabajo nuevo difícil más que el anterior? / Sí, es más difícil, pero es el trabajo mejor que tenía.</button>
+        <div id="c9_trad" style="display:none; padding: 0.8rem; border-radius: 6px; margin-top: 0.5rem; font-size: 0.9rem;"></div>
+    </div>`
+};
+
+// Inyecta el bloque de opciones de traducción (Fase 2, Parte II) para las clases 6-9
+// si el diálogo ya está en el contenido y aún no tiene las opciones (_trad).
+function inyectarTraduccionFase2(html, orden) {
+    if (!html || !BLOQUES_TRADUCCION[orden] || html.includes('_trad')) return html;
+    const bloque = BLOQUES_TRADUCCION[orden];
+    // Inserta el bloque justo después del cierre del div del diálogo (después del último </div>)
+    // Buscamos dónde termina el diálogo: el patrón del cierre del div de la Parte II.
+    const idx = html.lastIndexOf('Persona B:</strong>');
+    if (idx === -1) return html;
+    const cierre = html.indexOf('</div>', idx);
+    if (cierre === -1) return html;
+    const insertAt = cierre + '</div>'.length;
+    return html.slice(0, insertAt) + '\n' + bloque + html.slice(insertAt);
+}
+
+export const renderGestionCursos = async (req, res) => {
+    if (!req.session.user || req.session.user.email !== EMAIL_PROFESOR) {
+        return res.status(403).send('<h1>403 - Acceso denegado: Solo el profesor puede ver esta sección.</h1>');
+    }
+    try {
+        const db = await dbPromise;
+
+        const lecciones = await db.all(`
+            SELECT l.id as leccion_id, l.titulo as leccion_titulo, l.curso_id, l.orden, l.video_url, l.teacher_note, l.contenido_html, c.titulo as curso_titulo
+            FROM lecciones l
+            JOIN cursos c ON l.curso_id = c.id
+            ORDER BY c.id, l.orden ASC
+        `);
+
+        const anuncios = await db.all(`SELECT id, curso_id, mensaje, created_at, updated_at FROM curso_anuncios ORDER BY created_at DESC`);
+
+        return res.render('gestion-cursos', { lecciones: lecciones || [], anuncios: anuncios || [] });
+    } catch (error) {
+        console.error('Error al obtener gestión de cursos:', error);
+        return res.redirect('/profesor/entregas');
+    }
+};
+
+export const renderConsultasProfesor = async (req, res) => {
+    if (!req.session.user || req.session.user.email !== EMAIL_PROFESOR) {
+        return res.status(403).send('<h1>403 - Acceso denegado: Solo el profesor puede ver esta sección.</h1>');
+    }
+    try {
+        const db = await dbPromise;
+
+        const consultas = await db.all(`
+            SELECT c.id, c.usuario_id, c.curso_id, c.leccion_id, c.mensaje, c.respuesta_profesor, c.fecha, c.fecha_respuesta,
+                   u.nombre AS usuario_nombre, u.email AS usuario_email,
+                   co.titulo AS curso_titulo, l.titulo AS leccion_titulo, l.orden
+            FROM consultas_leccion c
+            JOIN usuarios u ON c.usuario_id = u.id
+            JOIN cursos co ON c.curso_id = co.id
+            JOIN lecciones l ON c.leccion_id = l.id
+            ORDER BY c.fecha ASC
+        `);
+
+        return res.render('consultas-profesor', { consultas: consultas || [] });
+    } catch (error) {
+        console.error('Error al obtener consultas de alumnos:', error);
+        return res.redirect('/profesor/entregas');
     }
 };
 
@@ -745,7 +1244,7 @@ export const descargarCertificado = async (req, res) => {
             SELECT d.nota, d.fecha 
             FROM entregas e
             JOIN devoluciones d ON d.entrega_id = e.id
-            WHERE e.usuario_id = ? AND e.leccion_id = ? AND d.nota >= 6
+            WHERE e.usuario_id = ? AND e.leccion_id = ? AND d.nota >= 7
             ORDER BY e.id DESC
             LIMIT 1
         `, [usuarioId, leccion10.id]);
@@ -799,7 +1298,7 @@ export const descargarCertificado = async (req, res) => {
 
         // Día (Alineado tras "Dado a los")
         firstPage.drawText(dia, {
-            x: 333,
+            x: 328,
             y: 172,
             size: 11,
             font: fontBold,
@@ -808,7 +1307,7 @@ export const descargarCertificado = async (req, res) => {
 
         // Mes (Alineado tras "del mes de")
         firstPage.drawText(mes, {
-            x: 470,
+            x: 455,
             y: 172,
             size: 11,
             font: fontBold,
@@ -1084,10 +1583,6 @@ export const uploadLessonVideo = async (req, res) => {
     }
 
     try {
-        console.log('uploadLessonVideo: start. session user=', req.session && req.session.user ? req.session.user.email : null);
-        console.log('uploadLessonVideo: headers.content-length=', req.headers && req.headers['content-length']);
-        console.log('uploadLessonVideo: req.body=', req.body);
-        console.log('uploadLessonVideo: req.file=', req.file);
         const db = await dbPromise;
 
         const { leccionId, videoUrl } = req.body;
@@ -1103,29 +1598,11 @@ export const uploadLessonVideo = async (req, res) => {
             // Verify the file was saved to disk
             const savedPath = req.file.path || path.join(__dirname, '../../public/videos', req.file.filename);
             const exists = fs.existsSync(savedPath);
-            console.log('uploadLessonVideo: expected savedPath=', savedPath, 'exists=', exists);
-
-            if (exists) {
-                try {
-                    const stats = fs.statSync(savedPath);
-                    console.log('uploadLessonVideo: saved file stats:', { size: stats.size, mtime: stats.mtime });
-                } catch (sErr) {
-                    console.warn('uploadLessonVideo: could not stat saved file', sErr);
-                }
-
-                try {
-                    const dir = path.dirname(savedPath);
-                    const files = fs.readdirSync(dir).slice(-20);
-                    console.log('uploadLessonVideo: recent files in upload dir:', files);
-                } catch (rErr) {
-                    console.warn('uploadLessonVideo: could not read upload dir', rErr);
-                }
-            }
 
             if (!exists) {
                 // If multer didn't save where we expected, try using req.file.path
                 if (req.file.path && fs.existsSync(req.file.path)) {
-                    console.log('uploadLessonVideo: found file at req.file.path=', req.file.path);
+                    // multer lo guardó en otro lado, pero está: seguimos.
                 } else {
                     console.error('uploadLessonVideo: uploaded file not found on disk. req.file:', req.file);
                     return res.status(500).json({ success: false, message: 'Archivo subido no encontrado en el servidor' });
@@ -1149,7 +1626,6 @@ export const uploadLessonVideo = async (req, res) => {
             }
 
             finalUrl = `${urlBase}/${req.file.filename}`;
-            console.log('uploadLessonVideo: computed finalUrl=', finalUrl);
         } else if (videoUrl && videoUrl.trim() !== '') {
             let candidate = videoUrl.trim();
 
@@ -1179,7 +1655,6 @@ export const uploadLessonVideo = async (req, res) => {
 
         try {
             await db.run('UPDATE lecciones SET video_url = ? WHERE id = ?', [finalUrl, leccionId]);
-            console.log('uploadLessonVideo: DB updated leccionId=', leccionId, 'with video_url=', finalUrl);
             return res.json({ success: true, message: 'Video de la lección guardado correctamente', video_url: finalUrl });
         } catch (dbErr) {
             console.error('uploadLessonVideo: error updating DB with video_url', dbErr);
@@ -1261,6 +1736,82 @@ export const updateLessonTeacherNote = async (req, res) => {
     }
 };
 
+export const actualizarContenidoLeccion = async (req, res) => {
+    if (!req.session.user) return res.status(401).json({ success: false, message: 'No autenticado' });
+    if (req.session.user.email !== EMAIL_PROFESOR) return res.status(403).json({ success: false, message: 'Acceso no autorizado' });
+
+    const { leccionId, contenido } = req.body;
+    if (!leccionId || contenido === undefined) return res.status(400).json({ success: false, message: 'Faltan datos' });
+
+    try {
+        const db = await dbPromise;
+        await db.run('UPDATE lecciones SET contenido_html = ? WHERE id = ?', [String(contenido), leccionId]);
+        return res.json({ success: true, message: 'Contenido de la lección actualizado' });
+    } catch (error) {
+        console.error('Error actualizando contenido de lección:', error);
+        return res.status(500).json({ success: false, message: 'Error al actualizar el contenido' });
+    }
+};
+
+export const eliminarNotaLeccion = async (req, res) => {
+    if (!req.session.user) return res.status(401).json({ success: false, message: 'No autenticado' });
+    if (req.session.user.email !== EMAIL_PROFESOR) return res.status(403).json({ success: false, message: 'Acceso no autorizado' });
+
+    const { leccionId } = req.body;
+    if (!leccionId) return res.status(400).json({ success: false, message: 'Falta leccionId' });
+
+    try {
+        const db = await dbPromise;
+        await db.run('UPDATE lecciones SET teacher_note = NULL WHERE id = ?', [leccionId]);
+        return res.json({ success: true, message: 'Nota de la lección eliminada' });
+    } catch (error) {
+        console.error('Error eliminando nota de la lección:', error);
+        return res.status(500).json({ success: false, message: 'Error al eliminar nota de la lección' });
+    }
+};
+
+export const guardarConsultaLeccion = async (req, res) => {
+    if (!req.session.user) {
+        return res.status(401).json({ success: false, message: 'No autenticado' });
+    }
+    const { cursoId, leccionId, mensaje } = req.body || {};
+    if (!cursoId || !leccionId || !mensaje || !String(mensaje).trim()) {
+        return res.status(400).json({ success: false, message: 'Faltan datos para la consulta' });
+    }
+    try {
+        const db = await dbPromise;
+        await db.run(
+            'INSERT INTO consultas_leccion (usuario_id, curso_id, leccion_id, mensaje) VALUES (?, ?, ?, ?)',
+            [req.session.user.id, parseInt(cursoId, 10), parseInt(leccionId, 10), String(mensaje).trim()]
+        );
+        return res.json({ success: true });
+    } catch (error) {
+        console.error('Error al guardar consulta de lección:', error);
+        return res.status(500).json({ success: false, message: 'Error al guardar la consulta' });
+    }
+};
+
+export const responderConsultaLeccion = async (req, res) => {
+    if (!req.session.user || req.session.user.email !== EMAIL_PROFESOR) {
+        return res.status(403).json({ success: false, message: 'Acceso denegado' });
+    }
+    const { consultaId, respuesta } = req.body || {};
+    if (!consultaId || !respuesta || !String(respuesta).trim()) {
+        return res.status(400).json({ success: false, message: 'Faltan datos para responder' });
+    }
+    try {
+        const db = await dbPromise;
+        await db.run(
+            'UPDATE consultas_leccion SET respuesta_profesor = ?, fecha_respuesta = CURRENT_TIMESTAMP WHERE id = ?',
+            [String(respuesta).trim(), parseInt(consultaId, 10)]
+        );
+        return res.json({ success: true });
+    } catch (error) {
+        console.error('Error al responder consulta de lección:', error);
+        return res.status(500).json({ success: false, message: 'Error al responder la consulta' });
+    }
+};
+
 export const renderMessagesList = async (req, res) => {
     if (!req.session.user) return res.redirect('/auth/login');
     const usuarioId = req.session.user.id;
@@ -1279,6 +1830,20 @@ export const renderMessagesList = async (req, res) => {
     } catch (error) {
         console.error('Error rendering messages list:', error);
         return res.redirect('/');
+    }
+};
+
+export const marcarMensajesLeidos = async (req, res) => {
+    if (!req.session.user) {
+        return res.status(401).json({ success: false, message: 'No autenticado' });
+    }
+    try {
+        const db = await dbPromise;
+        await db.run('UPDATE devoluciones SET leida = TRUE WHERE usuario_id = ?', [req.session.user.id]);
+        return res.json({ success: true });
+    } catch (error) {
+        console.error('Error al marcar mensajes como leídos:', error);
+        return res.status(500).json({ success: false, message: 'Error al marcar como leídos' });
     }
 };
 

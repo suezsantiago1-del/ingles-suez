@@ -1,34 +1,47 @@
 import 'dotenv/config';
 import express from 'express';
 import session from 'express-session';
+import connectPgSimple from 'connect-pg-simple';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
-import dbPromise from './src/config/database.js';
+import dbPromise, { pgPool } from './src/config/database.js';
 import authRoutes from './src/routes/authRoutes.js';
 import { 
     renderCourseDetail, 
     processCheckout, 
+    validarCodigoDescuento,
+    obtenerDesafioDiario,
     paymentSuccess, 
     paymentFailure, 
     renderMyCourses,
     renderClassroom,
     guardarEntrega,
     renderPanelProfesor,
+    renderGestionCursos,
+    renderConsultasProfesor,
     guardarDevolucion,
     saveTeacherNote,
     updateLessonTeacherNote,
+    eliminarNotaLeccion,
+    actualizarContenidoLeccion,
     uploadLessonVideo,
     handleMpWebhook,
     renderMensajesAlumno,
+    guardarConsultaLeccion,
+    responderConsultaLeccion,
     renderMessagesList,
     renderMessagesCourse,
+    marcarMensajesLeidos,
     descargarCertificado,
     renderPrivateClasses,
     guardarConsultaParticulares,
     enviarMensajeAlumnoChat,
     renderPanelParticularesProfesor,
-    guardarRespuestaParticular
+    guardarRespuestaParticular,
+    completarDesafio,
+    renderProfesorRachas,
+    enviarRecompensaUsuario
 } from './src/controllers/courseController.js';
 import { createOrUpdateAnnouncement, deleteAnnouncement } from './src/controllers/courseController.js';
 import multer from 'multer';
@@ -42,6 +55,26 @@ const PORT = process.env.PORT || 3000;
 // OBLIGATORIO para plataformas en la nube (Render, Railway, Heroku, Vercel)
 // Permite que Express confíe en las cookies enviadas a través del Proxy HTTPS
 app.set('trust proxy', 1);
+
+// Healthcheck del contenedor. Va primero de todo a propósito:
+//
+//   - antes del redirect a HTTPS de acá abajo, porque el chequeo entra por
+//     127.0.0.1 sin pasar por el proxy y por lo tanto sin X-Forwarded-Proto:
+//     lo redirigiría a https://127.0.0.1:3000, donde no hay TLS, y el
+//     contenedor quedaría unhealthy para siempre;
+//   - antes de la sesión, para no crear una sesión y una fila en la tabla
+//     `session` en cada chequeo.
+//
+// Toca la base con un SELECT 1 para que "healthy" signifique que la app puede
+// consultar, y no solamente que el puerto está abierto.
+app.get('/health', async (req, res) => {
+    try {
+        await pgPool.query('SELECT 1');
+        res.json({ ok: true });
+    } catch (e) {
+        res.status(503).json({ ok: false });
+    }
+});
 
 // Middleware para forzar HTTPS en producción
 app.use((req, res, next) => {
@@ -96,12 +129,30 @@ function uploadDebugLogger(req, res, next) {
     next();
 }
 
-// Increase payload limits for non-multipart parsers (safe default for this app)
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
-app.use(express.json({ limit: '50mb' }));
+// 1 MB alcanza: los únicos cuerpos grandes son las subidas de video, que son
+// multipart y no pasan por estos parsers. Con 50mb cualquier POST podía
+// reservar 50 MB de RAM del proceso.
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+app.use(express.json({ limit: '1mb' }));
+
+// El secreto firma las cookies de sesión: con un valor conocido cualquiera
+// puede fabricar la sesión de cualquier alumno. El fallback que había acá
+// estaba escrito en el repo, así que en producción ahora se exige de verdad.
+const SESSION_SECRET = process.env.SESSION_SECRET;
+if (!SESSION_SECRET && process.env.NODE_ENV === 'production') {
+    console.error('FALTA SESSION_SECRET: no arranco en producción sin secreto de sesión.');
+    process.exit(1);
+}
+
+// Sesiones en Postgres, no en memoria. El MemoryStore que trae
+// express-session por defecto nunca purga las sesiones vencidas —crece sin
+// techo mientras la app esté arriba— y se pierde entero en cada redeploy, que
+// desloguea a todos los alumnos. La tabla la crea el store si no existe.
+const PgStore = connectPgSimple(session);
 
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'clave_secreta_suez',
+    store: new PgStore({ pool: pgPool, tableName: 'session', createTableIfMissing: true }),
+    secret: SESSION_SECRET || 'inseguro-solo-desarrollo',
     resave: false,
     saveUninitialized: false,
     cookie: { 
@@ -148,6 +199,11 @@ app.get('/about', (req, res) => {
     res.render('about');
 });
 
+// Test de nivel de inglés (público, sin login)
+app.get('/test-nivel', (req, res) => {
+    res.render('test-nivel');
+});
+
 // Rutas de Clases Particulares (vista y envíos del alumno)
 app.get('/clases-particulares', renderPrivateClasses);
 app.post('/clases-particulares/enviar', guardarConsultaParticulares);
@@ -184,6 +240,11 @@ app.get('/', async (req, res) => {
 // Cursos, pagos y aula virtual
 app.get('/course/:id', renderCourseDetail);
 app.post('/checkout/:id', processCheckout);
+app.post('/validar-codigo-descuento', express.json(), validarCodigoDescuento);
+app.get('/desafio-diario', obtenerDesafioDiario);
+app.post('/desafio-diario/completar', completarDesafio);
+app.get('/profesor/rachas', renderProfesorRachas);
+app.post('/profesor/rachas/recompensar', enviarRecompensaUsuario);
 app.get('/payment/success', paymentSuccess);
 app.get('/payment/failure', paymentFailure);
 app.get('/mis-cursos', renderMyCourses);
@@ -196,11 +257,19 @@ app.post('/mercadopago/webhook', express.json(), handleMpWebhook);
 // Entregas de alumnos y panel del profesor para cursos
 app.post('/entregas', guardarEntrega);
 app.get('/profesor/entregas', renderPanelProfesor);
+app.get('/profesor/gestion', renderGestionCursos);
+app.get('/profesor/consultas', renderConsultasProfesor);
 app.post('/profesor/devolucion', guardarDevolucion);
 app.post('/profesor/nota', express.json(), saveTeacherNote);
 app.post('/profesor/anuncio', express.json(), createOrUpdateAnnouncement);
 app.delete('/profesor/anuncio', express.json(), deleteAnnouncement);
 app.post('/profesor/leccion/nota', express.json(), updateLessonTeacherNote);
+app.post('/profesor/leccion/nota/eliminar', express.json(), eliminarNotaLeccion);
+app.post('/profesor/leccion/contenido', express.json(), actualizarContenidoLeccion);
+
+// Consultas de alumnos al profesor por lección
+app.post('/consultas/leccion', express.json(), guardarConsultaLeccion);
+app.post('/profesor/consulta/responder', express.json(), responderConsultaLeccion);
 
 // Multer setup for lesson video uploads
 const storage = multer.diskStorage({
@@ -213,8 +282,27 @@ const storage = multer.diskStorage({
     }
 });
 
-// Increase Multer upload limit to 2GB to support large lesson videos
-const upload = multer({ storage, limits: { fileSize: 2 * 1024 * 1024 * 1024 } }); // up to ~2GB
+// Los videos van por YouTube: se pega el link en el campo de URL del panel y
+// uploadLessonVideo lo normaliza a /embed/ solo. La subida de archivos al
+// servidor queda apagada salvo que se prenda ALLOW_LOCAL_VIDEO_UPLOAD.
+//
+// El motivo es el deploy: en el VPS el contenedor no monta volumen de videos,
+// así que un archivo subido se escribiría en la capa efímera del contenedor y
+// desaparecería en el próximo redeploy, dejando la lección apuntando a un 404.
+// Y montar el volumen no es gratis: el backup del servidor re-comprime todos
+// los volúmenes de la app cada noche y retiene 34 copias.
+const ALLOW_LOCAL_VIDEO_UPLOAD = process.env.ALLOW_LOCAL_VIDEO_UPLOAD === 'true';
+const MAX_VIDEO_MB = parseInt(process.env.MAX_VIDEO_MB || '500', 10);
+const upload = multer({ storage, limits: { fileSize: MAX_VIDEO_MB * 1024 * 1024 } });
+
+// El panel manda siempre FormData, también cuando solo se guarda una URL. Con
+// .none() los campos de texto pasan igual y un archivo adjunto se rechaza sin
+// escribir un byte en disco (LIMIT_UNEXPECTED_FILE).
+const videoUpload = ALLOW_LOCAL_VIDEO_UPLOAD ? upload.single('videoFile') : upload.none();
+
+// La vista del panel usa esto para no mostrar el input de archivo cuando la
+// subida está apagada.
+app.locals.allowLocalVideoUpload = ALLOW_LOCAL_VIDEO_UPLOAD;
 
 // Middleware to detect aborted uploads and log request info
 function uploadRequestLogger(req, res, next) {
@@ -228,7 +316,7 @@ function uploadRequestLogger(req, res, next) {
 }
 
 // Endpoint for professor to upload a lesson video or set a video URL
-app.post('/profesor/leccion/video', uploadRequestLogger, uploadDebugLogger, upload.single('videoFile'), uploadLessonVideo);
+app.post('/profesor/leccion/video', uploadRequestLogger, uploadDebugLogger, videoUpload, uploadLessonVideo);
 
 // Legacy route: redirect old 'Mis Mensajes' to new messages master list
 app.get('/mis-mensajes', (req, res) => {
@@ -238,6 +326,7 @@ app.get('/mis-mensajes', (req, res) => {
 // Messages master list and detail per course
 app.get('/messages', renderMessagesList);
 app.get('/messages/:courseId', renderMessagesCourse);
+app.post('/messages/leer', marcarMensajesLeidos);
 
 // Global error handler (catches Multer and body-parser errors and returns JSON)
 app.use((err, req, res, next) => {
@@ -247,6 +336,9 @@ app.use((err, req, res, next) => {
     if (err && (err instanceof multer.MulterError || err.name === 'MulterError')) {
         if (err.code === 'LIMIT_FILE_SIZE') {
             return res.status(413).json({ success: false, message: 'El archivo excede el tamaño máximo permitido' });
+        }
+        if (err.code === 'LIMIT_UNEXPECTED_FILE') {
+            return res.status(400).json({ success: false, message: 'La subida de archivos está deshabilitada: pegá el link de YouTube en el campo de URL.' });
         }
         return res.status(400).json({ success: false, message: err.message || 'Error en la subida de archivo' });
     }
@@ -299,9 +391,13 @@ const server = app.listen(PORT, async () => {
     console.log(`Servidor listo en: http://localhost:${PORT}`);
 });
 
-// Disable default Node timeout so large uploads aren't cut off mid-transfer
+// Timeouts amplios, pero timeouts al fin. Con 0 ninguna conexión expiraba
+// nunca: una conexión colgada quedaba tomada hasta reiniciar el proceso.
+// 15 minutos sobran para cualquier subida legítima.
 try {
-    server.timeout = 0; // 0 = no timeout
+    server.timeout = 15 * 60 * 1000;
+    server.requestTimeout = 15 * 60 * 1000;
+    server.headersTimeout = 70 * 1000;
 } catch (e) {
     console.warn('Could not set server timeout:', e);
 }

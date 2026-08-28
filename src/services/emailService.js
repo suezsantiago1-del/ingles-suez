@@ -9,13 +9,35 @@ const getBrevoApiKey = () => {
            '';
 };
 
-// Obtener email remitente
+// Remitente de los mails.
+//
+// Tiene que ser una dirección de un dominio autenticado en Brevo (DKIM + SPF),
+// no un gmail: Brevo firma el mail con el dominio del remitente, y sobre
+// gmail.com no se puede publicar una clave DKIM porque el DNS es de Google. Un
+// mail que dice venir de gmail.com pero sale de los servidores de Brevo falla
+// la alineación DMARC y termina en spam — y acá el mail de verificación es lo
+// que habilita la cuenta del alumno.
+//
+// El fallback al gmail es transitorio, para no romper el deploy viejo mientras
+// el dominio no esté autenticado. Una vez que lo esté, se define
+// EMAIL_REMITENTE y este fallback deja de usarse.
 const getSenderEmail = () => {
-    return process.env.BREVO_SENDER_EMAIL || 
-           process.env.EMAIL_FROM ||
-           process.env.SMTP_USER ||
-           process.env.EMAIL_USER ||
+    return process.env.EMAIL_REMITENTE ||
+           process.env.BREVO_SENDER_EMAIL ||   // nombre anterior
            'suezsantiago1@gmail.com';
+};
+
+const getSenderName = () => process.env.EMAIL_REMITENTE_NOMBRE || 'INGLÉS SUEZ';
+
+// no-responder@ no tiene casilla: las respuestas de los alumnos se redirigen
+// al mail del profesor para que no se pierdan.
+const getReplyTo = () => process.env.EMAIL_RESPUESTAS || process.env.EMAIL_PROFESOR || null;
+
+// Arma sender y replyTo sobre un SendSmtpEmail ya creado.
+const aplicarRemitente = (sendSmtpEmail) => {
+    sendSmtpEmail.sender = { email: getSenderEmail(), name: getSenderName() };
+    const responder = getReplyTo();
+    if (responder) sendSmtpEmail.replyTo = { email: responder };
 };
 
 // Inicializar cliente de Brevo
@@ -37,8 +59,6 @@ export const sendVerificationEmail = async (email, nombre, token, req) => {
     try {
         const apiKey = getBrevoApiKey();
         console.log('Enviando email de verificación con API de Brevo a:', email);
-        console.log('API Key configurada:', !!apiKey);
-        console.log('API Key longitud:', apiKey.length);
         
         if (!apiKey) {
             return { 
@@ -56,16 +76,9 @@ export const sendVerificationEmail = async (email, nombre, token, req) => {
         }
         
         const verificationUrl = `${req.protocol}://${req.get('host')}/auth/verify/${token}`;
-        const senderEmail = getSenderEmail();
-        
-        console.log('Enviando email a Brevo API...');
-        console.log('Usando remitente:', senderEmail);
         
         const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
-        sendSmtpEmail.sender = { 
-            email: 'suezsantiago1@gmail.com', 
-            name: 'INGLÉS SUEZ' 
-        };
+        aplicarRemitente(sendSmtpEmail);
         sendSmtpEmail.to = [{ email: email, name: nombre }];
         sendSmtpEmail.subject = 'Verifica tu correo electrónico - INGLÉS SUEZ';
         sendSmtpEmail.htmlContent = `
@@ -156,10 +169,7 @@ export const sendEmail = async (to, subject, html) => {
         }
         
         const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
-        sendSmtpEmail.sender = { 
-            email: 'suezsantiago1@gmail.com', 
-            name: 'INGLÉS SUEZ' 
-        };
+        aplicarRemitente(sendSmtpEmail);
         sendSmtpEmail.to = [{ email: to }];
         sendSmtpEmail.subject = subject;
         sendSmtpEmail.htmlContent = html;

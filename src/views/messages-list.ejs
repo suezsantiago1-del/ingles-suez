@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <link rel="icon" type="image/png" href="/img/favicon.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mis Cursos - Mensajes</title>
@@ -55,6 +56,10 @@
         <h1 style="color:var(--primary-navy); margin-bottom: 0.5rem;">Mis Cursos</h1>
         <p style="color:var(--text-muted); margin-bottom: 1.5rem;">Selecciona un curso para ver las devoluciones por clase.</p>
 
+        <div style="display: flex; justify-content: flex-end; margin-bottom: 1rem;">
+            <button type="button" onclick="marcarMensajesLeidosDesdeLista()" style="background: #184168; color: white; border: none; padding: 0.55rem 1.1rem; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.9rem;">Marcar como leídos</button>
+        </div>
+
         <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap:1rem;">
             <% if (cursos && cursos.length > 0) { %>
                 <% cursos.forEach(c => { %>
@@ -78,5 +83,21 @@
     </main>
 
     <%- include('partials/footer') %>
+
+    <script>
+        function marcarMensajesLeidosDesdeLista() {
+            fetch('/messages/leer', { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Mensajes marcados como leídos.');
+                        window.location.reload();
+                    } else {
+                        alert(data.message || 'No se pudieron marcar como leídos.');
+                    }
+                })
+                .catch(() => alert('Error de conexión al marcar como leídos.'));
+        }
+    </script>
 </body>
 </html>

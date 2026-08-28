@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <link rel="icon" type="image/png" href="/img/favicon.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= curso.titulo %> - INGLÉS SUEZ</title>
@@ -80,6 +81,10 @@
             margin-bottom: 0.3rem;
         }
     </style>
+
+    <!-- Google AdSense Verification -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1854686112404128"
+         crossorigin="anonymous"></script>
 </head>
 <body>
 
@@ -108,9 +113,18 @@
                             </a>
                         <% } else { %>
                             <!-- Opción B: Usuario logueado pero no inscripto -->
-                            <form action="/checkout/<%= curso.id %>" method="POST" style="display: inline;">
-                                <button type="submit" class="btn-action btn-success">
-                                    Inscribirme en curso
+                            <div style="margin-bottom: 1rem;">
+                                <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                    <input type="text" id="codigo-descuento" placeholder="Código de descuento" style="flex: 1; padding: 0.7rem; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 0.9rem;">
+                                    <button type="button" onclick="validarCodigo()" style="padding: 0.7rem 1rem; background: #e2ebd5; color: #184168; border: 1px solid #cbd5e0; border-radius: 4px; cursor: pointer; font-size: 0.9rem;">Aplicar</button>
+                                </div>
+                                <div id="descuento-mensaje" style="font-size: 0.85rem; margin-top: 0.3rem;"></div>
+                                <div id="precio-con-descuento" style="font-weight: bold; color: #22543d; margin-top: 0.5rem; display: none;"></div>
+                            </div>
+                            <form action="/checkout/<%= curso.id %>" method="POST" id="checkout-form" style="display: inline;">
+                                <input type="hidden" name="codigo_descuento" id="codigo-descuento-hidden" value="">
+                                <button type="submit" class="btn-action btn-success" id="btn-inscribir">
+                                    Inscribirme en curso - $<%= curso.precio %> ARS
                                 </button>
                             </form>
                         <% } %>
@@ -138,8 +152,8 @@
                     <p>Cada entrega es revisada y corregida manualmente por el profesor, con devoluciones detalladas para que puedas mejorar.</p>
                 </div>
                 <div class="info-card">
-                    <h3>Certificado de nivel A1</h3>
-                    <p>Al completar y aprobar el curso, recibirás un certificado oficial de nivel A1 que acredita tu formación en inglés básico.</p>
+                    <h3>Certificado de nivel A1-A2</h3>
+                    <p>Al completar y aprobar el curso, recibirás un certificado oficial de nivel A1-A2 que acredita tu formación en inglés básico.</p>
                 </div>
             </div>
 
@@ -157,6 +171,70 @@
     </main>
 
     <%- include('partials/footer') %>
+
+    <script>
+        function validarCodigo() {
+            const codigo = document.getElementById('codigo-descuento').value.trim();
+            const mensaje = document.getElementById('descuento-mensaje');
+            const precioConDescuento = document.getElementById('precio-con-descuento');
+            const precioOriginal = <%= curso.precio %>;
+            
+            if (!codigo) {
+                mensaje.textContent = '';
+                mensaje.style.color = '';
+                precioConDescuento.style.display = 'none';
+                document.getElementById('codigo-descuento-hidden').value = '';
+                actualizarBotonPrecio(precioOriginal);
+                return;
+            }
+            
+            // Validar código con el servidor
+            fetch('/validar-codigo-descuento', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ codigo: codigo })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const precioFinal = Math.floor(precioOriginal * (1 - data.porcentaje / 100));
+                    
+                    mensaje.textContent = data.mensaje;
+                    mensaje.style.color = '#22543d';
+                    precioConDescuento.textContent = `Precio original: $${precioOriginal} ARS | Precio con descuento: $${precioFinal} ARS`;
+                    precioConDescuento.style.display = 'block';
+                    document.getElementById('codigo-descuento-hidden').value = codigo;
+                    actualizarBotonPrecio(precioFinal);
+                } else {
+                    mensaje.textContent = data.message;
+                    mensaje.style.color = '#9b2c2c';
+                    precioConDescuento.style.display = 'none';
+                    document.getElementById('codigo-descuento-hidden').value = '';
+                    actualizarBotonPrecio(precioOriginal);
+                }
+            })
+            .catch(error => {
+                mensaje.textContent = 'Error al validar el código. Intente nuevamente.';
+                mensaje.style.color = '#9b2c2c';
+                console.error('Error al validar código:', error);
+            });
+        }
+        
+        function actualizarBotonPrecio(precio) {
+            const btn = document.getElementById('btn-inscribir');
+            btn.textContent = `Inscribirme en curso - $${precio} ARS`;
+        }
+        
+        // Validar cuando el usuario presiona Enter en el campo de código
+        document.getElementById('codigo-descuento').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                validarCodigo();
+            }
+        });
+    </script>
 
 </body>
 </html>

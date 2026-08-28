@@ -1,0 +1,133 @@
+# Stack de producción de Inglés Suez. Va en /opt/apps/inglesuez/ del VPS, que
+# es un clon de este repo.
+#
+#   docker compose -f docker-compose.prod.yml up -d --build
+#
+# Los nombres de los contenedores NO son cosméticos. El backup y el
+# mantenimiento del servidor descubren qué respaldar y qué limpiar buscando
+# contenedores `<app>-db` y `<app>-web`; una app que no respeta la convención
+# queda sin backup en silencio, sin ningún error.
+#
+# La app se llama `inglesuez` por dos razones. Sin guión interno, porque el
+# descubrimiento usa `docker ps --filter "name=^/<app>-"` y ese filtro matchea
+# por PREFIJO: con una app `ingles` y otra `ingles-suez`, el backup de la
+# primera se llevaría los volúmenes de la segunda adentro de su tarball.
+#
+# Y con una sola `s`, aunque el repo tenga dos, para que sea idéntico al
+# dominio: `inglesuez.com`. Un directorio que difiere del dominio en una sola
+# letra es pedir un comando corrido contra el lugar equivocado.
+
+services:
+
+  # -------------------------------------------------------------------------
+  # Postgres
+  # -------------------------------------------------------------------------
+  db:
+    image: postgres:17-alpine
+    container_name: inglesuez-db
+    restart: unless-stopped
+    environment:
+      # El backup y el mantenimiento leen estas dos con `docker exec printenv`
+      # para saber con qué usuario y contra qué base correr pg_dump y VACUUM.
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - interna
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+          cpus: "0.5"
+
+  # -------------------------------------------------------------------------
+  # Express
+  # -------------------------------------------------------------------------
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: inglesuez:latest
+    container_name: inglesuez-web
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      # La base vive en la red interna de Docker y no habla TLS. Ver el
+      # comentario de pgPool en src/config/database.js.
+      DATABASE_SSL: "false"
+      # Se arma acá y no en el .env para no tener la contraseña escrita en dos
+      # lugares que se pueden desincronizar. Si la contraseña lleva caracteres
+      # especiales (@ : / ?) hay que URL-encodearlos o la URL se parsea mal.
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+    networks:
+      # `web` para que Caddy lo alcance por nombre; `interna` para hablarle a
+      # la base. La base NO está en `web`: así ninguna otra app del servidor
+      # la ve.
+      - web
+      - interna
+    depends_on:
+      db:
+        condition: service_healthy
+    # Node como PID 1 no maneja SIGTERM por su cuenta: sin esto, cada
+    # `docker compose down` espera los 10 segundos del timeout y mata el
+    # proceso a lo bruto.
+    init: true
+    healthcheck:
+      # /health toca la base con un SELECT 1, así que "healthy" significa que
+      # la app puede consultar y no solo que el puerto está abierto.
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      # El primer arranque contra una base vacía crea las tablas, corre los
+      # ALTER TABLE y siembra las lecciones (~120 KB de HTML). Sin margen, el
+      # contenedor se marca unhealthy antes de terminar.
+      start_period: 60s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          # Medido: el proceso queda en 60-90 MB en reposo. El techo está para
+          # que un pico no le saque memoria a las otras apps del servidor, no
+          # porque falte RAM.
+          memory: 384M
+          cpus: "1.0"
+
+
+volumes:
+  # Nombre explícito: sin esto compose lo prefija con el nombre del proyecto y
+  # quedaría `inglesuez_inglesuez_pgdata`.
+  pgdata:
+    name: inglesuez_pgdata
+
+# No hay volumen de media a propósito. Los videos de las lecciones van por
+# YouTube (link "no listado"): el panel del profesor guarda la URL y la app la
+# normaliza a /embed/. Montar un volumen para servir video propio saldría caro
+# de un modo poco obvio — el backup del servidor re-comprime todos los
+# volúmenes de la app cada noche y retiene 34 copias, así que 6 GB de video
+# serían ~200 GB de backups.
+
+networks:
+  web:
+    external: true
+  interna:
+    name: inglesuez_interna

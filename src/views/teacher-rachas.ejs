@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <link rel="icon" type="image/png" href="/img/favicon.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rachas y recompensas - INGLÉS SUEZ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=GFS+Didot&family=Tenor+Sans&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        body, p, span, div, a, li, button, input, textarea { font-family: 'GFS Didot', serif; }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Tenor Sans', sans-serif !important; }
+        body { background-color: #e3edf5; margin: 0; padding: 0; color: #1a202c; }
+    </style>
+</head>
+<body>
+
+<%- include('partials/header') %>
+
+<main style="max-width: 900px; margin: 3rem auto; padding: 0 1.5rem;">
+    <div style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 15px 35px rgba(11, 34, 56, 0.12), 0 5px 15px rgba(0,0,0,0.05); border: 1px solid #c0d4e5;">
+        <span style="background: #184168; color: white; padding: 0.35rem 0.8rem; border-radius: 4px; font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase;">Panel del profesor</span>
+        <h1 style="color: #0b2238; font-size: 1.8rem; margin: 1rem 0 0.25rem 0;">🔥 Rachas y recompensas</h1>
+        <p style="color: #4a5568; font-size: 0.95rem; margin: 0 0 1.5rem 0;">Mié las rachas de cada alumno y mandá recompensas personalizadas por texto.</p>
+
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+            <thead>
+                <tr style="text-align: left; color: #184168; background: #f0f6fc;">
+                    <th style="padding: 0.7rem; border-bottom: 2px solid #c0d4e5;">Alumno</th>
+                    <th style="padding: 0.7rem; border-bottom: 2px solid #c0d4e5;">Racha</th>
+                    <th style="padding: 0.7rem; border-bottom: 2px solid #c0d4e5;">XP</th>
+                    <th style="padding: 0.7rem; border-bottom: 2px solid #c0d4e5;">Hito</th>
+                    <th style="padding: 0.7rem; border-bottom: 2px solid #c0d4e5;">Recompensa personalizada</th>
+                </tr>
+            </thead>
+            <tbody>
+            <% if (usuarios && usuarios.length) { %>
+                <% usuarios.forEach(u => { %>
+                <tr style="border-bottom: 1px solid #edf2f7; vertical-align: top;">
+                    <td style="padding: 0.8rem;">
+                        <strong><%= u.nombre %></strong><br>
+                        <span style="color:#718096; font-size:0.8rem;"><%= u.email %></span>
+                    </td>
+                    <td style="padding: 0.8rem; text-align: center; font-weight: bold; color:#b45309;"><%= u.racha %> días</td>
+                    <td style="padding: 0.8rem; text-align: center;"><%= u.xpTotal %></td>
+                    <td style="padding: 0.8rem;">
+                        <% if (u.hito) { %>
+                            <span style="font-size:1rem;"><%= u.hito.emoji %> <%= u.hito.nombre %></span>
+                        <% } else { %>
+                            <span style="color:#a0aec0;">—</span>
+                        <% } %>
+                    </td>
+                    <td style="padding: 0.8rem;">
+                        <form method="POST" action="/profesor/rachas/recompensar" style="display:flex; gap:0.4rem; align-items:stretch;">
+                            <input type="hidden" name="usuarioId" value="<%= u.id %>">
+                            <input type="text" name="texto" placeholder="Escribí la recompensa..." style="flex:1; padding:0.5rem 0.7rem; border:1px solid #cbd5e0; border-radius:6px; font-size:0.85rem;" required>
+                            <button type="submit" style="background:#38a169; color:white; border:none; padding:0.5rem 0.9rem; border-radius:6px; font-weight:bold; cursor:pointer; font-size:0.85rem;">🎁 Enviar</button>
+                        </form>
+                    </td>
+                </tr>
+                <% }) %>
+            <% } else { %>
+                <tr><td colspan="5" style="padding:1rem; color:#718096;">Todavía no hay alumnos con actividades.</td></tr>
+            <% } %>
+            </tbody>
+        </table>
+    </div>
+
+    <div style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 4px 12px rgba(11,34,56,0.08); border: 1px solid #c0d4e5; margin-top: 1.5rem;">
+        <h2 style="color: #0b2238; font-size: 1.2rem; margin: 0 0 1rem 0;">📨 Recompensas enviadas</h2>
+        <% if (recompensas && recompensas.length) { %>
+            <% recompensas.forEach(r => { %>
+                <div style="background:#f0fff4; border-left:4px solid #38a169; padding:0.8rem 1rem; border-radius:6px; margin-bottom:0.6rem;">
+                    <div style="font-weight:bold; color:#22543d;">Para <%= r.nombre %></div>
+                    <div style="color:#2d3748;"><%= r.texto %></div>
+                    <div style="color:#a0aec0; font-size:0.8rem; margin-top:0.2rem;"><%= new Date(r.creado_en).toLocaleString('es-AR') %></div>
+                </div>
+            <% }) %>
+        <% } else { %>
+            <p style="color:#718096; margin:0;">Todavía no enviaste recompensas. Elegí un alumno en la tabla de arriba.</p>
+        <% } %>
+    </div>
+</main>
+
+<%- include('partials/footer') %>
+
+</body>
+</html>
