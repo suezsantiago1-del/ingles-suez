@@ -10,26 +10,38 @@ import authRoutes from './src/routes/authRoutes.js';
 import { 
     renderCourseDetail, 
     processCheckout, 
+    validarCodigoDescuento,
+    obtenerDesafioDiario,
     paymentSuccess, 
     paymentFailure, 
     renderMyCourses,
     renderClassroom,
     guardarEntrega,
     renderPanelProfesor,
+    renderGestionCursos,
+    renderConsultasProfesor,
     guardarDevolucion,
     saveTeacherNote,
     updateLessonTeacherNote,
+    eliminarNotaLeccion,
+    actualizarContenidoLeccion,
     uploadLessonVideo,
     handleMpWebhook,
     renderMensajesAlumno,
+    guardarConsultaLeccion,
+    responderConsultaLeccion,
     renderMessagesList,
     renderMessagesCourse,
+    marcarMensajesLeidos,
     descargarCertificado,
     renderPrivateClasses,
     guardarConsultaParticulares,
     enviarMensajeAlumnoChat,
     renderPanelParticularesProfesor,
-    guardarRespuestaParticular
+    guardarRespuestaParticular,
+    completarDesafio,
+    renderProfesorRachas,
+    enviarRecompensaUsuario
 } from './src/controllers/courseController.js';
 import { createOrUpdateAnnouncement, deleteAnnouncement } from './src/controllers/courseController.js';
 import multer from 'multer';
@@ -187,6 +199,11 @@ app.get('/about', (req, res) => {
     res.render('about');
 });
 
+// Test de nivel de inglés (público, sin login)
+app.get('/test-nivel', (req, res) => {
+    res.render('test-nivel');
+});
+
 // Rutas de Clases Particulares (vista y envíos del alumno)
 app.get('/clases-particulares', renderPrivateClasses);
 app.post('/clases-particulares/enviar', guardarConsultaParticulares);
@@ -223,6 +240,11 @@ app.get('/', async (req, res) => {
 // Cursos, pagos y aula virtual
 app.get('/course/:id', renderCourseDetail);
 app.post('/checkout/:id', processCheckout);
+app.post('/validar-codigo-descuento', express.json(), validarCodigoDescuento);
+app.get('/desafio-diario', obtenerDesafioDiario);
+app.post('/desafio-diario/completar', completarDesafio);
+app.get('/profesor/rachas', renderProfesorRachas);
+app.post('/profesor/rachas/recompensar', enviarRecompensaUsuario);
 app.get('/payment/success', paymentSuccess);
 app.get('/payment/failure', paymentFailure);
 app.get('/mis-cursos', renderMyCourses);
@@ -235,11 +257,19 @@ app.post('/mercadopago/webhook', express.json(), handleMpWebhook);
 // Entregas de alumnos y panel del profesor para cursos
 app.post('/entregas', guardarEntrega);
 app.get('/profesor/entregas', renderPanelProfesor);
+app.get('/profesor/gestion', renderGestionCursos);
+app.get('/profesor/consultas', renderConsultasProfesor);
 app.post('/profesor/devolucion', guardarDevolucion);
 app.post('/profesor/nota', express.json(), saveTeacherNote);
 app.post('/profesor/anuncio', express.json(), createOrUpdateAnnouncement);
 app.delete('/profesor/anuncio', express.json(), deleteAnnouncement);
 app.post('/profesor/leccion/nota', express.json(), updateLessonTeacherNote);
+app.post('/profesor/leccion/nota/eliminar', express.json(), eliminarNotaLeccion);
+app.post('/profesor/leccion/contenido', express.json(), actualizarContenidoLeccion);
+
+// Consultas de alumnos al profesor por lección
+app.post('/consultas/leccion', express.json(), guardarConsultaLeccion);
+app.post('/profesor/consulta/responder', express.json(), responderConsultaLeccion);
 
 // Multer setup for lesson video uploads
 const storage = multer.diskStorage({
@@ -296,6 +326,7 @@ app.get('/mis-mensajes', (req, res) => {
 // Messages master list and detail per course
 app.get('/messages', renderMessagesList);
 app.get('/messages/:courseId', renderMessagesCourse);
+app.post('/messages/leer', marcarMensajesLeidos);
 
 // Global error handler (catches Multer and body-parser errors and returns JSON)
 app.use((err, req, res, next) => {

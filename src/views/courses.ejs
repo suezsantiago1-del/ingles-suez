@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <link rel="icon" type="image/png" href="/img/favicon.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Todos los Cursos - INGLÉS SUEZ</title>
@@ -28,6 +29,10 @@
             display: block;
         }
     </style>
+
+    <!-- Google AdSense Verification -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1854686112404128"
+         crossorigin="anonymous"></script>
 </head>
 <body>
 
@@ -50,7 +55,7 @@
                         
                         <div class="card-header-logo" style="position: relative; overflow: hidden;">
                             <% if (curso && curso.titulo === 'Ingles Intensivo Desde Cero') { %>
-                                <div class="absolute top-4 left-[-8px] bg-[#002244] text-white text-xs font-bold py-1.5 px-4 shadow-lg rounded-r-md z-20 border-l-4 border-[#0055a5]">CERTIFICADO A1</div>
+                                <div class="absolute top-4 left-[-8px] bg-[#002244] text-white text-xs font-bold py-1.5 px-4 shadow-lg rounded-r-md z-20 border-l-4 border-[#0055a5]">CERTIFICADO A1-A2</div>
                             <% } %>
                             <img src="<%= (curso.id == 1 || curso.titulo.toLowerCase().includes('intensivo')) ? '/img/logo_2.png?v=2' : '/img/logo_3.png?v=2' %>" alt="<%= curso.titulo %>">
                         </div>
@@ -58,7 +63,7 @@
                         <div style="padding: 2rem; display: flex; flex-direction: column; flex-grow: 1;">
                             <% if (curso && (curso.titulo === 'Inglés Intensivo Desde Cero' || curso.titulo === 'Ingles Intensivo Desde Cero')) { %>
                                 <div class="mb-2">
-                                    <span style="background-color: #002244; color: white; display: inline-block; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; letter-spacing: 0.5px;">CERTIFICADO A1</span>
+                                    <span style="background-color: #002244; color: white; display: inline-block; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; letter-spacing: 0.5px;">CERTIFICADO A1-A2</span>
                                 </div>
                                 <h3 class="course-title" style="color: #0b2238; font-size: 1.4rem; margin: 0.25rem 0 0.8rem 0;">Inglés Intensivo Desde Cero</h3>
                             <% } else { %>

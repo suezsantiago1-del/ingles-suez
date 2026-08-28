@@ -22,5 +22,8 @@
     "pdf-lib": "^1.17.1",
     "pg": "^8.23.0",
     "sib-api-v3-sdk": "^8.5.0"
+  },
+  "devDependencies": {
+    "sharp": "^0.35.3"
   }
 }

@@ -97,12 +97,12 @@ Variables de entorno (`.env`, todas documentadas en `.env.example`):
 ## Mapa del repo
 
 ```
-server.js                        (362)   Express, sesión, middleware global, multer,
+server.js                        (402)   Express, sesión, middleware global, multer,
                                  TODAS las rutas menos las de /auth
 Dockerfile                       (~60)   imagen de producción (node:22-alpine)
 docker-compose.prod.yml          (~120)  stack del VPS: web + db. Ver DEPLOY.md
 DEPLOY.md                                cómo se despliega y cómo se actualiza
-src/config/database.js           (215)   pool pg (exportado) + adapter + schema
+src/config/database.js           (297)   pool pg (exportado) + adapter + schema
                                  + índices + seed de cursos
 src/config/seeds.js              (1171)  ⚠️ NO ABRIR ENTERO. Solo el HTML de las
                                  lecciones iniciales. Se corre si la tabla está vacía.
@@ -110,10 +110,14 @@ src/config/devSeeds.js           (135)   usuarios y datos de prueba. Solo corre 
                                  SEED_TEST_DATA=true y nunca en producción.
 src/routes/authRoutes.js         (67)    rutas montadas en /auth
 src/controllers/authController.js    (540)   login, registro, perfil, verificación, reset
-src/controllers/courseController.js  (1349)  cursos, pagos, classroom, entregas,
+src/controllers/courseController.js  (1982)  cursos, pagos, classroom, entregas,
                                      mensajes, certificados, particulares
 src/services/emailService.js     (175)   sendVerificationEmail, sendEmail (Brevo)
-src/views/*.ejs                  17 vistas + partials/header.ejs, partials/footer.ejs
+src/views/*.ejs                  22 vistas + partials/header.ejs, partials/footer.ejs
+                                 Las vistas nuevas de main (desafio-diario,
+                                 test-nivel, gestion-cursos, teacher-rachas,
+                                 consultas-profesor) y sus rutas todavía no
+                                 están en las tablas de abajo.
 public/css/styles.css            (~16 KB) todo el CSS del sitio
 ```
 
@@ -122,29 +126,41 @@ public/css/styles.css            (~16 KB) todo el CSS del sitio
 | Línea | Función | Qué hace |
 |---|---|---|
 | 19 | `renderCourseDetail` | detalle de curso |
-| 48 | `processCheckout` | crea preferencia de MercadoPago |
-| 122 | `handleMpWebhook` | webhook de pagos |
-| 221 | `paymentSuccess` | registra la compra |
-| 266 | `paymentFailure` | |
-| 275 | `renderMyCourses` | mis cursos |
-| 296 | `renderClassroom` | **aula virtual** (lecciones, entregas, anuncios) |
-| 421 | `guardarEntrega` | alumno entrega una tarea |
-| 491 | `renderPanelProfesor` | panel de entregas del profesor |
-| 545 | `guardarDevolucion` | corrección + nota |
-| 588 | `saveTeacherNote` | |
-| 610 | `renderMensajesAlumno` | ⚠️ exportada e importada pero SIN ruta asignada |
-| 683 | `descargarCertificado` | genera el PDF con pdf-lib |
-| 809 | `renderPrivateClasses` | clases particulares (alumno) |
-| 852 | `guardarConsultaParticulares` | |
-| 904 | `enviarMensajeAlumnoChat` | |
-| 934 | `renderPanelParticularesProfesor` | |
-| 987 | `guardarRespuestaParticular` | |
-| 1033 | `uploadLessonVideo` | guarda el video de la lección: URL de YouTube (normal) o archivo subido (solo con ALLOW_LOCAL_VIDEO_UPLOAD) |
-| 1138 | `createOrUpdateAnnouncement` | |
-| 1161 | `deleteAnnouncement` | |
-| 1179 | `updateLessonTeacherNote` | |
-| 1196 | `renderMessagesList` | |
-| 1217 | `renderMessagesCourse` | |
+| 145 | `obtenerDesafioDiario` | desafío diario |
+| 240 | `completarDesafio` | |
+| 285 | `renderProfesorRachas` | panel de rachas |
+| 328 | `enviarRecompensaUsuario` | |
+| 350 | `validarCodigoDescuento` | |
+| 387 | `processCheckout` | crea preferencia de MercadoPago |
+| 492 | `handleMpWebhook` | webhook de pagos |
+| 604 | `paymentSuccess` | registra la compra |
+| 649 | `paymentFailure` | |
+| 658 | `renderMyCourses` | mis cursos |
+| 679 | `renderClassroom` | **aula virtual** (lecciones, entregas, anuncios, consultas) |
+| 828 | `guardarEntrega` | alumno entrega una tarea |
+| 898 | `renderPanelProfesor` | panel de entregas del profesor |
+| 1040 | `renderGestionCursos` | gestión de videos, anuncios y notas |
+| 1063 | `renderConsultasProfesor` | |
+| 1088 | `guardarDevolucion` | corrección + nota |
+| 1131 | `saveTeacherNote` | |
+| 1153 | `renderMensajesAlumno` | ⚠️ exportada e importada pero SIN ruta asignada |
+| 1226 | `descargarCertificado` | genera el PDF con pdf-lib |
+| 1352 | `renderPrivateClasses` | clases particulares (alumno) |
+| 1395 | `guardarConsultaParticulares` | |
+| 1447 | `enviarMensajeAlumnoChat` | |
+| 1477 | `renderPanelParticularesProfesor` | |
+| 1530 | `guardarRespuestaParticular` | |
+| 1576 | `uploadLessonVideo` | guarda el video: URL de YouTube (normal) o archivo (solo con ALLOW_LOCAL_VIDEO_UPLOAD) |
+| 1681 | `createOrUpdateAnnouncement` | |
+| 1704 | `deleteAnnouncement` | |
+| 1722 | `updateLessonTeacherNote` | |
+| 1739 | `actualizarContenidoLeccion` | |
+| 1756 | `eliminarNotaLeccion` | |
+| 1773 | `guardarConsultaLeccion` | |
+| 1794 | `responderConsultaLeccion` | |
+| 1815 | `renderMessagesList` | |
+| 1836 | `marcarMensajesLeidos` | |
+| 1850 | `renderMessagesCourse` | |
 
 ### Índice de funciones — `src/controllers/authController.js`
 

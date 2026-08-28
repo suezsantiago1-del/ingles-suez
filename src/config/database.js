@@ -149,6 +149,74 @@ const dbPromise = (async () => {
     await adapter.pgPool.query(`ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS verification_token VARCHAR(255);`);
     await adapter.pgPool.query(`ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS verification_token_expires TIMESTAMP;`);
     
+    // Tabla de códigos de descuento
+    await adapter.pgPool.query(`
+        CREATE TABLE IF NOT EXISTS codigos_descuento (
+            id SERIAL PRIMARY KEY,
+            codigo VARCHAR(50) UNIQUE NOT NULL,
+            porcentaje INTEGER NOT NULL,
+            usos_maximos INTEGER NOT NULL,
+            usos_actuales INTEGER DEFAULT 0,
+            activo BOOLEAN DEFAULT TRUE,
+            creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+    `);
+
+    // Crear código de descuento principal si no existe (no depende de SEED_TEST_DATA)
+    const codigoExistente = await adapter.pgPool.query(
+        'SELECT id FROM codigos_descuento WHERE codigo = $1',
+        ['DESCUENTO25']
+    );
+    
+    if (codigoExistente.rows.length === 0) {
+        await adapter.pgPool.query(
+            'INSERT INTO codigos_descuento (codigo, porcentaje, usos_maximos, usos_actuales, activo) VALUES ($1, $2, $3, $4, $5)',
+            ['DESCUENTO25', 25, 50, 0, true]
+        );
+        console.log('Código de descuento creado: DESCUENTO25 (25% off, 50 usos)');
+    }
+
+    // Tabla de desafíos diarios
+    await adapter.pgPool.query(`
+        CREATE TABLE IF NOT EXISTS desafios_diarios (
+            id SERIAL PRIMARY KEY,
+            pregunta TEXT NOT NULL,
+            opcion_a TEXT NOT NULL,
+            opcion_b TEXT NOT NULL,
+            opcion_c TEXT NOT NULL,
+            respuesta_correcta VARCHAR(1) NOT NULL,
+            explicacion TEXT NOT NULL,
+            ejemplo TEXT NOT NULL,
+            categoria VARCHAR(50) NOT NULL,
+            orden INTEGER NOT NULL
+        );
+    `);
+
+    await adapter.pgPool.query(`ALTER TABLE desafios_diarios ADD COLUMN IF NOT EXISTS tipo VARCHAR(30) NOT NULL DEFAULT 'quiz'`);
+    await adapter.pgPool.query(`ALTER TABLE desafios_diarios ADD COLUMN IF NOT EXISTS texto_audio TEXT`);
+
+    // Tabla de completados del desafío diario (para racha y XP)
+    await adapter.pgPool.query(`
+        CREATE TABLE IF NOT EXISTS desafio_completados (
+            id SERIAL PRIMARY KEY,
+            usuario_id INTEGER NOT NULL,
+            fecha DATE NOT NULL,
+            xp INTEGER NOT NULL DEFAULT 10,
+            UNIQUE (usuario_id, fecha)
+        );
+    `);
+
+    // Tabla de recompensas personalizadas que envía el profesor
+    await adapter.pgPool.query(`
+        CREATE TABLE IF NOT EXISTS desafio_recompensas (
+            id SERIAL PRIMARY KEY,
+            usuario_id INTEGER NOT NULL,
+            texto TEXT NOT NULL,
+            creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+    `);
+
+
     // Forzado explícito de creación de mensajes_particulares
     await adapter.pgPool.query(`
         CREATE TABLE IF NOT EXISTS mensajes_particulares (
@@ -185,6 +253,20 @@ const dbPromise = (async () => {
             mensaje TEXT NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+    `);
+
+    // Consultas de alumnos al profesor por lección (idempotente)
+    await adapter.pgPool.query(`
+        CREATE TABLE IF NOT EXISTS consultas_leccion (
+            id SERIAL PRIMARY KEY,
+            usuario_id INTEGER NOT NULL,
+            curso_id INTEGER NOT NULL,
+            leccion_id INTEGER NOT NULL,
+            mensaje TEXT NOT NULL,
+            respuesta_profesor TEXT DEFAULT NULL,
+            fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            fecha_respuesta TIMESTAMP DEFAULT NULL
         );
     `);
 
