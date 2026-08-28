@@ -66,6 +66,9 @@ Variables de entorno (`.env`, todas documentadas en `.env.example`):
 - `MP_ACCESS_TOKEN` — MercadoPago. Sin esto el checkout falla pero la app levanta.
 - `BREVO_API_KEY` — API HTTP de Brevo (no SMTP). `SMTP_PASS` sigue funcionando
   como fallback por compatibilidad con el deploy viejo.
+- `EMAIL_REMITENTE` / `EMAIL_REMITENTE_NOMBRE` — desde qué dirección salen los
+  mails. Tiene que ser de un dominio autenticado en Brevo, no un gmail.
+- `EMAIL_RESPUESTAS` (opcional) — `Reply-To`. Default: `EMAIL_PROFESOR`.
 - `EMAIL_PROFESOR` (opcional) — cuenta con permisos de profesor.
 - `ALLOW_LOCAL_VIDEO_UPLOAD` (opcional) — en `'true'` reaparece el input de
   archivo del panel. Default `false`: los videos van por YouTube.

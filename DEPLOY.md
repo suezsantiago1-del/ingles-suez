@@ -109,9 +109,30 @@ siempre. No hay forma de que los usuarios de prueba entren a producción por
 un `.env` mal copiado.
 
 **Los mails salen por la API HTTP de Brevo**, no por SMTP: el contenedor no
-necesita abrir el 587 hacia afuera. Ojo con el remitente — hoy está
-hardcodeado en `src/services/emailService.js` y tiene que ser una dirección
-verificada en Brevo, o los mails de verificación no llegan.
+necesita abrir el 587 hacia afuera.
+
+**El remitente tiene que ser del dominio propio**, no un gmail. Sobre
+`gmail.com` no se puede publicar la clave DKIM que Brevo necesita —el DNS es
+de Google—, así que un mail que dice venir de ahí pero sale de Brevo falla la
+alineación DMARC y cae en spam. Y el mail de verificación es lo que habilita
+la cuenta del alumno.
+
+Para que funcione hay que autenticar `inglesuez.com` en Brevo (*Senders,
+Domains & Dedicated IPs* → *Domains*) y cargar en la zona DNS de DonWeb los
+registros que Brevo devuelve, más estos dos:
+
+| Tipo | Nombre | Valor |
+|---|---|---|
+| TXT | `@` | `v=spf1 include:spf.brevo.com ~all` |
+| TXT | `_dmarc` | `v=DMARC1; p=none; rua=mailto:suezsantiago1@gmail.com` |
+
+DMARC arranca en `p=none`: durante unas semanas solo reporta, no bloquea.
+Recién cuando los reportes muestren que todo sale alineado se sube a
+`quarantine`.
+
+Después va `EMAIL_REMITENTE=no-responder@inglesuez.com` en el `.env`. Esa
+dirección no necesita casilla: las respuestas se redirigen a `EMAIL_PROFESOR`
+con un `Reply-To`.
 
 **Nada de esto publica puertos al host.** Solo Caddy escucha en 80/443; la
 base ni siquiera está en la red `web`, así que ninguna otra app del servidor
