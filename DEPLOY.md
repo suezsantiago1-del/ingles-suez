@@ -2,10 +2,10 @@
 
 La app corre en un VPS propio (Ubuntu + Docker), detrás de un reverse proxy
 Caddy que ya está andando y que termina TLS para todos los sitios del
-servidor. Este repo se clona en `/opt/apps/inglessuez/` y se levanta con su
+servidor. Este repo se clona en `/opt/apps/inglesuez/` y se levanta con su
 propio `docker-compose.prod.yml`.
 
-Dos contenedores y nada más: `inglessuez-web` (Node) e `inglessuez-db`
+Dos contenedores y nada más: `inglesuez-web` (Node) e `inglesuez-db`
 (Postgres 17).
 
 ---
@@ -35,15 +35,15 @@ efímera y desaparecería en el próximo redeploy, dejando la lección en un 404
 **En el servidor**, con el usuario que administra `/opt/apps/`:
 
 ```bash
-git clone git@github.com:suezsantiago1-del/ingles-suez.git /opt/apps/inglessuez
+git clone git@github.com:suezsantiago1-del/ingles-suez.git /opt/apps/inglesuez
 ```
 
 El directorio va en **750**, no 755: adentro está el `.env` con la contraseña
 de Postgres, la key de Brevo y el token de MercadoPago.
 
 ```bash
-chmod 750 /opt/apps/inglessuez
-cp /opt/apps/inglessuez/.env.example /opt/apps/inglessuez/.env
+chmod 750 /opt/apps/inglesuez
+cp /opt/apps/inglesuez/.env.example /opt/apps/inglesuez/.env
 ```
 
 Completar el `.env` con los valores reales. Los obligatorios son
@@ -57,7 +57,7 @@ openssl rand -base64 48
 Levantar:
 
 ```bash
-cd /opt/apps/inglessuez && docker compose -f docker-compose.prod.yml up -d --build
+cd /opt/apps/inglesuez && docker compose -f docker-compose.prod.yml up -d --build
 ```
 
 El primer arranque crea las tablas, corre los `ALTER TABLE`, los índices y
@@ -68,7 +68,7 @@ Verificar:
 
 ```bash
 docker compose -f docker-compose.prod.yml ps
-docker exec inglessuez-web wget -qO- http://127.0.0.1:3000/health
+docker exec inglesuez-web wget -qO- http://127.0.0.1:3000/health
 ```
 
 Tiene que responder `{"ok":true}`. Ese endpoint hace un `SELECT 1` contra la
@@ -76,7 +76,7 @@ base, así que un `healthy` significa que la app puede consultar, no solo que
 el puerto está abierto.
 
 Falta el bloque del dominio en el Caddyfile del servidor, que vive en el repo
-de infraestructura y no acá. Apunta a `inglessuez-web:3000` por la red
+de infraestructura y no acá. Apunta a `inglesuez-web:3000` por la red
 `web` de Docker.
 
 ---
@@ -86,7 +86,7 @@ de infraestructura y no acá. Apunta a `inglessuez-web:3000` por la red
 **En el servidor:**
 
 ```bash
-cd /opt/apps/inglessuez && git pull && docker compose -f docker-compose.prod.yml up -d --build
+cd /opt/apps/inglesuez && git pull && docker compose -f docker-compose.prod.yml up -d --build
 ```
 
 Las sesiones ya **no** se pierden en el redeploy: viven en la tabla `session`

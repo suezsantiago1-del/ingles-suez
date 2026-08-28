@@ -1,4 +1,4 @@
-# Stack de producción de Inglés Suez. Va en /opt/apps/inglessuez/ del VPS, que
+# Stack de producción de Inglés Suez. Va en /opt/apps/inglesuez/ del VPS, que
 # es un clon de este repo.
 #
 #   docker compose -f docker-compose.prod.yml up -d --build
@@ -8,10 +8,14 @@
 # contenedores `<app>-db` y `<app>-web`; una app que no respeta la convención
 # queda sin backup en silencio, sin ningún error.
 #
-# Y la app se llama `inglessuez`, sin guión, también por eso: el descubrimiento
-# usa `docker ps --filter "name=^/<app>-"`, que matchea por PREFIJO. Con una
-# app `ingles` y otra `ingles-suez`, el backup de la primera se llevaría los
-# volúmenes de la segunda adentro de su tarball.
+# La app se llama `inglesuez` por dos razones. Sin guión interno, porque el
+# descubrimiento usa `docker ps --filter "name=^/<app>-"` y ese filtro matchea
+# por PREFIJO: con una app `ingles` y otra `ingles-suez`, el backup de la
+# primera se llevaría los volúmenes de la segunda adentro de su tarball.
+#
+# Y con una sola `s`, aunque el repo tenga dos, para que sea idéntico al
+# dominio: `inglesuez.com`. Un directorio que difiere del dominio en una sola
+# letra es pedir un comando corrido contra el lugar equivocado.
 
 services:
 
@@ -20,7 +24,7 @@ services:
   # -------------------------------------------------------------------------
   db:
     image: postgres:17-alpine
-    container_name: inglessuez-db
+    container_name: inglesuez-db
     restart: unless-stopped
     environment:
       # El backup y el mantenimiento leen estas dos con `docker exec printenv`
@@ -57,8 +61,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: inglessuez:latest
-    container_name: inglessuez-web
+    image: inglesuez:latest
+    container_name: inglesuez-web
     restart: unless-stopped
     env_file: .env
     environment:
@@ -111,9 +115,9 @@ services:
 
 volumes:
   # Nombre explícito: sin esto compose lo prefija con el nombre del proyecto y
-  # quedaría `inglessuez_inglessuez_pgdata`.
+  # quedaría `inglesuez_inglesuez_pgdata`.
   pgdata:
-    name: inglessuez_pgdata
+    name: inglesuez_pgdata
 
 # No hay volumen de media a propósito. Los videos de las lecciones van por
 # YouTube (link "no listado"): el panel del profesor guarda la URL y la app la
@@ -126,4 +130,4 @@ networks:
   web:
     external: true
   interna:
-    name: inglessuez_interna
+    name: inglesuez_interna
