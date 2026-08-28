@@ -405,50 +405,6 @@ export const renderClassroom = async (req, res) => {
         // Load announcements for this course
         const anuncios = await db.all('SELECT id, mensaje, created_at FROM curso_anuncios WHERE curso_id = ? ORDER BY created_at DESC', [cursoId]);
 
-        // Debug: log active lesson and video URLs to help trace missing video issues
-        try {
-            const activeUrl = leccionActiva && leccionActiva.video_url;
-            console.log('renderClassroom: leccionActiva id=', leccionActiva && leccionActiva.id, 'video_url=', activeUrl);
-            console.log('renderClassroom: lecciones with video_url:', leccionesConEstado.map(l => ({ id: l.id, orden: l.orden, video_url: l.video_url })));
-
-            // If the active lesson has a local-looking URL, check for file existence on disk.
-            if (activeUrl && typeof activeUrl === 'string' && !activeUrl.startsWith('http')) {
-                const candidates = [];
-                // Candidate under public (e.g. /videos/xxx.mp4)
-                try { candidates.push(path.join(__dirname, '../../public', activeUrl.replace(/^[\\/]+/, ''))); } catch(e){}
-                // Candidate if exposed at /uploads -> map to project root + activeUrl
-                try { candidates.push(path.join(process.cwd(), activeUrl.replace(/^[\\/]+/, ''))); } catch(e){}
-                // Candidate directly using value if it's an absolute path
-                try { candidates.push(activeUrl); } catch(e){}
-
-                let found = false;
-                for (const c of candidates) {
-                    try {
-                        if (c && fs.existsSync(c)) {
-                            console.log('renderClassroom: video file exists on disk at:', c);
-                            found = true;
-                            break;
-                        } else {
-                            console.log('renderClassroom: video candidate not found:', c);
-                        }
-                    } catch (ex) {
-                        console.warn('renderClassroom: error checking file candidate', c, ex && ex.stack ? ex.stack : ex);
-                    }
-                }
-
-                if (!found) {
-                    // Detect suspicious DB-stored absolute/temp paths
-                    if (activeUrl.includes('tmp') || activeUrl.includes('temp') || /[A-Za-z]:[\\/]/.test(activeUrl) || activeUrl.startsWith('/tmp') ) {
-                        console.warn('renderClassroom: video_url appears to be a temporary or absolute filesystem path. Consider storing a relative public URL (/videos/...) or using persistent storage. video_url=', activeUrl);
-                    } else {
-                        console.warn('renderClassroom: video_url does not map to an existing file on disk. video_url=', activeUrl);
-                    }
-                }
-            }
-        } catch (dbgErr) {
-            console.error('renderClassroom: debug log error', dbgErr);
-        }
-
         return res.render('classroom', { 
             curso, 
             lecciones: leccionesConEstado, 
@@ -1084,10 +1040,6 @@ export const uploadLessonVideo = async (req, res) => {
     }
 
     try {
-        console.log('uploadLessonVideo: start. session user=', req.session && req.session.user ? req.session.user.email : null);
-        console.log('uploadLessonVideo: headers.content-length=', req.headers && req.headers['content-length']);
-        console.log('uploadLessonVideo: req.body=', req.body);
-        console.log('uploadLessonVideo: req.file=', req.file);
         const db = await dbPromise;
 
         const { leccionId, videoUrl } = req.body;
@@ -1103,29 +1055,11 @@ export const uploadLessonVideo = async (req, res) => {
             // Verify the file was saved to disk
             const savedPath = req.file.path || path.join(__dirname, '../../public/videos', req.file.filename);
             const exists = fs.existsSync(savedPath);
-            console.log('uploadLessonVideo: expected savedPath=', savedPath, 'exists=', exists);
-
-            if (exists) {
-                try {
-                    const stats = fs.statSync(savedPath);
-                    console.log('uploadLessonVideo: saved file stats:', { size: stats.size, mtime: stats.mtime });
-                } catch (sErr) {
-                    console.warn('uploadLessonVideo: could not stat saved file', sErr);
-                }
-
-                try {
-                    const dir = path.dirname(savedPath);
-                    const files = fs.readdirSync(dir).slice(-20);
-                    console.log('uploadLessonVideo: recent files in upload dir:', files);
-                } catch (rErr) {
-                    console.warn('uploadLessonVideo: could not read upload dir', rErr);
-                }
-            }
 
             if (!exists) {
                 // If multer didn't save where we expected, try using req.file.path
                 if (req.file.path && fs.existsSync(req.file.path)) {
-                    console.log('uploadLessonVideo: found file at req.file.path=', req.file.path);
+                    // multer lo guardó en otro lado, pero está: seguimos.
                 } else {
                     console.error('uploadLessonVideo: uploaded file not found on disk. req.file:', req.file);
                     return res.status(500).json({ success: false, message: 'Archivo subido no encontrado en el servidor' });
@@ -1149,7 +1083,6 @@ export const uploadLessonVideo = async (req, res) => {
             }
 
             finalUrl = `${urlBase}/${req.file.filename}`;
-            console.log('uploadLessonVideo: computed finalUrl=', finalUrl);
         } else if (videoUrl && videoUrl.trim() !== '') {
             let candidate = videoUrl.trim();
 
@@ -1179,7 +1112,6 @@ export const uploadLessonVideo = async (req, res) => {
 
         try {
             await db.run('UPDATE lecciones SET video_url = ? WHERE id = ?', [finalUrl, leccionId]);
-            console.log('uploadLessonVideo: DB updated leccionId=', leccionId, 'with video_url=', finalUrl);
             return res.json({ success: true, message: 'Video de la lección guardado correctamente', video_url: finalUrl });
         } catch (dbErr) {
             console.error('uploadLessonVideo: error updating DB with video_url', dbErr);
