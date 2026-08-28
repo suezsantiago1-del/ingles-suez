@@ -50,6 +50,19 @@ services:
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
       - pgdata:/var/lib/postgresql/data
+    # /var/lib/postgresql en tmpfs, y no es cosmético. La imagen de Postgres 18
+    # declara `VOLUME /var/lib/postgresql`: sin esto, Docker crea un volumen
+    # anónimo con nombre de hash colgando del contenedor. Y como backup.sh
+    # descubre qué respaldar INSPECCIONANDO los contenedores de la app, se lo
+    # llevaría al tarball diario — un tar.gz de un directorio casi vacío, con
+    # nombre ilegible, todas las noches. Es el mismo caso que el Redis de
+    # Ventaja.
+    #
+    # Los datos de verdad no están acá sino en el volumen `pgdata`, que se monta
+    # más adentro (/var/lib/postgresql/data) y por lo tanto le gana a este
+    # tmpfs.
+    tmpfs:
+      - /var/lib/postgresql
     networks:
       - interna
     healthcheck:
