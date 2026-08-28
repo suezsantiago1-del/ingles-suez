@@ -2,12 +2,21 @@ import pg from 'pg';
 import { seedLecciones } from './seeds.js';
 import { seedDatosDePrueba } from './devSeeds.js';
 
+// El pool se exporta aparte porque el store de sesiones (connect-pg-simple) lo
+// necesita al construir el middleware, antes de que `dbPromise` resuelva.
+//
+// SSL: en Render/Neon la conexión sale a internet y es obligatorio. En el VPS,
+// Postgres corre en la red interna de Docker y NO habla TLS: forzarlo ahí hace
+// fallar el arranque con "The server does not support SSL connections". Por eso
+// lo decide DATABASE_SSL y no la sola presencia de DATABASE_URL.
+export const pgPool = new pg.Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: process.env.DATABASE_SSL === 'true' ? { rejectUnauthorized: false } : false
+});
+
 class DatabaseAdapter {
     constructor() {
-        this.pgPool = new pg.Pool({
-            connectionString: process.env.DATABASE_URL,
-            ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
-        });
+        this.pgPool = pgPool;
     }
 
     // Convierte marcadores '?' a '$1', '$2', etc. compatibles con PostgreSQL
@@ -124,6 +133,17 @@ const dbPromise = (async () => {
     await adapter.pgPool.query(`ALTER TABLE cursos ADD COLUMN IF NOT EXISTS instructor_email VARCHAR(255);`);
     await adapter.pgPool.query(`ALTER TABLE entregas ADD COLUMN IF NOT EXISTS teacher_notes TEXT;`);
     
+    // Índices de las claves foráneas. Postgres NO los crea solo (a diferencia
+    // de las PK), y todas las consultas del aula y del panel filtran por estas
+    // columnas. Son idempotentes, corren en cada arranque sin costo.
+    await adapter.pgPool.query(`
+        CREATE INDEX IF NOT EXISTS idx_compras_usuario_curso ON compras (usuario_id, curso_id);
+        CREATE INDEX IF NOT EXISTS idx_lecciones_curso_orden ON lecciones (curso_id, orden);
+        CREATE INDEX IF NOT EXISTS idx_entregas_usuario_leccion ON entregas (usuario_id, leccion_id);
+        CREATE INDEX IF NOT EXISTS idx_entregas_curso ON entregas (curso_id);
+        CREATE INDEX IF NOT EXISTS idx_devoluciones_usuario ON devoluciones (usuario_id);
+    `);
+
     // Columnas para verificación de email
     await adapter.pgPool.query(`ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS email_verificado BOOLEAN DEFAULT FALSE;`);
     await adapter.pgPool.query(`ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS verification_token VARCHAR(255);`);
