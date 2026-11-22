@@ -4,170 +4,92 @@
     <link rel="icon" type="image/png" href="/img/favicon.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mis Mensajes - <%= course.titulo %></title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        /* Mobile sidebar transition */
-        .sidebar-transition {
-            transition: transform 0.3s ease-in-out;
-        }
-        
-        /* Overlay for mobile sidebar */
-        .sidebar-overlay {
-            transition: opacity 0.3s ease-in-out;
-        }
-        
-        /* Hide scrollbar for mobile sidebar */
-        .hide-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .hide-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-    </style>
+    <title>Devoluciones · <%= course.titulo %> · Inglés Suez</title>
 </head>
-<body class="bg-slate-100 min-h-screen flex flex-col m-0">
-
-    <!-- Include header partial -->
+<body class="tema-flyer">
     <%- include('partials/header') %>
 
-    <div class="flex flex-row w-full flex-1 overflow-hidden relative">
+    <% const activa = (lessons || []).find(l => l.id == activeLessonId); %>
 
-        <!-- Overlay for mobile -->
-        <div id="sidebarOverlay" class="sidebar-overlay fixed inset-0 bg-black/50 z-30 lg:hidden hidden opacity-0" onclick="toggleSidebar()"></div>
+    <main class="fx-page">
+        <a href="/messages" class="fx-back">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Mis mensajes
+        </a>
+        <h1 class="fx-page__title" style="margin-top: 1rem;"><%= course.titulo %></h1>
 
-        <!-- Sidebar -->
-        <aside id="sidebar" class="sidebar-transition fixed lg:relative z-40 lg:z-auto w-80 bg-white border-r border-slate-200 flex-shrink-0 flex flex-col h-[calc(100vh-64px)] overflow-y-auto -translate-x-full lg:translate-x-0 hide-scrollbar">
-            <div class="p-4 border-b border-slate-200 bg-slate-50 sticky top-0 z-10 flex justify-between items-center">
-                <div>
-                    <h2 class="font-bold text-[#002244] text-lg truncate"><%= course.titulo %></h2>
-                    <p class="text-xs text-slate-500">Selecciona una clase</p>
-                </div>
-                <button onclick="toggleSidebar()" class="lg:hidden text-slate-500 hover:text-slate-700 p-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
+        <% if (typeof errorMessage !== 'undefined' && errorMessage) { %>
+            <p class="fx-status is-error"><%= errorMessage %></p>
+        <% } %>
 
-            <div class="divide-y divide-slate-100 flex-1">
-                <% lessons.forEach(lesson => { %>
-                    <% const isActive = (lesson.id == activeLessonId); %>
+        <div class="fx-msgs">
+            <!-- Clases del curso -->
+            <nav class="fx-lessons" aria-label="Clases del curso">
+                <% (lessons || []).forEach(lesson => { const on = lesson.id == activeLessonId; %>
                     <% if (lesson.isLocked) { %>
-                        <div class="p-4 opacity-50 cursor-not-allowed flex items-center justify-between bg-slate-50">
-                            <span class="text-sm font-medium text-slate-400">
-                                <strong><%= lesson.orden %>.</strong> <%= lesson.titulo %>
-                            </span>
-                            <span class="text-xs">🔒</span>
-                        </div>
+                        <span class="fx-lesson is-locked" title="Se habilita al completar la clase anterior">
+                            <span class="fx-lesson__n"><%= lesson.orden %></span>
+                            <span class="fx-lesson__t"><%= lesson.titulo %></span>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-label="Bloqueada"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+                        </span>
                     <% } else { %>
-                        <a href="/messages/<%= course.id %>?lessonId=<%= lesson.id %>"
-                           onclick="closeSidebarOnMobile()"
-                           class="block transition-colors duration-150 p-4 text-sm font-medium <%= isActive ? 'bg-[#002244] text-white rounded-lg mx-3 my-2 shadow-sm' : 'text-slate-700 hover:bg-slate-50' %>">
-                            <strong><%= lesson.orden %>.</strong> <%= lesson.titulo %>
+                        <a href="/messages/<%= course.id %>?lessonId=<%= lesson.id %>" class="fx-lesson" <%- on ? 'aria-current="page"' : '' %>>
+                            <span class="fx-lesson__n"><%= lesson.orden %></span>
+                            <span class="fx-lesson__t"><%= lesson.titulo %></span>
                         </a>
                     <% } %>
                 <% }) %>
-            </div>
-        </aside>
+            </nav>
 
-        <!-- Mobile Toggle Button for Sidebar -->
-        <button id="sidebarToggleBtn" class="lg:hidden fixed top-20 right-4 z-20 bg-[#002244] text-white p-3 rounded-lg shadow-lg hover:bg-[#003366] transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-        </button>
+            <!-- Devoluciones de la clase elegida -->
+            <section aria-live="polite">
+                <% if (activa) { %>
+                    <h2 class="fx-msgs__title">Clase <%= activa.orden %>: <%= activa.titulo %></h2>
 
-        <!-- Content -->
-        <main class="flex-1 p-4 lg:p-8 bg-slate-100 h-[calc(100vh-64px)] overflow-y-auto w-full">
-            <div class="max-w-4xl mx-auto mt-12 lg:mt-0">
-                <h1 class="text-xl lg:text-2xl font-bold text-[#002244] mb-4 lg:mb-6">Devoluciones - Clase seleccionada</h1>
-
-                <% if (typeof errorMessage !== 'undefined' && errorMessage) { %>
-                    <div class="mb-4 p-4 bg-yellow-50 border-l-4 border-amber-400 text-amber-800 rounded">
-                        <%= errorMessage %>
-                    </div>
-                <% } %>
-
-                <% if (activeLessonId) { %>
                     <% if (messages && messages.length > 0) { %>
                         <% messages.forEach(m => { %>
-                            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 lg:p-6 mb-4 lg:mb-6">
-                                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 border-b pb-3 gap-2">
-                                    <span class="text-xs sm:text-sm text-slate-500">Enviado: <%= new Date(m.fecha).toLocaleString('es-AR') %></span>
+                            <article class="fx-feedback">
+                                <header class="fx-feedback__head">
+                                    <span class="fx-feedback__who">
+                                        <span class="fx-avatar" aria-hidden="true">S</span>
+                                        <span>Devolución del profesor<small><%= new Date(m.fecha).toLocaleString('es-AR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }) %></small></span>
+                                    </span>
                                     <% if (m.nota !== null && m.nota !== undefined) { %>
-                                        <span class="bg-[#002244] text-white text-xs px-3 py-1 rounded-md font-bold">Calif: <%= m.nota %></span>
+                                        <span class="fx-grade" aria-label="Nota <%= m.nota %>"><small>Nota</small><%= m.nota %></span>
                                     <% } %>
-                                </div>
-
-                                <div class="mb-6 bg-slate-50 p-4 rounded-xl border border-slate-100">
-                                    <h3 class="font-bold text-slate-800 mb-2 text-xs sm:text-sm uppercase tracking-wider">Tu entrega enviada</h3>
-                                    <p class="text-sm sm:text-base text-slate-600 whitespace-pre-line"><%= m.entrega_alumno %></p>
-                                </div>
-
-                                <div class="bg-blue-50/40 p-4 rounded-xl border-l-4 border-[#002244]">
-                                    <h3 class="font-bold text-[#002244] mb-2 text-xs sm:text-sm uppercase tracking-wider">Devolución del Profesor</h3>
-                                    <p class="text-sm sm:text-base text-slate-700 whitespace-pre-line"><%= m.mensaje %></p>
-                                </div>
-                            </div>
+                                </header>
+                                <p class="fx-feedback__body"><%= m.mensaje %></p>
+                                <details class="fx-feedback__mine">
+                                    <summary>Ver lo que entregaste</summary>
+                                    <p><%= m.entrega_alumno %></p>
+                                </details>
+                            </article>
                         <% }) %>
                     <% } else { %>
-                        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 lg:p-12 text-center">
-                            <p class="text-slate-500 text-base lg:text-lg">No hay devoluciones registradas para esta clase.</p>
+                        <div class="fx-panel" style="text-align: center; padding: 2.5rem 1.5rem;">
+                            <h2>Todavía no hay devolución</h2>
+                            <p style="margin: 0 0 1.2rem;">Si ya entregaste esta clase, el profesor la está corrigiendo. Si no, podés hacerla desde el aula.</p>
+                            <a href="/classroom/<%= course.id %>" class="fx-btn fx-btn--sm">Ir al aula</a>
                         </div>
                     <% } %>
                 <% } else { %>
-                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 lg:p-12 text-center">
-                        <p class="text-slate-500 text-base lg:text-lg">Selecciona una clase en el panel para ver el contenido.</p>
+                    <div class="fx-panel" style="text-align: center; padding: 2.5rem 1.5rem;">
+                        <h2>Este curso todavía no tiene clases</h2>
+                        <p style="margin: 0;">Cuando se publiquen, vas a ver acá las devoluciones de cada una.</p>
                     </div>
                 <% } %>
-            </div>
-        </main>
-    </div>
+            </section>
+        </div>
+    </main>
+
+    <%- include('partials/footer') %>
 
     <script>
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('sidebarOverlay');
-            
-            sidebar.classList.toggle('-translate-x-full');
-            sidebar.classList.toggle('translate-x-0');
-            overlay.classList.toggle('hidden');
-            overlay.classList.toggle('opacity-0');
-            overlay.classList.toggle('opacity-100');
-        }
-
-        function closeSidebarOnMobile() {
-            if (window.innerWidth < 1024) {
-                toggleSidebar();
-            }
-        }
-
-        // Initialize sidebar toggle button
-        document.addEventListener('DOMContentLoaded', function() {
-            const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
-            if (sidebarToggleBtn) {
-                sidebarToggleBtn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    toggleSidebar();
-                });
-            }
-        });
-
-        // Close sidebar when clicking outside on mobile
-        document.addEventListener('click', function(event) {
-            const sidebar = document.getElementById('sidebar');
-            const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
-            const overlay = document.getElementById('sidebarOverlay');
-            
-            if (window.innerWidth < 1024 && 
-                !sidebar.contains(event.target) && 
-                sidebarToggleBtn && !sidebarToggleBtn.contains(event.target) &&
-                !overlay.classList.contains('hidden')) {
-                toggleSidebar();
-            }
-        });
+    // En celular, la lista de clases es una fila deslizable: centrar la clase activa
+    (function () {
+        var on = document.querySelector('.fx-lesson[aria-current="page"]');
+        if (on && window.matchMedia('(max-width: 860px)').matches) on.scrollIntoView({ block: 'nearest', inline: 'center' });
+    })();
     </script>
 </body>
 </html>

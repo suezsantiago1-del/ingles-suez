@@ -25,7 +25,13 @@ async function main() {
     }
     if (invalidos) { console.error('Hay', invalidos, 'items inválidos. Abortando.'); await pool.end(); process.exit(1); }
 
-    // Duplicados: comparar contra preguntas ya existentes
+    // Vaciar la tabla ANTES de importar: el resultado final debe ser SOLO los 80 del JSON.
+    // Este DELETE es exclusivo de este script manual de importación; nunca corre en el
+    // arranque normal de la app (database.js no tiene reseed de desafíos).
+    const delRes = await pool.query('DELETE FROM desafios_diarios');
+    console.log('Tabla desafios_diarios vaciada (filas eliminadas:', delRes.rowCount, '). Insertando los', items.length, 'desafíos.');
+
+    // Duplicados: comparar contra lo que quedó tras el DELETE (en teoría nada, por lo que no se saltea)
     const existentes = await pool.query('SELECT pregunta FROM desafios_diarios');
     const yaExisten = new Set(existentes.rows.map(r => r.pregunta));
 

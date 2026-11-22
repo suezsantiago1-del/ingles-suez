@@ -26,7 +26,6 @@ import {
     actualizarContenidoLeccion,
     uploadLessonVideo,
     handleMpWebhook,
-    renderMensajesAlumno,
     guardarConsultaLeccion,
     responderConsultaLeccion,
     renderMessagesList,

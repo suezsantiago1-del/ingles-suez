@@ -1,298 +1,130 @@
-<!-- Importación de Google Fonts -->
+<!-- Tipografía del flyer -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=GFS+Didot&family=Tenor+Sans&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,800;1,900&display=swap" rel="stylesheet">
 
 <!-- Vincular CSS global -->
-<link rel="stylesheet" href="/css/styles.css?v=1.2">
+<link rel="stylesheet" href="/css/styles.css?v=2.0">
 
-<style>
-  html, body {
-    margin: 0 !important;
-    padding: 0 !important;
-    width: 100%;
-    min-height: 100vh;
-    box-sizing: border-box;
-  }
-  * {
-    box-sizing: border-box;
-  }
+<header class="fx-nav<%= locals.user ? ' fx-nav--user' : '' %>">
+    <div class="fx-nav__inner">
+        <div style="display: flex; align-items: center; gap: 2.5rem;">
+            <%- include('logo') %>
 
-  /* Mobile menu styles */
-  .mobile-menu-btn {
-    display: none;
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0.5rem;
-    z-index: 1000;
-    position: relative;
-  }
-  
-  .mobile-menu-btn svg {
-    width: 24px;
-    height: 24px;
-    display: block;
-  }
-  
-  .mobile-menu-overlay {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 200;
-  }
-  
-  .mobile-menu {
-    display: none;
-    position: fixed;
-    top: 0;
-    right: -300px;
-    width: 280px;
-    max-width: 80%;
-    height: 100%;
-    background: #0b2238;
-    z-index: 201;
-    padding: 1.5rem;
-    transition: right 0.3s ease;
-    overflow-y: auto;
-  }
-  
-  .mobile-menu.active {
-    right: 0;
-    display: block;
-  }
-  
-  .mobile-menu-overlay.active {
-    display: block;
-  }
-  
-  .mobile-menu a {
-    display: block;
-    color: white;
-    text-decoration: none;
-    padding: 1rem 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    font-family: 'GFS Didot', serif;
-    font-size: 1rem;
-  }
-  
-  .mobile-menu a:hover {
-    opacity: 0.8;
-  }
+            <nav class="fx-nav__links" aria-label="Secciones">
+                <a href="/cursos-todos">Cursos</a>
+                <a href="/test-nivel">Test de nivel</a>
+                <a href="/desafio-diario">Desafío del día</a>
+                <a href="/about">Acerca de</a>
+            </nav>
+        </div>
 
-  /* Ajustes para pantallas pequeñas (Celulares) */
-  @media (max-width: 1024px) {
-    .mobile-menu-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    .nav-links-left {
-      display: none !important;
-    }
-    
-    .nav-links-right {
-      display: none !important;
-    }
-    
-    .main-nav {
-      padding: 0.5rem 1rem !important;
-      min-height: 60px;
-    }
-    
-    .nav-left {
-      gap: 0.5rem !important;
-      flex: 1;
-    }
-    
-    .nav-left img {
-      height: 45px !important;
-      max-width: 120px;
-    }
-    
-    .nav-left a {
-      max-width: 120px;
-    }
-  }
-  
-  @media (max-width: 480px) {
-    .main-nav {
-      padding: 0.5rem 0.75rem !important;
-    }
-    
-    .nav-left img {
-      height: 40px !important;
-      max-width: 100px;
-    }
-    
-    .mobile-menu {
-      width: 250px;
-      max-width: 85%;
-    }
-  }
-  
-  @media (min-width: 1025px) {
-    .mobile-menu,
-    .mobile-menu-overlay {
-      display: none !important;
-    }
-  }
-</style>
+        <div class="fx-nav__end">
+        <div class="fx-nav__right">
+            <% if (locals.user) { %>
 
-<nav class="main-nav" style="background: #0b2238; padding: 0.8rem 2.5rem; display: flex; justify-content: space-between; align-items: center; font-family: 'Tenor Sans', sans-serif; position: relative; z-index: 100; border-bottom: 2px solid #184168; margin: 0; width: 100%; min-height: 70px;">
-    <div class="nav-left" style="display: flex; align-items: center; gap: 1.5rem; flex: 1;">
-        <a href="/" style="display: flex; align-items: center; text-decoration: none; min-width: fit-content;">
-            <img src="/img/logo.jpg" alt="INGLÉS SUEZ" style="height: 68px; width: auto; object-fit: contain; border-radius: 6px; max-width: 150px;">
-        </a>
-        
-        <!-- Enlaces secundarios (Desktop) -->
-        <div class="nav-links-left" style="display: flex; gap: 1.8rem; align-items: center; margin-left: 0.5rem;">
-            <a href="/cursos-todos" style="color: white; text-decoration: none; font-size: 1.05rem; opacity: 0.45; font-family: 'GFS Didot', serif; transition: opacity 0.2s ease;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.45'">Cursos</a>
-            <a href="/clases-particulares" style="color: white; text-decoration: none; font-size: 1.05rem; opacity: 0.45; font-family: 'GFS Didot', serif; transition: opacity 0.2s ease;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.45'">Clases Particulares</a>
-            <a href="/about" style="color: white; text-decoration: none; font-size: 1.05rem; opacity: 0.45; font-family: 'GFS Didot', serif; transition: opacity 0.2s ease;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.45'">Acerca de</a>
-            <a href="/test-nivel" style="color: white; text-decoration: none; font-size: 1.05rem; opacity: 0.45; font-family: 'GFS Didot', serif; transition: opacity 0.2s ease;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.45'">Test de Nivel</a>
-            <a href="/desafio-diario" style="color: white; text-decoration: none; font-size: 1.05rem; opacity: 0.45; font-family: 'GFS Didot', serif; transition: opacity 0.2s ease;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.45'">Desafío del día</a>
+                <% if (locals.user.email === 'suezsantiago1@gmail.com') { %>
+                    <a href="/profesor/entregas" class="fx-chip-teacher">Panel profesor</a>
+                    <a href="/profesor/rachas" class="fx-chip-teacher">Rachas</a>
+                <% } %>
+
+                <div class="fx-nav__msgs">
+                    <div>
+                        <a href="/messages">Mis mensajes</a>
+                        <% if (locals.mensajesNoLeidos && locals.mensajesNoLeidos > 0) { %>
+                            <span class="fx-badge-count"><%= locals.mensajesNoLeidos %></span>
+                        <% } %>
+                        <span id="mensajesMenuBtn" title="Opciones" role="button" tabindex="0" aria-label="Opciones de mensajes">
+                            <svg style="width:0.7rem; height:0.7rem;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6" /></svg>
+                        </span>
+                    </div>
+                    <div id="mensajesMenuDesplegable" class="fx-dropdown">
+                        <a href="/messages">Ver mensajes</a>
+                        <button type="button" onclick="marcarMensajesLeidos()" id="btnMarcarLeidosMenu">Marcar como leídos</button>
+                    </div>
+                </div>
+
+                <a href="/mis-cursos">Mis cursos</a>
+                <a href="/auth/profile">Mi perfil</a>
+                <a href="/auth/logout" class="fx-logout">Cerrar sesión</a>
+            <% } else { %>
+                <a href="/auth/login">Iniciar sesión</a>
+                <a href="/auth/register" class="fx-btn fx-btn--sm">Registrarse</a>
+            <% } %>
+        </div>
+
+        <a href="/clases-particulares" class="fx-btn fx-btn--sm fx-btn--solid">Clases particulares</a>
+
+        <button class="fx-menu-btn" onclick="toggleMobileMenu()" aria-label="Abrir menú">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
+                <path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h10" />
+            </svg>
+        </button>
         </div>
     </div>
-    
-    <!-- Mobile menu button -->
-    <button class="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Abrir menú">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-        </svg>
-    </button>
-    
-    <!-- Desktop navigation -->
-    <div class="nav-links-right" style="display: flex; gap: 1.8rem; align-items: center;">
-        <a href="/" style="color: white; text-decoration: none; font-size: 1rem; font-family: 'GFS Didot', serif;">Inicio</a>
-        
-        <% if (locals.user) { %>
-            
-            <% if (locals.user.email === 'suezsantiago1@gmail.com') { %>
-                <!-- Botón exclusivo para el Profesor -->
-                <a href="/profesor/entregas" style="background: #e2ebd5; color: #0b2238; padding: 0.4rem 0.9rem; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 0.95rem; font-family: 'Tenor Sans', sans-serif;">Panel Profesor</a>
-                <a href="/profesor/rachas" style="background: #fbd38d; color: #7c2d12; padding: 0.4rem 0.9rem; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 0.95rem; font-family: 'Tenor Sans', sans-serif;">Rachas</a>
-            <% } %>
+</header>
 
-            <!-- Menú desplegable de Mis Mensajes: el texto navega directo a /messages, la flechita abre las opciones -->
-            <div style="position: relative;">
-                <div style="display: flex; align-items: center; gap: 0.2rem;">
-                    <a href="/messages" style="color: white; text-decoration: none; font-size: 1rem; font-family: 'GFS Didot', serif; white-space: nowrap;">Mis Mensajes</a>
-                    <% if (locals.mensajesNoLeidos && locals.mensajesNoLeidos > 0) { %>
-                        <span style="background: #e53e3e; color: white; border-radius: 50%; padding: 0.1rem 0.4rem; font-size: 0.75rem; font-weight: bold;"><%= locals.mensajesNoLeidos %></span>
-                    <% } %>
-                    <span id="mensajesMenuBtn" title="Opciones" style="display: flex; align-items: center; cursor: pointer; padding: 0.1rem 0.25rem;">
-                        <svg style="width:0.6rem; height:0.6rem;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6" /></svg>
-                    </span>
-                </div>
-                <div id="mensajesMenuDesplegable" style="display: none; position: absolute; right: 0; top: 100%; background: #ffffff; border: 1px solid #cbd5e0; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); min-width: 190px; z-index: 300; padding: 0.45rem 0;">
-                    <a href="/messages" style="display: block; padding: 0.55rem 1rem; color: #0b2238; text-decoration: none; font-size: 0.9rem;">Ver mensajes</a>
-                    <button type="button" onclick="marcarMensajesLeidos()" id="btnMarcarLeidosMenu" style="display: block; width: 100%; text-align: left; background: none; border: none; padding: 0.55rem 1rem; color: #0b2238; font-size: 0.9rem; cursor: pointer;">Marcar como leídos</button>
-                </div>
-            </div>
-
-            <a href="/mis-cursos" style="color: white; text-decoration: none; font-size: 1rem; font-family: 'GFS Didot', serif;">Mis Cursos</a>
-            <a href="/auth/profile" style="color: white; text-decoration: none; font-size: 1rem; font-family: 'GFS Didot', serif;">Mi Perfil</a>
-            <a href="/auth/logout" style="color: #feb2b2; text-decoration: none; font-weight: bold; font-size: 1rem; font-family: 'GFS Didot', serif;">Cerrar Sesión</a>
-        <% } else { %>
-            <a href="/auth/login" style="color: white; text-decoration: none; font-size: 1rem; font-family: 'GFS Didot', serif;">Iniciar Sesión</a>
-            <a href="/auth/register" style="background: white; color: #0b2238; padding: 0.6rem 1.3rem; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 0.95rem; font-family: 'Tenor Sans', sans-serif;">Registrarse</a>
-        <% } %>
-    </div>
-</nav>
-
-<!-- Mobile menu -->
-<div class="mobile-menu-overlay" onclick="toggleMobileMenu()"></div>
-<div class="mobile-menu">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
-        <span style="color: white; font-weight: bold; font-family: 'Tenor Sans', sans-serif; font-size: 1.2rem;">Menú</span>
-        <button onclick="toggleMobileMenu()" style="background: none; border: none; cursor: pointer; padding: 0.5rem;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+<!-- Menú móvil -->
+<div class="fx-mobile-overlay" onclick="toggleMobileMenu()"></div>
+<aside class="fx-mobile" aria-label="Menú">
+    <div class="fx-mobile__head">
+        <%- include('logo') %>
+        <button onclick="toggleMobileMenu()" class="fx-menu-btn" style="display: block;" aria-label="Cerrar menú">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
+                <path stroke-linecap="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
         </button>
     </div>
-    
-    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-        <a href="/" onclick="toggleMobileMenu()" style="padding: 0.75rem 0;">Inicio</a>
-        <a href="/cursos-todos" onclick="toggleMobileMenu()" style="padding: 0.75rem 0;">Cursos</a>
-        <a href="/clases-particulares" onclick="toggleMobileMenu()" style="padding: 0.75rem 0;">Clases Particulares</a>
-        <a href="/about" onclick="toggleMobileMenu()" style="padding: 0.75rem 0;">Acerca de</a>
-        <a href="/test-nivel" onclick="toggleMobileMenu()" style="padding: 0.75rem 0;">Test de Nivel</a>
-        <a href="/desafio-diario" onclick="toggleMobileMenu()" style="padding: 0.75rem 0;">Desafío del día</a>
-        
-        <% if (locals.user) { %>
-            <div style="border-top: 1px solid rgba(255,255,255,0.1); margin: 1rem 0;"></div>
-            
-            
 
+    <nav>
+        <a href="/" onclick="toggleMobileMenu()">Inicio</a>
+        <a href="/cursos-todos" onclick="toggleMobileMenu()">Cursos</a>
+        <a href="/clases-particulares" onclick="toggleMobileMenu()">Clases particulares</a>
+        <a href="/test-nivel" onclick="toggleMobileMenu()">Test de nivel</a>
+        <a href="/desafio-diario" onclick="toggleMobileMenu()">Desafío del día</a>
+        <a href="/about" onclick="toggleMobileMenu()">Acerca de</a>
+
+        <div class="fx-sep"></div>
+
+        <% if (locals.user) { %>
             <% if (locals.user.email === 'suezsantiago1@gmail.com') { %>
-                <a href="/profesor/entregas" onclick="toggleMobileMenu()" style="background: #e2ebd5; color: #0b2238; padding: 0.75rem; border-radius: 6px; text-align: center; margin-top: 0.5rem;">Panel Profesor</a>
-                <a href="/profesor/rachas" onclick="toggleMobileMenu()" style="background: #fbd38d; color: #7c2d12; padding: 0.75rem; border-radius: 6px; text-align: center; margin-top: 0.5rem;">Rachas</a>
+                <a href="/profesor/entregas" onclick="toggleMobileMenu()" class="fx-chip-teacher">Panel profesor</a>
+                <a href="/profesor/rachas" onclick="toggleMobileMenu()" class="fx-chip-teacher">Rachas</a>
             <% } %>
 
-            <div style="position: relative;">
-                <a href="/messages" onclick="toggleMobileMenu()" style="padding: 0.75rem 0; display: flex; justify-content: space-between; align-items: center;">
-                    <span>Mis Mensajes</span>
-                    <% if (locals.mensajesNoLeidos && locals.mensajesNoLeidos > 0) { %>
-                        <span style="background: #e53e3e; color: white; border-radius: 50%; padding: 0.2rem 0.5rem; font-size: 0.75rem; font-weight: bold;"><%= locals.mensajesNoLeidos %></span>
-                    <% } %>
-                    <span id="mensajesMenuBtnMobile" onclick="event.stopPropagation(); toggleMensajesMenuMobile()" style="display: flex; align-items: center; cursor: pointer; padding: 0.1rem 0.25rem;">
-                        <svg style="width:0.6rem; height:0.6rem;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6" /></svg>
-                    </span>
-                </a>
-                <div id="mensajesMenuDesplegableMobile" style="display: none; position: absolute; right: 0; top: 100%; background: #ffffff; border: 1px solid #cbd5e0; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); min-width: 190px; z-index: 300; padding: 0.45rem 0;">
-                    <a href="/messages" onclick="toggleMobileMenu()" style="display: block; padding: 0.55rem 1rem; color: #0b2238; text-decoration: none; font-size: 0.9rem;">Ver mensajes</a>
-                    <button type="button" onclick="marcarMensajesLeidos(); toggleMobileMenu();" id="btnMarcarLeidosMenuMobile" style="display: block; width: 100%; text-align: left; background: none; border: none; padding: 0.55rem 1rem; color: #0b2238; font-size: 0.9rem; cursor: pointer;">Marcar como leídos</button>
-                </div>
-            </div>
-
-            <a href="/mis-cursos" onclick="toggleMobileMenu()" style="padding: 0.75rem 0;">Mis Cursos</a>
-            <a href="/auth/profile" onclick="toggleMobileMenu()" style="padding: 0.75rem 0;">Mi Perfil</a>
-            <a href="/auth/logout" onclick="toggleMobileMenu()" style="color: #feb2b2; padding: 0.75rem 0;">Cerrar Sesión</a>
+            <a href="/messages" onclick="toggleMobileMenu()">
+                <span>Mis mensajes</span>
+                <% if (locals.mensajesNoLeidos && locals.mensajesNoLeidos > 0) { %>
+                    <span class="fx-badge-count"><%= locals.mensajesNoLeidos %></span>
+                <% } %>
+            </a>
+            <% if (locals.mensajesNoLeidos && locals.mensajesNoLeidos > 0) { %>
+                <a href="#" onclick="event.preventDefault(); marcarMensajesLeidos(); toggleMobileMenu();" id="btnMarcarLeidosMenuMobile" style="color: var(--fx-muted); font-size: 0.95rem;">Marcar mensajes como leídos</a>
+            <% } %>
+            <a href="/mis-cursos" onclick="toggleMobileMenu()">Mis cursos</a>
+            <a href="/auth/profile" onclick="toggleMobileMenu()">Mi perfil</a>
+            <a href="/auth/logout" onclick="toggleMobileMenu()" class="fx-logout">Cerrar sesión</a>
         <% } else { %>
-            <div style="border-top: 1px solid rgba(255,255,255,0.1); margin: 1rem 0;"></div>
-            <a href="/auth/login" onclick="toggleMobileMenu()" style="padding: 0.75rem 0;">Iniciar Sesión</a>
-            <a href="/auth/register" onclick="toggleMobileMenu()" style="background: white; color: #0b2238; padding: 0.75rem; border-radius: 6px; text-align: center; margin-top: 0.5rem;">Registrarse</a>
+            <a href="/auth/login" onclick="toggleMobileMenu()">Iniciar sesión</a>
+            <a href="/auth/register" onclick="toggleMobileMenu()" class="fx-btn">Registrarse</a>
         <% } %>
-    </div>
-</div>
+    </nav>
+</aside>
 
 <script>
 function toggleMobileMenu() {
-    const menu = document.querySelector('.mobile-menu');
-    const overlay = document.querySelector('.mobile-menu-overlay');
-    
-    if (menu.classList.contains('active')) {
-        menu.classList.remove('active');
-        overlay.classList.remove('active');
-        document.body.style.overflow = '';
-    } else {
-        menu.classList.add('active');
-        overlay.classList.add('active');
-        document.body.style.overflow = 'hidden';
-    }
+    const menu = document.querySelector('.fx-mobile');
+    const overlay = document.querySelector('.fx-mobile-overlay');
+    const abierto = menu.classList.toggle('active');
+    overlay.classList.toggle('active', abierto);
+    document.body.style.overflow = abierto ? 'hidden' : '';
 }
 
-// Menú desplegable de Mis Mensajes: se abre solo con la flechita
+// Menú desplegable de Mis Mensajes: se abre con la flechita (click o teclado)
 function toggleMensajesMenu() {
     const menu = document.getElementById('mensajesMenuDesplegable');
     if (!menu) return;
-    const visible = menu.style.display === 'block';
-    menu.style.display = visible ? 'none' : 'block';
-}
-
-// Menú desplegable de Mis Mensajes para móvil
-function toggleMensajesMenuMobile() {
-    const menu = document.getElementById('mensajesMenuDesplegableMobile');
-    if (!menu) return;
-    const visible = menu.style.display === 'block';
-    menu.style.display = visible ? 'none' : 'block';
+    menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
 }
 
 document.addEventListener('click', function (e) {
@@ -304,15 +136,19 @@ document.addEventListener('click', function (e) {
     } else if (!menu.contains(e.target)) {
         menu.style.display = 'none';
     }
-    
-    // Para el menú móvil
-    const btnMobile = document.getElementById('mensajesMenuBtnMobile');
-    const menuMobile = document.getElementById('mensajesMenuDesplegableMobile');
-    if (!btnMobile || !menuMobile) return;
-    if (btnMobile.contains(e.target)) {
-        toggleMensajesMenuMobile();
-    } else if (!menuMobile.contains(e.target)) {
-        menuMobile.style.display = 'none';
+});
+
+document.addEventListener('keydown', function (e) {
+    const btn = document.getElementById('mensajesMenuBtn');
+    if (btn && document.activeElement === btn && (e.key === 'Enter' || e.key === ' ')) {
+        e.preventDefault();
+        toggleMensajesMenu();
+    }
+    if (e.key === 'Escape') {
+        const menu = document.getElementById('mensajesMenuDesplegable');
+        if (menu) menu.style.display = 'none';
+        const mobile = document.querySelector('.fx-mobile');
+        if (mobile && mobile.classList.contains('active')) toggleMobileMenu();
     }
 });
 

@@ -1,54 +1,47 @@
-<footer style="background: #0b2238; color: white; padding: 3rem 2rem 2rem 2rem; margin-top: 4rem; border-top: 3px solid #184168; font-family: 'GFS Didot', serif;">
-    <div style="max-width: 1200px; margin: 0 auto; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2rem;">
-        
+<footer class="fx-footer">
+    <div class="fx-footer__inner">
+
         <!-- Marca y descripción -->
-        <div style="flex: 1; min-width: 250px;">
-            <h3 style="font-family: 'Tenor Sans', sans-serif; color: white; font-size: 1.4rem; margin-top: 0; margin-bottom: 0.8rem;">INGLÉS SUEZ</h3>
-            <p style="color: #a4c4de; font-size: 0.95rem; line-height: 1.6; margin: 0;">
-                Cursos online y clases particulares diseñadas para aprender de forma clara, práctica y efectiva.
-            </p>
+        <div>
+            <%- include('logo', { tam: 'lg' }) %>
+            <p>Cursos online y clases particulares para hablar inglés con confianza: conversación, listening y pronunciación, a tu ritmo.</p>
         </div>
 
         <!-- Secciones rápidas -->
-        <div style="flex: 1; min-width: 200px;">
-            <h4 style="font-family: 'Tenor Sans', sans-serif; color: white; font-size: 1.1rem; margin-top: 0; margin-bottom: 1rem;">Navegación</h4>
-            <ul style="list-style: none; padding: 0; margin: 0; line-height: 2;">
-                <li><a href="/" style="color: #a4c4de; text-decoration: none;">Inicio</a></li>
-                <li><a href="/cursos-todos" style="color: #a4c4de; text-decoration: none;">Cursos</a></li>
-                <li><a href="/clases-particulares" style="color: #a4c4de; text-decoration: none;">Clases Particulares</a></li>
-                <li><a href="/about" style="color: #a4c4de; text-decoration: none;">Acerca de</a></li>
+        <div>
+            <h4>Navegación</h4>
+            <ul>
+                <li><a href="/">Inicio</a></li>
+                <li><a href="/cursos-todos">Cursos</a></li>
+                <li><a href="/clases-particulares">Clases particulares</a></li>
+                <li><a href="/test-nivel">Test de nivel</a></li>
+                <li><a href="/about">Acerca de</a></li>
             </ul>
         </div>
 
-        <!-- Información de Contacto y Redes -->
-        <div style="flex: 1; min-width: 250px;">
-            <h4 style="font-family: 'Tenor Sans', sans-serif; color: white; font-size: 1.1rem; margin-top: 0; margin-bottom: 1rem;">Contacto y Perfiles</h4>
-            <div style="display: flex; flex-direction: column; gap: 0.8rem; font-size: 0.95rem;">
-                <div>
-                    <span style="color: #a4c4de;">WhatsApp: </span>
-                    <a href="https://api.whatsapp.com/send?phone=5493412161767" target="_blank" style="color: white; text-decoration: none; font-weight: bold;">
-                        +54 9 341 216 1767
-                    </a>
-                </div>
-                <div>
-                    <span style="color: #a4c4de;">Instagram: </span>
-                    <a href="https://www.instagram.com/ingles.suez/" target="_blank" style="color: white; text-decoration: none; font-weight: bold;">
-                        @ingles.suez
-                    </a>
-                </div>
-                <div>
-                    <span style="color: #a4c4de;">Superprof: </span>
-                    <a href="https://www.superprof.com.ar/clases-ingles-nivel-basico-avanzado-desde-todas-las-edades-para-aprender-forma-natural-practica-sin-presiones.html" target="_blank" style="color: white; text-decoration: none; font-weight: bold;">
-                        Perfil de Superprof
-                    </a>
-                </div>
+        <!-- Contacto y redes -->
+        <div>
+            <h4>Contacto</h4>
+            <div class="fx-contact">
+                <a href="https://www.instagram.com/ingles.suez/" target="_blank" rel="noopener">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.3" cy="6.7" r="0.9" fill="currentColor" stroke="none"/></svg>
+                    @ingles.suez
+                </a>
+                <a href="https://api.whatsapp.com/send?phone=5493412161767" target="_blank" rel="noopener">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3.5 20.5l1.3-4.2A8.5 8.5 0 1 1 8 19.4z" stroke-linejoin="round"/><path d="M9 8.3c.2-.4.5-.5.8-.5h.5c.2 0 .4.1.5.4l.7 1.6c.1.2 0 .5-.1.6l-.5.6c.6 1.2 1.6 2.2 2.8 2.8l.6-.5c.2-.1.4-.2.6-.1l1.6.7c.3.1.4.3.4.5v.5c0 .3-.1.6-.5.8-.6.4-1.5.6-2.4.3a9 9 0 0 1-5.2-5.2c-.3-.9-.1-1.8.3-2.4z" fill="currentColor" stroke="none"/></svg>
+                    341 216 1767
+                </a>
+                <a href="https://www.superprof.com.ar/clases-ingles-nivel-basico-avanzado-desde-todas-las-edades-para-aprender-forma-natural-practica-sin-presiones.html" target="_blank" rel="noopener">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4.5 20.5c.8-3.6 3.9-5.8 7.5-5.8s6.7 2.2 7.5 5.8z" stroke-linejoin="round"/></svg>
+                    Perfil en Superprof
+                </a>
             </div>
         </div>
 
     </div>
 
-    <!-- Copyright -->
-    <div style="text-align: center; border-top: 1px solid #184168; margin-top: 2.5rem; padding-top: 1.5rem; color: #85abc9; font-size: 0.85rem;">
-        &copy; <%= new Date().getFullYear() %> INGLÉS SUEZ. Todos los derechos reservados.
+    <div class="fx-footer__base">
+        <div class="fx-rule fx-rule--center">Rosario, Centro</div>
+        <p class="fx-footer__copy" style="max-width: none;">&copy; <%= new Date().getFullYear() %> Inglés Suez</p>
     </div>
 </footer>

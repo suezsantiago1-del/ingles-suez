@@ -4,100 +4,83 @@
     <link rel="icon" type="image/png" href="/img/favicon.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mis Cursos - Mensajes</title>
-    <link rel="stylesheet" href="/css/styles.css">
-    <style>
-        /* Mobile improvements */
-        main {
-            padding: 1rem;
-        }
-        
-        @media (min-width: 768px) {
-            main {
-                padding: 0 1.5rem;
-            }
-        }
-        
-        .card {
-            padding: 1.25rem;
-            border-radius: 0.75rem;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        
-        .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-        
-        .messages-empty {
-            text-align: center;
-            padding: 2rem;
-            color: var(--text-muted);
-            background: white;
-            border-radius: 0.75rem;
-        }
-        
-        @media (max-width: 767px) {
-            h1 {
-                font-size: 1.5rem;
-            }
-            
-            .card {
-                padding: 1rem;
-            }
-        }
-    </style>
+    <title>Mis mensajes · Inglés Suez</title>
 </head>
-<body>
-
+<body class="tema-flyer">
     <%- include('partials/header') %>
 
-    <main style="max-width:900px; margin:2rem auto; padding:0 1rem;">
-        <h1 style="color:var(--primary-navy); margin-bottom: 0.5rem;">Mis Cursos</h1>
-        <p style="color:var(--text-muted); margin-bottom: 1.5rem;">Selecciona un curso para ver las devoluciones por clase.</p>
-
-        <div style="display: flex; justify-content: flex-end; margin-bottom: 1rem;">
-            <button type="button" onclick="marcarMensajesLeidosDesdeLista()" style="background: #184168; color: white; border: none; padding: 0.55rem 1.1rem; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.9rem;">Marcar como leídos</button>
+    <main class="fx-page">
+        <div class="fx-block__head" style="margin: 0 0 2.2rem;">
+            <div>
+                <h1 class="fx-page__title">Mis <span class="fx-steel">mensajes</span></h1>
+                <p class="fx-page__lead">Las correcciones del profesor a tus entregas, ordenadas por curso.</p>
+            </div>
+            <% if (locals.mensajesNoLeidos && locals.mensajesNoLeidos > 0) { %>
+                <div style="text-align: right;">
+                    <button type="button" class="fx-btn fx-btn--sm" id="btn-leidos">Marcar todo como leído</button>
+                    <p class="fx-status" id="leidos-status" role="status" style="margin-top: 0.5rem;"></p>
+                </div>
+            <% } %>
         </div>
 
-        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap:1rem;">
+        <div class="fx-grid">
+            <!-- Las clases particulares también son mensajes con el profesor -->
+            <a href="/clases-particulares#mis-consultas" class="fx-card fx-card--link">
+                <div class="fx-card__body">
+                    <span class="fx-card__tag">Chat</span>
+                    <h3>Clases particulares</h3>
+                    <p>Tus consultas y la conversación con el profesor para coordinar clases.</p>
+                    <span class="fx-card__more">Abrir chat</span>
+                </div>
+            </a>
+
             <% if (cursos && cursos.length > 0) { %>
                 <% cursos.forEach(c => { %>
-                    <a href="/messages/<%= c.id %>" class="card" style="text-decoration:none; color:inherit; background: white; border: 1px solid #e2e8f0;">
-                        <div style="display:flex; flex-direction: column; gap: 0.5rem;">
-                            <div style="font-weight:800; color:var(--primary-navy); font-size: 1rem; line-height: 1.4;"><%= c.titulo %></div>
-                            <div style="color:var(--text-muted); font-size: 0.875rem; display: flex; align-items: center; gap: 0.25rem;">
-                                Ver devoluciones 
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                                </svg>
-                            </div>
+                    <a href="/messages/<%= c.id %>" class="fx-card fx-card--link">
+                        <div class="fx-card__body">
+                            <span class="fx-card__tag">Curso</span>
+                            <h3><%= c.titulo %></h3>
+                            <p>Devoluciones y notas de cada clase que entregaste.</p>
+                            <span class="fx-card__more">Ver devoluciones</span>
                         </div>
                     </a>
                 <% }) %>
             <% } else { %>
-                <div class="messages-empty" style="grid-column: 1 / -1;">No tienes cursos asociados.</div>
+                <div class="fx-card">
+                    <div class="fx-card__body">
+                        <h3>Todavía no tenés cursos</h3>
+                        <p>Cuando compres un curso, las correcciones de tus entregas van a aparecer acá.</p>
+                        <a href="/cursos-todos" class="fx-btn fx-btn--sm" style="align-self: flex-start;">Ver cursos</a>
+                    </div>
+                </div>
             <% } %>
         </div>
-
     </main>
 
     <%- include('partials/footer') %>
 
     <script>
-        function marcarMensajesLeidosDesdeLista() {
-            fetch('/messages/leer', { method: 'POST' })
-                .then(r => r.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('Mensajes marcados como leídos.');
-                        window.location.reload();
-                    } else {
-                        alert(data.message || 'No se pudieron marcar como leídos.');
-                    }
-                })
-                .catch(() => alert('Error de conexión al marcar como leídos.'));
-        }
+    (function () {
+        var btn = document.getElementById('btn-leidos');
+        if (!btn) return;
+        btn.addEventListener('click', async function () {
+            var status = document.getElementById('leidos-status');
+            btn.disabled = true;
+            status.classList.remove('is-error');
+            try {
+                var res = await fetch('/messages/leer', { method: 'POST' });
+                var data = await res.json();
+                if (!data.success) throw new Error(data.message);
+                status.textContent = 'Listo, todo marcado como leído.';
+                document.querySelectorAll('.fx-badge-count').forEach(function (b) { b.remove(); });
+                btn.remove();
+            } catch (err) {
+                status.classList.add('is-error');
+                status.textContent = 'No se pudo marcar. Probá de nuevo.';
+                btn.disabled = false;
+            }
+        });
+    })();
     </script>
 </body>
 </html>

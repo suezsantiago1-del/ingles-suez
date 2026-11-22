@@ -4,249 +4,127 @@
     <link rel="icon" type="image/png" href="/img/favicon.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>INGLÉS SUEZ - Cursos de Inglés Online</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=GFS+Didot&family=Tenor+Sans&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/styles.css">
-    <style>
-        :root {
-            --dark-blue: #0b2238;
-            --mid-blue: #184168;
-            --accent-blue: #306d9d;
-            --light-blue: #a4c4de;
-            --bg-light: #e3edf5;
-        }
-
-        body, p, span, div, a, li, button, input {
-            font-family: 'GFS Didot', serif;
-        }
-
-        h1, h2, h3, h4, h5, h6 {
-            font-family: 'Tenor Sans', sans-serif !important;
-        }
-
-        body {
-            background-color: var(--bg-light);
-            margin: 0;
-            padding: 0;
-            color: #1a202c;
-            overflow-x: hidden;
-        }
-
-        .hero-section {
-            position: relative;
-            background: linear-gradient(135deg, #0b2238 0%, #1e4d77 50%, #85abc9 100%);
-            padding: 5rem 1.5rem 6rem 1.5rem;
-            text-align: center;
-            overflow: hidden;
-        }
-
-        .hero-section::before {
-            content: "";
-            position: absolute;
-            top: -50px;
-            left: -50px;
-            width: 400px;
-            height: 400px;
-            background: rgba(11, 34, 56, 0.85);
-            clip-path: polygon(0 0, 100% 0, 70% 100%, 0 80%);
-            z-index: 1;
-        }
-
-        .hero-section::after {
-            content: "";
-            position: absolute;
-            top: -20px;
-            right: -60px;
-            width: 450px;
-            height: 450px;
-            background: rgba(24, 65, 104, 0.7);
-            clip-path: polygon(30% 0, 100% 0, 100% 90%, 0 40%);
-            z-index: 1;
-        }
-
-        .hero-card-dark {
-            position: relative;
-            z-index: 5;
-            max-width: 650px;
-            margin: 0 auto;
-            background: var(--dark-blue);
-            color: white;
-            padding: 3rem 2rem;
-            border-radius: 8px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(255, 255, 255, 0.1);
-        }
-
-        .geometric-divider {
-            height: 18px;
-            background: var(--dark-blue);
-            clip-path: polygon(0 0, 20% 100%, 80% 100%, 100% 0);
-            margin-top: -2px;
-            position: relative;
-            z-index: 6;
-        }
-
-        .courses-section {
-            position: relative;
-            max-width: 1200px;
-            margin: 3rem auto;
-            padding: 0 1.5rem;
-        }
-
-        .courses-section::before {
-            content: "";
-            position: absolute;
-            bottom: -100px;
-            left: -100px;
-            width: 350px;
-            height: 350px;
-            background: var(--mid-blue);
-            clip-path: polygon(0 40%, 100% 100%, 0 100%);
-            opacity: 0.8;
-            pointer-events: none;
-        }
-
-        .courses-section::after {
-            content: "";
-            position: absolute;
-            bottom: -100px;
-            right: -100px;
-            width: 350px;
-            height: 350px;
-            background: var(--dark-blue);
-            clip-path: polygon(100% 30%, 100% 100%, 0 100%);
-            opacity: 0.9;
-            pointer-events: none;
-        }
-
-        .curso-card-3d {
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(11, 34, 56, 0.12), 0 4px 10px rgba(0, 0, 0, 0.05);
-            display: flex;
-            flex-direction: column;
-            border: 1px solid #c0d4e5;
-            position: relative;
-            z-index: 4;
-            transition: transform 0.25s, box-shadow 0.25s;
-        }
-
-        .curso-card-3d:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 16px 36px rgba(11, 34, 56, 0.2);
-        }
-
-        .card-header-logo {
-            background: #d3e4f2;
-            padding: 0;
-            width: 100%;
-            height: 200px;
-            border-bottom: 2px solid #b2cce0;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .card-header-logo img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
-    </style>
+    <title>Inglés Suez · Speak English with confidence</title>
+    <meta name="description" content="Cursos de inglés online y clases particulares: conversación y fluidez, listening y pronunciación, clases personalizadas.">
 
     <!-- Google AdSense Verification -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1854686112404128"
          crossorigin="anonymous"></script>
 </head>
-<body>
+<body class="tema-flyer">
 
     <%- include('partials/header') %>
 
-    <header class="hero-section">
-        <div class="hero-card-dark">
-            <span style="background: rgba(255,255,255,0.12); color: #a4c4de; padding: 0.35rem 0.8rem; border-radius: 4px; font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase;">
-                APRENDE A TU RITMO
-            </span>
-            <h1 style="color: white; font-size: 2.1rem; margin: 1.5rem 0 1rem 0; line-height: 1.2;">
-                HABLA INGLÉS CON CONFIANZA Y LIBERTAD
-            </h1>
-            <p style="color: #cbd5e0; font-size: 1.1rem; line-height: 1.6; margin-bottom: 2rem;">
-                Clases estructuradas, explicaciones claras sin rodeos y material práctico diseñado para el mundo real.
-            </p>
+    <section class="fx-hero">
+        <div class="fx-hero__inner fx-hero__grid">
+            <div>
+                <h1>Hablá inglés <span class="fx-steel">sin trabarte</span></h1>
+                <p class="fx-hero__lead">Clases particulares 1 a 1, online o presenciales en Rosario Centro, armadas según lo que necesitás. Y si preferís ir a tu ritmo, cursos online con correcciones del profesor.</p>
 
-            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-                <a href="#cursos" style="background: #184168; color: white; padding: 0.85rem 1.5rem; border-radius: 4px; text-decoration: none; font-size: 0.85rem; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.2); font-family: 'Tenor Sans', sans-serif;">
-                    EXPLORAR CURSOS
-                </a>
-                <% if (!locals.user) { %>
-                    <a href="/auth/register" style="background: white; color: var(--dark-blue); padding: 0.85rem 1.5rem; border-radius: 4px; text-decoration: none; font-size: 0.85rem; text-transform: uppercase; font-family: 'Tenor Sans', sans-serif; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-                        CREAR CUENTA GRATIS
-                    </a>
-                <% } %>
+                <div class="fx-hero__ctas">
+                    <a href="/clases-particulares" class="fx-btn fx-btn--solid">Pedir clase particular</a>
+                    <a href="#cursos" class="fx-btn">Ver cursos online</a>
+                </div>
             </div>
+
+            <!-- Atajo a particulares: elegís objetivo y llegás al pedido ya completo -->
+            <aside class="fx-quiz" aria-labelledby="fx-goal-q">
+                <svg class="fx-quiz__star" viewBox="0 0 100 100" aria-hidden="true">
+                    <path class="fx-star" d="M50 0 C53 38 62 47 100 50 C62 53 53 62 50 100 C47 62 38 53 0 50 C38 47 47 38 50 0Z"/>
+                </svg>
+                <p class="fx-quiz__hint">Clases particulares</p>
+                <p class="fx-quiz__q" id="fx-goal-q">¿Para qué necesitás inglés?</p>
+                <div class="fx-goals">
+                    <a href="/clases-particulares?objetivo=Conversaci%C3%B3n%20y%20Fluidez#pedir">Hablar con fluidez</a>
+                    <a href="/clases-particulares?objetivo=Ingl%C3%A9s%20Laboral%20%2F%20Entrevistas#pedir">Trabajo y entrevistas</a>
+                    <a href="/clases-particulares?objetivo=Preparaci%C3%B3n%20de%20Ex%C3%A1menes#pedir">Rendir un examen</a>
+                    <a href="/clases-particulares?objetivo=Apoyo%20Escolar%20%2F%20Universitario#pedir">Apoyo escolar</a>
+                </div>
+                <p class="fx-quiz__fb" style="color: var(--fx-muted);">Elegí uno y armamos tu clase alrededor de eso.</p>
+            </aside>
         </div>
-    </header>
+    </section>
 
-    <div class="geometric-divider"></div>
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.fx-quiz__opts button').forEach(function (b) {
+        b.addEventListener('click', function () {
+            var quiz = b.closest('.fx-quiz');
+            quiz.querySelectorAll('.fx-quiz__opts button').forEach(function (o) {
+                o.classList.remove('is-ok', 'is-bad');
+                if (o.dataset.ok === '1') o.classList.add('is-ok');
+            });
+            var ok = b.dataset.ok === '1';
+            if (!ok) b.classList.add('is-bad');
+            quiz.querySelector('.fx-quiz__fb').textContent = ok
+                ? 'Correcto. Con she, he o it, el verbo en presente lleva -s.'
+                : 'Casi. Con she, he o it, el verbo en presente lleva -s: she goes.';
+        });
+    });
+    });
+    </script>
 
-    <main id="cursos" class="courses-section">
-        <div style="text-align: center; margin-bottom: 3rem;">
-            <h2 style="color: var(--dark-blue); font-size: 1.8rem; text-transform: uppercase; margin-bottom: 0.4rem;">
-                NUESTROS CURSOS DESTACADOS
-            </h2>
-            <p style="color: #4a5568; font-size: 1.05rem;">
-                Elige el nivel o enfoque que mejor se adapte a tus objetivos actuales.
-            </p>
+    <main id="cursos" class="fx-section">
+        <div class="fx-section__head">
+            <h2>O aprendé a tu ritmo</h2>
+            <p>Cursos online con clases grabadas, ejercicios y devoluciones del profesor. Ideales para sumar práctica entre clases particulares.</p>
         </div>
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; position: relative; z-index: 5;">
+        <div class="fx-grid">
             <% if (cursos && cursos.length > 0) { %>
                 <% cursos.forEach(curso => { %>
-                    <div class="curso-card-3d rounded-xl overflow-hidden" style="position: relative; overflow: hidden;">
-                        <div class="card-header-logo" style="position: relative; overflow: hidden;">
-                            <% if (curso && curso.titulo === 'Ingles Intensivo Desde Cero') { %>
-                                <div class="absolute top-4 left-[-8px] bg-[#002244] text-white text-xs font-bold py-1.5 px-4 shadow-lg rounded-r-md z-20 border-l-4 border-[#0055a5]">CERTIFICADO A1-A2</div>
-                            <% } %>
-                            <img src="<%= (curso.id == 1 || curso.titulo.toLowerCase().includes('intensivo')) ? '/img/logo_2.png?v=2' : '/img/logo_3.png?v=2' %>" alt="<%= curso.titulo %>">
+                    <% const esIntensivo = curso.titulo === 'Inglés Intensivo Desde Cero' || curso.titulo === 'Ingles Intensivo Desde Cero'; %>
+                    <article class="fx-card">
+                        <div class="fx-card__media">
+                            <img src="<%= (curso.id == 1 || curso.titulo.toLowerCase().includes('intensivo')) ? '/img/logo_2.png?v=2' : '/img/logo_3.png?v=2' %>" alt="<%= curso.titulo %>" loading="lazy">
                         </div>
 
-                        <div style="padding: 1.5rem; display: flex; flex-direction: column; flex-grow: 1;">
-                            <% if (curso && (curso.titulo === 'Inglés Intensivo Desde Cero' || curso.titulo === 'Ingles Intensivo Desde Cero')) { %>
-                                <div class="mb-2">
-                                    <span style="background-color: #002244; color: white; display: inline-block; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; letter-spacing: 0.5px;">CERTIFICADO A1-A2</span>
-                                </div>
-                                <h3 class="course-title" style="color: var(--dark-blue); font-size: 1.25rem; margin: 0.25rem 0 0.75rem 0;">Inglés Intensivo Desde Cero</h3>
+                        <div class="fx-card__body">
+                            <% if (esIntensivo) { %>
+                                <span class="fx-card__tag">Certificado A1–A2</span>
+                                <h3>Inglés Intensivo Desde Cero</h3>
                             <% } else { %>
-                                <h3 style="color: var(--dark-blue); font-size: 1.25rem; margin-top: 0; margin-bottom: 0.75rem;"><%= curso.titulo %></h3>
+                                <h3><%= curso.titulo %></h3>
                             <% } %>
-                            <p style="color: #4a5568; font-size: 0.95rem; line-height: 1.6; flex-grow: 1; margin-bottom: 1.5rem;"><%= curso.descripcion %></p>
-                            
-                            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e2ebd5; padding-top: 1rem;">
+                            <p><%= curso.descripcion %></p>
+
+                            <div class="fx-card__foot">
                                 <% if (curso && curso.titulo === 'Conversación y Fluidez Real') { %>
-                                    <div class="badge-coming-soon">Próximamente</div>
+                                    <span class="fx-soon">Próximamente</span>
                                 <% } else if (locals.comprasIds && locals.comprasIds.includes(curso.id)) { %>
-                                    <!-- Curso comprado - Solo mostrar botón "Ir al Aula" -->
-                                    <a href="/classroom/<%= curso.id %>" style="background: #27ae60; color: white; padding: 0.65rem 1.2rem; border-radius: 4px; text-decoration: none; font-size: 0.85rem; font-family: 'Tenor Sans', sans-serif; font-weight: bold; width: 100%; text-align: center;">
-                                        Ir al Aula
-                                    </a>
+                                    <a href="/classroom/<%= curso.id %>" class="fx-btn fx-btn--solid" style="width: 100%;">Ir al aula</a>
                                 <% } else { %>
-                                    <!-- Curso no comprado - Mostrar precio y botón "Ver Curso" -->
-                                    <span style="color: var(--dark-blue); font-size: 1.25rem; font-weight: bold; font-family: 'Tenor Sans', sans-serif;">$<%= curso.precio %> ARS</span>
-                                    <a href="/course/<%= curso.id %>" style="background: var(--dark-blue); color: white; padding: 0.65rem 1.2rem; border-radius: 4px; text-decoration: none; font-size: 0.85rem; font-family: 'Tenor Sans', sans-serif;">
-                                        Ver Curso
-                                    </a>
+                                    <span class="fx-price">$<%= curso.precio %><small>ARS</small></span>
+                                    <a href="/course/<%= curso.id %>" class="fx-btn fx-btn--sm">Ver curso</a>
                                 <% } %>
                             </div>
                         </div>
-                    </div>
+                    </article>
                 <% }); %>
             <% } else { %>
-                <p style="text-align: center; color: #718096; grid-column: 1 / -1;">No hay cursos disponibles por el momento.</p>
+                <p class="fx-empty">Todavía no hay cursos publicados.</p>
             <% } %>
         </div>
     </main>
+
+    <!-- Pregunta del test de nivel -->
+    <section class="fx-section" style="margin-top: 4rem;">
+        <aside class="fx-quiz fx-quiz--band" aria-labelledby="fx-quiz-q">
+            <div>
+                <p class="fx-quiz__hint">¿No sabés tu nivel? Probá una pregunta del test</p>
+                <p class="fx-quiz__q" id="fx-quiz-q">She ___ to work by bus every day.</p>
+            </div>
+            <div>
+                <div class="fx-quiz__opts">
+                    <button type="button" data-ok="0">go</button>
+                    <button type="button" data-ok="1">goes</button>
+                    <button type="button" data-ok="0">going</button>
+                </div>
+                <p class="fx-quiz__fb" aria-live="polite"></p>
+                <a href="/test-nivel" class="fx-quiz__link">Hacer el test completo</a>
+            </div>
+        </aside>
+    </section>
 
     <%- include('partials/footer') %>
 

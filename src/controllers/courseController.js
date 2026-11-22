@@ -788,7 +788,6 @@ export const renderClassroom = async (req, res) => {
             // Si no hay parámetro leccion, redirigir a la primera lección desbloqueada con el parámetro correcto
             const primeraDesbloqueada = leccionesConEstado.find(l => l.desbloqueada);
             if (primeraDesbloqueada) {
-                console.log('Redirigiendo a primera lección desbloqueada:', primeraDesbloqueada.id);
                 return res.redirect(`/classroom/${cursoId}?leccion=${primeraDesbloqueada.id}`);
             }
         }
@@ -807,8 +806,6 @@ export const renderClassroom = async (req, res) => {
         // Debug: log active lesson and video URLs to help trace missing video issues
         try {
             const activeUrl = leccionActiva && leccionActiva.video_url;
-            console.log('renderClassroom: leccionActiva id=', leccionActiva && leccionActiva.id, 'video_url=', activeUrl);
-            console.log('renderClassroom: lecciones with video_url:', leccionesConEstado.map(l => ({ id: l.id, orden: l.orden, video_url: l.video_url })));
 
             // If the active lesson has a local-looking URL, check for file existence on disk.
             if (activeUrl && typeof activeUrl === 'string' && !activeUrl.startsWith('http')) {
@@ -824,11 +821,8 @@ export const renderClassroom = async (req, res) => {
                 for (const c of candidates) {
                     try {
                         if (c && fs.existsSync(c)) {
-                            console.log('renderClassroom: video file exists on disk at:', c);
                             found = true;
                             break;
-                        } else {
-                            console.log('renderClassroom: video candidate not found:', c);
                         }
                     } catch (ex) {
                         console.warn('renderClassroom: error checking file candidate', c, ex && ex.stack ? ex.stack : ex);
@@ -1197,77 +1191,6 @@ export const saveTeacherNote = async (req, res) => {
     }
 };
 
-export const renderMensajesAlumno = async (req, res) => {
-    if (!req.session.user) {
-        return res.redirect('/auth/login');
-    }
-
-    const usuarioId = req.session.user.id;
-
-    try {
-        const db = await dbPromise;
-
-        const rows = await db.all(`
-            SELECT 
-                d.id AS devolucion_id,
-                d.mensaje,
-                d.nota,
-                d.fecha,
-                d.leida,
-                l.id AS leccion_id,
-                l.titulo AS leccion_titulo,
-                c.id AS curso_id,
-                c.titulo AS curso_titulo,
-                e.contenido AS entrega_alumno
-            FROM devoluciones d
-            JOIN entregas e ON d.entrega_id = e.id
-            JOIN lecciones l ON e.leccion_id = l.id
-            JOIN cursos c ON e.curso_id = c.id
-            WHERE d.usuario_id = ?
-            ORDER BY c.titulo, l.orden, d.fecha DESC
-        `, [usuarioId]);
-
-        // Mark as read
-        await db.run('UPDATE devoluciones SET leida = TRUE WHERE usuario_id = ?', [usuarioId]);
-
-        // Group by course then by lesson
-        const cursosMap = new Map();
-        for (const r of rows) {
-            const cursoId = r.curso_id;
-            if (!cursosMap.has(cursoId)) {
-                cursosMap.set(cursoId, { curso_id: cursoId, curso_titulo: r.curso_titulo, leccionesMap: new Map() });
-            }
-
-            const cursoEntry = cursosMap.get(cursoId);
-            const leccionId = r.leccion_id;
-            if (!cursoEntry.leccionesMap.has(leccionId)) {
-                cursoEntry.leccionesMap.set(leccionId, { leccion_id: leccionId, leccion_titulo: r.leccion_titulo, mensajes: [] });
-            }
-
-            const leccionEntry = cursoEntry.leccionesMap.get(leccionId);
-            leccionEntry.mensajes.push({
-                devolucion_id: r.devolucion_id,
-                mensaje: r.mensaje,
-                nota: r.nota,
-                fecha: r.fecha,
-                leida: r.leida,
-                entrega_alumno: r.entrega_alumno
-            });
-        }
-
-        // Convert maps to arrays and tidy structure
-        const cursos = Array.from(cursosMap.values()).map(c => ({
-            curso_id: c.curso_id,
-            curso_titulo: c.curso_titulo,
-            lecciones: Array.from(c.leccionesMap.values())
-        }));
-
-        return res.render('student-messages', { cursos });
-    } catch (error) {
-        console.error('Error al obtener mensajes del alumno:', error);
-        return res.redirect('/');
-    }
-};
 
 // Generar y descargar el Certificado en PDF
 export const descargarCertificado = async (req, res) => {
@@ -1393,6 +1316,30 @@ export const descargarCertificado = async (req, res) => {
 // ==========================================
 
 /**
+ * Carga el historial de chat de varias consultas con una sola query
+ * (antes se hacía una por consulta) y lo deja en c.mensajesChat.
+ */
+const cargarChats = async (db, consultas) => {
+    consultas.forEach(c => { c.mensajesChat = []; });
+    if (consultas.length === 0) return;
+    try {
+        const ids = consultas.map(c => c.id);
+        const filas = await db.all(`
+            SELECT * FROM chat_mensajes_particulares
+            WHERE consulta_id IN (${ids.map(() => '?').join(', ')})
+            ORDER BY fecha ASC
+        `, ids);
+        const porConsulta = new Map(consultas.map(c => [Number(c.id), c]));
+        filas.forEach(m => {
+            const c = porConsulta.get(Number(m.consulta_id));
+            if (c) c.mensajesChat.push(m);
+        });
+    } catch (err) {
+        console.error('Error al cargar el historial de chat de particulares:', err);
+    }
+};
+
+/**
  * Renderiza la página de Clases Particulares para el alumno,
  * cargando el historial de sus consultas previas e incluyendo el hilo de mensajes interactivo.
  */
@@ -1407,18 +1354,8 @@ export const renderPrivateClasses = async (req, res) => {
                 ORDER BY fecha_consulta DESC
             `, [req.session.user.id]);
 
-            // Cargar el historial extendido del chat para cada consulta
-            for (let c of misConsultas) {
-                try {
-                    c.mensajesChat = await db.all(`
-                        SELECT * FROM chat_mensajes_particulares 
-                        WHERE consulta_id = ? 
-                        ORDER BY fecha ASC
-                    `, [c.id]);
-                } catch (err) {
-                    c.mensajesChat = [];
-                }
-            }
+            // Cargar el historial extendido del chat de todas las consultas
+            await cargarChats(db, misConsultas);
         } catch (error) {
             console.error('Error al obtener consultas particulares del alumno:', error);
         }
@@ -1506,6 +1443,12 @@ export const enviarMensajeAlumnoChat = async (req, res) => {
     try {
         const db = await dbPromise;
 
+        // Solo el alumno dueño de la consulta puede escribir en ese chat
+        const consulta = await db.get('SELECT usuario_id FROM mensajes_particulares WHERE id = ?', [consultaId]);
+        if (!consulta || Number(consulta.usuario_id) !== Number(usuarioId)) {
+            return res.status(404).json({ success: false, message: 'Consulta no encontrada.' });
+        }
+
         await db.run(`
             INSERT INTO chat_mensajes_particulares (consulta_id, usuario_id, emisor, mensaje)
             VALUES (?, ?, 'ALUMNO', ?)
@@ -1552,17 +1495,7 @@ export const renderPanelParticularesProfesor = async (req, res) => {
         `);
 
         // Cargar el historial de chat para la vista del profesor
-        for (let c of consultas) {
-            try {
-                c.mensajesChat = await db.all(`
-                    SELECT * FROM chat_mensajes_particulares 
-                    WHERE consulta_id = ? 
-                    ORDER BY fecha ASC
-                `, [c.id]);
-            } catch (err) {
-                c.mensajesChat = [];
-            }
-        }
+        await cargarChats(db, consultas);
 
         return res.render('teacher-particulares-panel', { consultas: consultas || [] });
     } catch (error) {
@@ -1954,7 +1887,7 @@ export const renderMessagesCourse = async (req, res) => {
         // Get first 10 lessons for the course (safe)
         let lessons = [];
         try {
-            lessons = await db.all('SELECT id, titulo, orden FROM lecciones WHERE curso_id = ? ORDER BY orden LIMIT 10', [cursoId]) || [];
+            lessons = await db.all('SELECT id, titulo, orden FROM lecciones WHERE curso_id = ? ORDER BY orden', [cursoId]) || [];
         } catch (err) {
             console.error('renderMessagesCourse: error fetching lessons', err && err.stack ? err.stack : err);
             lessons = [];
@@ -2004,9 +1937,6 @@ export const renderMessagesCourse = async (req, res) => {
             };
         });
 
-        // Debug logging for progress and lesson lock state
-        console.log(`renderMessagesCourse: usuarioId=${usuarioId}, cursoId=${cursoId}, maxCompleted=${maxCompleted}, hasPurchase=${hasPurchase}, maxLessonOrden=${maxLessonOrden}, unlockAll=${unlockAll}`);
-        lessonsWithLock.forEach(ll => console.log(`Lesson: id=${ll.id}, orden=${ll.orden}, isLocked=${ll.isLocked}`));
 
         // Determine active lesson
         let activeLessonId = selectedLessonId;

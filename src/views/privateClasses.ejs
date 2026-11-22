@@ -4,389 +4,461 @@
     <link rel="icon" type="image/png" href="/img/favicon.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Clases Particulares - INGLÉS SUEZ</title>
-    <link rel="stylesheet" href="/css/styles.css">
-    <style>
-        /* Slightly larger base UI scale for readability */
-        body { 
-            font-size: 17px;
-            overflow-x: hidden; /* Prevenir scroll horizontal */
-        }
-        
-        /* Evitar scrollbars duplicados */
-        html, body {
-            height: 100%;
-            margin: 0;
-            padding: 0;
-        }
-
-        .particulares-container { 
-            max-width: 1500px; 
-            margin: 2.5rem auto; 
-            padding: 0 1rem; 
-            display: grid; 
-            grid-template-columns: 1fr 1.6fr; 
-            gap: 2.5rem; 
-            min-height: calc(100vh - 200px); /* Asegurar altura mínima */
-        }
-        .card-box { 
-            background: white; 
-            border-radius: 10px; 
-            padding: 2rem; 
-            border: 1px solid #cbd5e0; 
-            box-shadow: 0 6px 18px rgba(0,0,0,0.04); 
-            overflow: hidden; /* Evitar overflow en las cards */
-        }
-        .card-box h2 { 
-            color: #0b2238; 
-            margin-top: 0; 
-            font-size: 1.45rem; 
-            border-bottom: 2px solid #0b2238; 
-            padding-bottom: 0.6rem; 
-        }
-        
-        .chat-card { 
-            background: #ffffff; 
-            border: 1px solid #e6eef6; 
-            border-radius: 12px; 
-            padding: 0.8rem; 
-            margin-bottom: 0.8rem; 
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-            transition: box-shadow 0.2s ease;
-        }
-        .chat-card:hover {
-            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-        }
-        .badge-tag { 
-            background: #184168; 
-            color: white; 
-            padding: 0.2rem 0.5rem; 
-            border-radius: 6px; 
-            font-size: 0.7rem; 
-            font-weight: 600; 
-        }
-        .badge-obj {
-            background: #f7fafc;
-            color: #2d3748;
-            padding: 0.2rem 0.5rem;
-            border-radius: 6px;
-            font-size: 0.7rem;
-            font-weight: 500;
-            border: 1px solid #e2e8f0;
-        }
-
-        /* Chat thread: reduce message box size for comfortable reading */
-        .chat-thread {
-            display: flex;
-            flex-direction: column;
-            gap: 0.8rem;
-            margin: 1.2rem 0;
-            max-height: 350px; /* Reducido para dejar espacio al formulario */
-            overflow-y: auto;
-            padding-right: 0.8rem;
-        }
-        .chat-msg {
-            padding: 1rem 1.5rem;
-            border-radius: 16px;
-            font-size: 1.1rem;
-            max-width: 75%;
-            white-space: pre-wrap;
-            line-height: 1.5;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.08);
-        }
-        .chat-msg-alumno {
-            background: linear-gradient(135deg, #e8f0fe 0%, #d2e3fc 100%);
-            color: #1f2937;
-            align-self: flex-end;
-            border-bottom-right-radius: 4px;
-            border: 1px solid #c5d9fc;
-        }
-        .chat-msg-profesor {
-            background: linear-gradient(135deg, #f0f9f0 0%, #e0f2e0 100%);
-            color: #0b2238;
-            align-self: flex-start;
-            border-bottom-left-radius: 4px;
-            border-left: 4px solid #4a7c59;
-            border: 1px solid #c8e6c9;
-        }
-        .chat-msg-header {
-            font-size: 0.85rem;
-            font-weight: 600;
-            margin-bottom: 0.3rem;
-            display: flex;
-            justify-content: space-between;
-            gap: 0.6rem;
-            opacity: 0.9;
-        }
-
-        .reply-box {
-            display: flex;
-            gap: 0.8rem;
-            margin-top: 1rem;
-            border-top: 1px solid #edf2f7;
-            padding-top: 1rem;
-        }
-        .reply-input {
-            flex: 1;
-            padding: 0.8rem 1.2rem;
-            border: 1px solid #cbd5e0;
-            border-radius: 10px;
-            font-family: inherit;
-            font-size: 1.05rem;
-            resize: none;
-            height: 56px;
-        }
-        .reply-btn {
-            background: #184168;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            padding: 0 1.5rem;
-            font-weight: 600;
-            font-size: 1.05rem;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: background 0.2s ease;
-        }
-        .reply-btn:hover {
-            background: #2d4a6f;
-        }
-
-        @media (max-width: 850px) {
-            .particulares-container { 
-                grid-template-columns: 1fr; 
-                margin: 1.5rem auto;
-            }
-            .chat-msg { 
-                max-width: 85%; 
-                padding: 0.8rem 1.2rem;
-                font-size: 1rem;
-            }
-            .chat-thread { 
-                max-height: 500px; 
-                gap: 0.6rem;
-            }
-            .reply-input { 
-                height: 50px; 
-                padding: 0.7rem 1rem;
-                font-size: 1rem;
-            }
-            .chat-msg-header { font-size: 0.8rem; }
-        }
-        
-        @media (max-width: 480px) {
-            .chat-msg { 
-                max-width: 92%; 
-                font-size: 0.95rem;
-                padding: 0.7rem 1rem;
-            }
-            .chat-thread { 
-                max-height: 450px; 
-                gap: 0.5rem;
-            }
-            .reply-input { 
-                height: 48px; 
-                padding: 0.6rem 0.9rem;
-                font-size: 0.95rem;
-            }
-            .badge-tag, .badge-obj { font-size: 0.7rem; }
-            .chat-msg-header { font-size: 0.75rem; }
-        }
-    </style>
+    <title>Clases particulares de inglés · Inglés Suez</title>
+    <meta name="description" content="Clases particulares de inglés 1 a 1, online o presenciales en Rosario Centro: conversación, exámenes, entrevistas y apoyo escolar.">
 </head>
-<body>
+<body class="tema-flyer">
 
     <%- include('partials/header') %>
 
-    <div class="particulares-container" style="<%= singleChatMode ? 'grid-template-columns: 1fr;' : '' %>">
-        
-        <!-- FORMULARIO DE SOLICITUD -->
-        <% if (!singleChatMode) { %>
-        <div class="card-box">
-            <h2>Solicitar Clase Particular</h2>
-            <form id="form-consulta-particular">
-                <div style="margin-bottom: 1rem;">
-                    <label style="display: block; font-weight: bold; margin-bottom: 0.3rem;">Modalidad preferida:</label>
-                    <select name="modalidad" required style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid #cbd5e0;">
-                        <option value="Online (1 a 1)">Online (1 a 1)</option>
-                        <option value="Presencial">Presencial</option>
-                        <option value="Grupal Reducida">Grupal Reducida</option>
-                    </select>
-                </div>
+    <%
+        const consultas = (typeof misConsultas !== 'undefined' && Array.isArray(misConsultas)) ? misConsultas : [];
+        const tieneConsultas = consultas.length > 0;
 
-                <div style="margin-bottom: 1rem;">
-                    <label style="display: block; font-weight: bold; margin-bottom: 0.3rem;">Objetivo principal:</label>
-                    <select name="objetivo" required style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid #cbd5e0;">
-                        <option value="Preparación de Exámenes">Preparación de Exámenes</option>
-                        <option value="Inglés Laboral / Entrevistas">Inglés Laboral / Entrevistas</option>
-                        <option value="Conversación y Fluidez">Conversación y Fluidez</option>
-                        <option value="Apoyo Escolar / Universitario">Apoyo Escolar / Universitario</option>
-                    </select>
-                </div>
+        // Arma el hilo de cada consulta sin duplicar el primer mensaje
+        // (mensaje_alumno también se guarda como primera fila del chat).
+        const hiloDe = (c) => {
+            const chat = Array.isArray(c.mensajesChat) ? c.mensajesChat : [];
+            const msgs = [];
+            if (!(chat.length && chat[0].emisor === 'ALUMNO' && chat[0].mensaje === c.mensaje_alumno)) {
+                msgs.push({ emisor: 'ALUMNO', mensaje: c.mensaje_alumno, fecha: c.fecha_consulta });
+            }
+            chat.forEach(m => msgs.push(m));
+            if (!chat.length && c.respuesta_profesor) {
+                msgs.push({ emisor: 'PROFESOR', mensaje: c.respuesta_profesor, fecha: c.fecha_respuesta || c.fecha_consulta });
+            }
+            return msgs;
+        };
+        const dia = (f) => f ? new Date(f).toLocaleDateString('es-AR', { day: 'numeric', month: 'long' }) : '';
+        const diaCorto = (f) => f ? new Date(f).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' }) : '';
+        const hora = (f) => f ? new Date(f).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }) : '';
+        const estrella = 'M50 0 C53 38 62 47 100 50 C62 53 53 62 50 100 C47 62 38 53 0 50 C38 47 47 38 50 0Z';
+    %>
 
-                <div style="margin-bottom: 1rem;">
-                    <label style="display: block; font-weight: bold; margin-bottom: 0.3rem;">Tu consulta o disponibilidad horaria:</label>
-                    <textarea name="mensaje" required placeholder="Escribe tus dudas, nivel aproximado o días/horarios disponibles..." style="width: 100%; height: 110px; padding: 0.6rem; border-radius: 6px; border: 1px solid #cbd5e0; font-family: inherit;"></textarea>
+    <!-- HERO -->
+    <section class="fx-pc-hero">
+        <div class="fx-pc-hero__grid">
+            <div>
+                <p class="fx-pc-kicker">
+                    <svg viewBox="0 0 100 100" aria-hidden="true"><path class="fx-star" d="<%= estrella %>"/></svg>
+                    Online o presencial en Rosario Centro
+                </p>
+                <h1 class="fx-pc-title">
+                    Clases de inglés
+                    <span class="fx-orbit-word">a tu medida
+                        <svg class="fx-orbit-word__path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                            <path pathLength="1" vector-effect="non-scaling-stroke" d="M 8 98 C 40 112, 96 96, 103 40 C 106 10, 92 -4, 70 2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                        </svg>
+                        <svg class="fx-orbit-word__star" viewBox="0 0 100 100" aria-hidden="true"><path class="fx-star" d="<%= estrella %>"/></svg>
+                    </span>
+                </h1>
+                <p class="fx-pc-lead">Clases 1 a 1 con Santiago, armadas según lo que necesitás: soltarte para hablar, rendir un examen o llegar seguro a una entrevista de trabajo.</p>
+                <div class="fx-pc-ctas">
+                    <% if (tieneConsultas) { %>
+                        <a href="#mis-consultas" class="fx-btn fx-btn--solid">Ver mis consultas</a>
+                        <a href="#pedir" class="fx-btn">Pedir otra clase</a>
+                    <% } else { %>
+                        <a href="#pedir" class="fx-btn fx-btn--solid">Pedir mi clase</a>
+                        <a href="https://api.whatsapp.com/send?phone=5493412161767" target="_blank" rel="noopener" class="fx-btn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3.5 20.5l1.3-4.2A8.5 8.5 0 1 1 8 19.4z" stroke-linejoin="round"/></svg>
+                            Escribir por WhatsApp
+                        </a>
+                    <% } %>
                 </div>
+            </div>
 
-                <button type="submit" id="btn-enviar" style="width: 100%; background: #184168; color: white; padding: 0.8rem; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 1rem;">
-                    Enviar Consulta
-                </button>
-            </form>
+            <!-- Conversación que se escribe sola: muestra cómo es una clase -->
+            <div class="fx-live" aria-label="Ejemplo de una clase particular">
+                <div class="fx-live__head">
+                    <span class="fx-live__avatar" aria-hidden="true">S</span>
+                    <span class="fx-live__who">Santiago<small>Profesor de inglés</small></span>
+                    <span class="fx-live__rec">En clase</span>
+                </div>
+                <div class="fx-live__thread" id="fx-live-thread" aria-hidden="true"></div>
+                <p class="fx-live__caption">Así arranca una clase de preparación para entrevistas</p>
+            </div>
         </div>
-        <% } %>
+    </section>
 
-        <!-- LISTA DE CONSULTAS Y CHAT CON EL PROFESOR -->
-        <div class="card-box">
-            <h2>Mis Consultas y Respuestas</h2>
+    <% if (tieneConsultas) { %>
+    <!-- CHAT CON EL PROFESOR -->
+    <section class="fx-block" id="mis-consultas" style="padding-top: 3.5rem;">
+        <div class="fx-block__head">
+            <h2>Tus consultas</h2>
+            <p>Acá hablás directo con el profesor para coordinar horarios y resolver dudas.</p>
+        </div>
 
-            <% if (typeof misConsultas !== 'undefined' && misConsultas.length > 0) { %>
-                <!-- Contenedor con scroll solo para las consultas -->
-                <div style="max-height: 600px; overflow-y: auto; padding-right: 0.5rem; margin-bottom: 1rem;">
-                    <% const consultasToShow = singleChatMode ? misConsultas.filter(x => x.id == activeConsultaId) : misConsultas; %>
-                    <% consultasToShow.forEach(c => { %>
-                        <div class="chat-card">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.3rem;">
-                                <div>
-                                    <span class="badge-tag"><%= c.modalidad %></span>
-                                    <span class="badge-obj"><%= c.objetivo %></span>
-                                </div>
-                                <span style="font-size: 0.8rem; color: #718096;"><%= new Date(c.fecha_consulta).toLocaleDateString('es-AR') %></span>
-                            </div>
-                            
-                            <!-- HILO DE CONVERSACIÓN DE LA CONSULTA -->
-                            <div class="chat-thread" style="max-height: 300px; overflow-y: auto; padding-right: 0.5rem;">
-                                <!-- Mensaje original del alumno -->
-                                <div class="chat-msg chat-msg-alumno">
-                                    <div class="chat-msg-header">
-                                        <span>Tú</span>
-                                    </div>
-                                    <%= c.mensaje_alumno %>
-                                </div>
-
-                                <!-- Historial de respuestas (si existen mensajes persistidos) -->
-                                <% if (c.mensajesChat && c.mensajesChat.length > 0) { %>
-                                    <% c.mensajesChat.forEach(m => { %>
-                                        <div class="chat-msg <%= m.emisor === 'PROFESOR' ? 'chat-msg-profesor' : 'chat-msg-alumno' %>">
-                                            <div class="chat-msg-header">
-                                                <span><%= m.emisor === 'PROFESOR' ? 'Profesor' : 'Tú' %></span>
-                                                <span style="opacity: 0.7; font-weight: normal;"><%= new Date(m.fecha).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }) %></span>
-                                            </div>
-                                            <%= m.mensaje %>
-                                        </div>
-                                    <% }) %>
-                                <% } else if (c.respuesta_profesor) { %>
-                                    <!-- Fallback para compatibilidad previa -->
-                                    <div class="chat-msg chat-msg-profesor">
-                                        <div class="chat-msg-header">
-                                            <span>Profesor</span>
-                                        </div>
-                                        <%= c.respuesta_profesor %>
-                                    </div>
-                                <% } %>
-                            </div>
-
-                            <% if (!c.respuesta_profesor && (!c.mensajesChat || c.mensajesChat.length === 0)) { %>
-                                <div style="background: #fffaf0; border: 1px solid #fbd38d; color: #c05621; padding: 0.6rem; border-radius: 4px; font-size: 0.85rem; margin-top: 0.5rem;">
-                                    <em>Consulta recibida. El profesor te responderá a la brevedad.</em>
-                                </div>
-                            <% } %>
-
-                            <!-- INPUT PARA RESPONDER DENTRO DEL CHAT -->
-                            <form class="form-responder-chat reply-box" data-consulta-id="<%= c.id %>">
-                                <textarea name="mensaje" class="reply-input" placeholder="Escribe un mensaje..." required></textarea>
-                                <button type="submit" class="reply-btn">Enviar</button>
-                            </form>
-                        </div>
+        <div class="fx-chat" id="fx-chat">
+            <aside class="fx-chat__side">
+                <div class="fx-chat__side-head">
+                    <strong>Conversaciones</strong>
+                    <a href="#pedir" class="fx-btn fx-btn--sm">Nueva</a>
+                </div>
+                <ul class="fx-chat__list" role="tablist" aria-label="Tus consultas">
+                    <% consultas.forEach((c, i) => { const h = hiloDe(c); const ult = h[h.length - 1] || {}; %>
+                        <li>
+                            <button type="button" class="fx-chat__item" role="tab" data-consulta="<%= c.id %>" aria-selected="<%= i === 0 ? 'true' : 'false' %>">
+                                <span class="fx-chat__item-top">
+                                    <span class="fx-chat__item-name"><%= c.objetivo %></span>
+                                    <span class="fx-chat__item-date"><%= diaCorto(ult.fecha || c.fecha_consulta) %></span>
+                                </span>
+                                <span class="fx-chat__item-prev" style="display: block;">
+                                    <% if (ult.emisor === 'PROFESOR') { %><span class="fx-chat__dot" title="Te respondió el profesor"></span><% } %><%= ult.emisor === 'PROFESOR' ? 'Profesor: ' : 'Vos: ' %><%= ult.mensaje %>
+                                </span>
+                            </button>
+                        </li>
                     <% }) %>
-                </div> <!-- Cierre del contenedor con scroll -->
-            <% } else { %>
-                <div style="text-align: center; padding: 3rem 1rem; color: #a0aec0;">
-                    <div style="font-size: 2.5rem; margin-bottom: 0.5rem;"> </div>
-                    <p style="margin: 0;">Aún no has realizado consultas de clases particulares.</p>
-                    <small>Completa el formulario para enviar tu solicitud al profesor.</small>
-                </div>
-            <% } %>
-        </div>
+                </ul>
+            </aside>
 
-    </div>
+            <div class="fx-chat__main">
+                <% consultas.forEach((c, i) => { const h = hiloDe(c); let ultimoDia = ''; %>
+                    <div class="fx-chat__conv" data-consulta="<%= c.id %>" role="tabpanel" style="display: <%= i === 0 ? 'flex' : 'none' %>; flex-direction: column; flex: 1; min-height: 0;">
+                        <div class="fx-chat__head">
+                            <button type="button" class="fx-chat__back" aria-label="Volver a la lista">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </button>
+                            <span class="fx-chat__head-title"><%= c.objetivo %></span>
+                            <span class="fx-tag"><%= c.modalidad %></span>
+                            <span class="fx-chat__head-meta">Desde el <%= dia(c.fecha_consulta) %></span>
+                        </div>
+
+                        <div class="fx-thread" aria-live="polite">
+                            <% h.forEach(m => { const d = dia(m.fecha); %>
+                                <% if (d && d !== ultimoDia) { ultimoDia = d; %>
+                                    <div class="fx-thread__day"><%= d %></div>
+                                <% } %>
+                                <div class="fx-msg <%= m.emisor === 'PROFESOR' ? 'fx-msg--them' : 'fx-msg--me' %>">
+                                    <div class="fx-msg__bubble"><%= m.mensaje %></div>
+                                    <span class="fx-msg__time"><%= m.emisor === 'PROFESOR' ? 'Profesor' : 'Vos' %><%= hora(m.fecha) ? ', ' + hora(m.fecha) : '' %></span>
+                                </div>
+                            <% }) %>
+                            <% if (!h.some(m => m.emisor === 'PROFESOR')) { %>
+                                <p class="fx-thread__note">Tu consulta llegó. El profesor te va a responder por acá; también te avisamos en Mis mensajes.</p>
+                            <% } %>
+                        </div>
+
+                        <form class="fx-composer" data-consulta="<%= c.id %>">
+                            <label class="sr-only" for="msg-<%= c.id %>" style="position: absolute; left: -9999px;">Mensaje</label>
+                            <textarea id="msg-<%= c.id %>" name="mensaje" rows="1" placeholder="Escribí un mensaje" required></textarea>
+                            <button type="submit" class="fx-send" aria-label="Enviar mensaje">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h13M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </button>
+                        </form>
+                        <p class="fx-composer__hint">Enter para enviar, Shift + Enter para un salto de línea</p>
+                    </div>
+                <% }) %>
+            </div>
+        </div>
+    </section>
+    <% } %>
+
+    <!-- MODALIDADES -->
+    <section class="fx-block">
+        <div class="fx-block__head">
+            <h2>¿Cómo querés cursar?</h2>
+            <p>Elegí una opción y la dejamos marcada en tu pedido.</p>
+        </div>
+        <div class="fx-pick-grid" data-grupo="modalidad">
+            <button type="button" class="fx-pick" data-valor="Online (1 a 1)" aria-pressed="false">
+                <span class="fx-pick__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l5 5 9-10" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                <svg class="fx-pick__icon" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="8" y="9" width="24" height="17" rx="1.5"/><path d="M4 31h32l-2 2.5H6z" stroke-linejoin="round"/></svg>
+                <strong>Online 1 a 1</strong>
+                <span>Por videollamada, desde donde estés. Es la opción más flexible para encajar en tu semana.</span>
+            </button>
+            <button type="button" class="fx-pick" data-valor="Presencial" aria-pressed="false">
+                <span class="fx-pick__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l5 5 9-10" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                <svg class="fx-pick__icon" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M20 36s11-10.4 11-19a11 11 0 0 0-22 0c0 8.6 11 19 11 19z" stroke-linejoin="round"/><circle cx="20" cy="17" r="4"/></svg>
+                <strong>Presencial</strong>
+                <span>Cara a cara en Rosario Centro, para quienes aprenden mejor en persona.</span>
+            </button>
+            <button type="button" class="fx-pick" data-valor="Grupal Reducida" aria-pressed="false">
+                <span class="fx-pick__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l5 5 9-10" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                <svg class="fx-pick__icon" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="14" cy="14" r="5"/><circle cx="27" cy="15" r="4"/><path d="M4 33c0-5.5 4.5-9 10-9s10 3.5 10 9zM23 24.5c1-.3 2-.5 3-.5 4.7 0 9 3 9 8" stroke-linejoin="round"/></svg>
+                <strong>Grupal reducida</strong>
+                <span>Con amigos, pareja o compañeros de trabajo. Se divide el costo y se practica más conversación.</span>
+            </button>
+        </div>
+    </section>
+
+    <!-- OBJETIVOS -->
+    <section class="fx-block">
+        <div class="fx-block__head">
+            <h2>¿Para qué lo necesitás?</h2>
+            <p>Cada clase se arma alrededor de tu objetivo, no de un libro.</p>
+        </div>
+        <div class="fx-pick-grid fx-pick-grid--4" data-grupo="objetivo">
+            <button type="button" class="fx-pick" data-valor="Conversación y Fluidez" aria-pressed="false">
+                <span class="fx-pick__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l5 5 9-10" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                <svg class="fx-pick__icon" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M20 6c8.3 0 15 5.6 15 12.5S28.3 31 20 31c-1.6 0-3.1-.2-4.5-.6L7 34l2.2-6.2C6.6 25.5 5 22.2 5 18.5 5 11.6 11.7 6 20 6z" stroke-linejoin="round"/></svg>
+                <strong>Hablar con fluidez</strong>
+                <span>Perderle el miedo a hablar y entender a nativos.</span>
+            </button>
+            <button type="button" class="fx-pick" data-valor="Inglés Laboral / Entrevistas" aria-pressed="false">
+                <span class="fx-pick__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l5 5 9-10" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                <svg class="fx-pick__icon" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="5" y="12" width="30" height="20" rx="2"/><path d="M15 12V8h10v4M5 20h30"/></svg>
+                <strong>Trabajo y entrevistas</strong>
+                <span>Reuniones, mails y entrevistas en inglés.</span>
+            </button>
+            <button type="button" class="fx-pick" data-valor="Preparación de Exámenes" aria-pressed="false">
+                <span class="fx-pick__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l5 5 9-10" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                <svg class="fx-pick__icon" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M10 5h14l7 7v23H10z" stroke-linejoin="round"/><path d="M24 5v7h7M15 21l3 3 7-7"/></svg>
+                <strong>Rendir un examen</strong>
+                <span>First, IELTS, TOEFL o finales de la facultad.</span>
+            </button>
+            <button type="button" class="fx-pick" data-valor="Apoyo Escolar / Universitario" aria-pressed="false">
+                <span class="fx-pick__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l5 5 9-10" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                <svg class="fx-pick__icon" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 14l16-7 16 7-16 7z" stroke-linejoin="round"/><path d="M10 17v8c0 3 4.5 5 10 5s10-2 10-5v-8"/></svg>
+                <strong>Apoyo escolar</strong>
+                <span>Para la escuela o la universidad, a cualquier edad.</span>
+            </button>
+        </div>
+    </section>
+
+    <!-- CÓMO EMPEZAR (secuencia real) -->
+    <section class="fx-block">
+        <div class="fx-block__head">
+            <h2>Cómo empezar</h2>
+        </div>
+        <ol class="fx-steps">
+            <li><strong>Contás qué necesitás</strong><span>Completás el pedido de abajo con tu objetivo y tus horarios.</span></li>
+            <li><strong>Acordamos el horario</strong><span>Te respondo por el chat de esta página para coordinar día, hora y modalidad.</span></li>
+            <li><strong>Primera clase</strong><span>Arrancamos con una charla para ver tu nivel y armar el plan.</span></li>
+        </ol>
+    </section>
+
+    <!-- PEDIDO -->
+    <section class="fx-block fx-pc-form-wrap" id="pedir" style="padding-bottom: 1rem;">
+        <div class="fx-split">
+            <div>
+                <h2 class="fx-page__title">Pedí tu <span class="fx-steel">clase</span></h2>
+                <p class="fx-page__lead">Te contesto en esta misma página, en el chat de tus consultas. Si preferís, también podés escribir por WhatsApp.</p>
+                <ul class="fx-points" style="margin-top: 2rem;">
+                    <li><svg viewBox="0 0 100 100" aria-hidden="true"><path class="fx-star" d="<%= estrella %>"/></svg><span>Sin compromiso<small>Primero hablamos y después decidís.</small></span></li>
+                    <li><svg viewBox="0 0 100 100" aria-hidden="true"><path class="fx-star" d="<%= estrella %>"/></svg><span>Horarios flexibles<small>Mañana, tarde o noche, según tu semana.</small></span></li>
+                    <li><svg viewBox="0 0 100 100" aria-hidden="true"><path class="fx-star" d="<%= estrella %>"/></svg><span>Todos los niveles<small>Desde cero hasta avanzado.</small></span></li>
+                </ul>
+            </div>
+
+            <div class="fx-panel">
+                <% if (locals.user) { %>
+                    <h2>Tu pedido</h2>
+                    <p>Contame lo básico y seguimos por chat.</p>
+                    <form id="form-consulta-particular">
+                        <div class="fx-field">
+                            <label for="f-modalidad">Modalidad</label>
+                            <select id="f-modalidad" name="modalidad" class="fx-input" required>
+                                <option value="Online (1 a 1)">Online 1 a 1</option>
+                                <option value="Presencial">Presencial en Rosario Centro</option>
+                                <option value="Grupal Reducida">Grupal reducida</option>
+                            </select>
+                        </div>
+                        <div class="fx-field">
+                            <label for="f-objetivo">Objetivo</label>
+                            <select id="f-objetivo" name="objetivo" class="fx-input" required>
+                                <option value="Conversación y Fluidez">Hablar con fluidez</option>
+                                <option value="Inglés Laboral / Entrevistas">Trabajo y entrevistas</option>
+                                <option value="Preparación de Exámenes">Rendir un examen</option>
+                                <option value="Apoyo Escolar / Universitario">Apoyo escolar o universitario</option>
+                            </select>
+                        </div>
+                        <div class="fx-field">
+                            <label for="f-mensaje">Tu nivel y disponibilidad</label>
+                            <textarea id="f-mensaje" name="mensaje" class="fx-input" required placeholder="Ej.: tengo nivel intermedio, puedo martes y jueves después de las 18 h."></textarea>
+                        </div>
+                        <button type="submit" id="btn-enviar" class="fx-btn fx-btn--solid" style="width: 100%;">Enviar pedido</button>
+                        <p class="fx-status" id="form-status" role="status"></p>
+                    </form>
+                <% } else { %>
+                    <h2>Creá tu cuenta para pedir la clase</h2>
+                    <p>Con tu cuenta podés chatear con el profesor y seguir tus consultas desde acá.</p>
+                    <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
+                        <a href="/auth/register" class="fx-btn fx-btn--solid">Crear cuenta</a>
+                        <a href="/auth/login" class="fx-btn">Ya tengo cuenta</a>
+                    </div>
+                    <p style="margin: 1.4rem 0 0; color: var(--fx-muted);">¿Preferís no registrarte? <a href="https://api.whatsapp.com/send?phone=5493412161767" target="_blank" rel="noopener" style="color: var(--fx-steel);">Escribime por WhatsApp</a>.</p>
+                <% } %>
+            </div>
+        </div>
+    </section>
 
     <%- include('partials/footer') %>
 
     <script>
-        // Formulario principal de nueva solicitud
-        const form = document.getElementById('form-consulta-particular');
+    (function () {
+        var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        // ---------- Conversación en vivo del hero ----------
+        var guion = [
+            { q: 'them', t: 'Hi! What would you like to work on today?' },
+            { q: 'me',   t: 'I have a job interview on Friday 😬' },
+            { q: 'them', t: 'Perfect, let\'s practice. Tell me about yourself.' },
+            { q: 'me',   t: 'I\'m a graphic designer and I love working with brands.' },
+            { q: 'them', t: 'Great start! Try "I specialize in branding" — it sounds more confident.' }
+        ];
+        var live = document.getElementById('fx-live-thread');
+        function burbuja(m) {
+            var d = document.createElement('div');
+            d.className = 'fx-msg ' + (m.q === 'me' ? 'fx-msg--me' : 'fx-msg--them');
+            var b = document.createElement('div');
+            b.className = 'fx-msg__bubble';
+            b.textContent = m.t;
+            d.appendChild(b);
+            return d;
+        }
+        if (live) {
+            if (reduce) {
+                guion.forEach(function (m) { live.appendChild(burbuja(m)); });
+            } else {
+                var i = 0;
+                var paso = function () {
+                    if (i >= guion.length) {
+                        setTimeout(function () { live.innerHTML = ''; i = 0; paso(); }, 4200);
+                        return;
+                    }
+                    var m = guion[i];
+                    var typing = document.createElement('div');
+                    typing.className = 'fx-msg ' + (m.q === 'me' ? 'fx-msg--me' : 'fx-msg--them');
+                    typing.innerHTML = '<div class="fx-msg__bubble fx-typing"><i></i><i></i><i></i></div>';
+                    live.appendChild(typing);
+                    setTimeout(function () {
+                        live.replaceChild(burbuja(m), typing);
+                        i++;
+                        setTimeout(paso, 900);
+                    }, 650 + Math.min(m.t.length * 22, 1300));
+                };
+                setTimeout(paso, 900);
+            }
+        }
+
+        // ---------- Tarjetas que completan el pedido ----------
+        var params = new URLSearchParams(location.search);
+        function elegir(grupo, valor, desplazar) {
+            var cont = document.querySelector('[data-grupo="' + grupo + '"]');
+            if (cont) cont.querySelectorAll('.fx-pick').forEach(function (b) {
+                b.setAttribute('aria-pressed', b.dataset.valor === valor ? 'true' : 'false');
+            });
+            var sel = document.getElementById('f-' + grupo);
+            if (sel) sel.value = valor;
+            if (desplazar) {
+                var dest = document.getElementById('pedir');
+                if (dest && grupo === 'objetivo') dest.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' });
+            }
+        }
+        document.querySelectorAll('[data-grupo] .fx-pick').forEach(function (b) {
+            b.addEventListener('click', function () {
+                elegir(b.closest('[data-grupo]').dataset.grupo, b.dataset.valor, true);
+            });
+        });
+        ['modalidad', 'objetivo'].forEach(function (g) {
+            var sel = document.getElementById('f-' + g);
+            if (params.get(g)) elegir(g, params.get(g), false);
+            else if (sel) elegir(g, sel.value, false);
+            if (sel) sel.addEventListener('change', function () { elegir(g, sel.value, false); });
+        });
+
+        // ---------- Nuevo pedido ----------
+        var form = document.getElementById('form-consulta-particular');
         if (form) {
-            form.addEventListener('submit', async (e) => {
+            form.addEventListener('submit', async function (e) {
                 e.preventDefault();
-                const btn = document.getElementById('btn-enviar');
+                var btn = document.getElementById('btn-enviar');
+                var status = document.getElementById('form-status');
                 btn.disabled = true;
-                btn.innerText = 'Enviando...';
-
-                const formData = new FormData(form);
-                const data = Object.fromEntries(formData.entries());
-
+                btn.textContent = 'Enviando…';
+                status.classList.remove('is-error');
+                status.textContent = '';
                 try {
-                    const res = await fetch('/clases-particulares/enviar', {
+                    var res = await fetch('/clases-particulares/enviar', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(data)
+                        body: JSON.stringify(Object.fromEntries(new FormData(form).entries()))
                     });
-
-                    const resData = await res.json();
-
-                    if (resData.success) {
-                        alert(resData.message);
-                        window.location.reload();
-                    } else {
-                        alert(resData.message || 'Error al enviar la consulta.');
-                        btn.disabled = false;
-                        btn.innerText = 'Enviar Consulta';
+                    var data = await res.json();
+                    if (data.success) {
+                        status.textContent = 'Pedido enviado. Abriendo tu chat con el profesor…';
+                        setTimeout(function () { location.href = '/clases-particulares#mis-consultas'; location.reload(); }, 900);
+                        return;
                     }
+                    throw new Error(data.message || 'No se pudo enviar el pedido.');
                 } catch (err) {
-                    console.error(err);
-                    alert('Error de conexión al enviar la consulta.');
+                    status.classList.add('is-error');
+                    status.textContent = (err && err.message && err.message !== 'Failed to fetch') ? err.message : 'No hay conexión. Probá de nuevo en un momento.';
                     btn.disabled = false;
-                    btn.innerText = 'Enviar Consulta';
+                    btn.textContent = 'Enviar pedido';
                 }
             });
         }
 
-        // Formularios de respuestas continuas en el chat
-        document.querySelectorAll('.form-responder-chat').forEach(f => {
-            f.addEventListener('submit', async (e) => {
+        // ---------- Chat ----------
+        var chat = document.getElementById('fx-chat');
+        if (!chat) return;
+
+        function abajo(conv) { var t = conv.querySelector('.fx-thread'); if (t) t.scrollTop = t.scrollHeight; }
+        function abrir(id, enMovil) {
+            if (enMovil) chat.classList.add('is-thread');
+            chat.querySelectorAll('.fx-chat__item').forEach(function (b) { b.setAttribute('aria-selected', b.dataset.consulta === id ? 'true' : 'false'); });
+            chat.querySelectorAll('.fx-chat__conv').forEach(function (c) {
+                var on = c.dataset.consulta === id;
+                c.style.display = on ? 'flex' : 'none';
+                if (on) abajo(c);
+            });
+        }
+        chat.querySelectorAll('.fx-chat__item').forEach(function (b) {
+            b.addEventListener('click', function () { abrir(b.dataset.consulta, true); });
+        });
+        chat.querySelectorAll('.fx-chat__back').forEach(function (b) {
+            b.addEventListener('click', function () { chat.classList.remove('is-thread'); });
+        });
+        var primera = chat.querySelector('.fx-chat__conv');
+        if (primera) abajo(primera);
+
+        chat.querySelectorAll('.fx-composer').forEach(function (f) {
+            var ta = f.querySelector('textarea');
+            var btn = f.querySelector('button');
+            ta.addEventListener('input', function () { ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 160) + 'px'; });
+            ta.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); f.requestSubmit(); }
+            });
+            f.addEventListener('submit', async function (e) {
                 e.preventDefault();
-                const consultaId = f.getAttribute('data-consulta-id');
-                const textarea = f.querySelector('textarea');
-                const btn = f.querySelector('button');
-                const mensaje = textarea.value.trim();
-
-                if (!mensaje) return;
-
+                var texto = ta.value.trim();
+                if (!texto) return;
+                var conv = f.closest('.fx-chat__conv');
+                var hilo = conv.querySelector('.fx-thread');
+                var nota = hilo.querySelector('.fx-thread__note');
+                var msg = document.createElement('div');
+                msg.className = 'fx-msg fx-msg--me fx-msg--pending';
+                msg.innerHTML = '<div class="fx-msg__bubble"></div><span class="fx-msg__time">Enviando…</span>';
+                msg.firstChild.textContent = texto;
+                hilo.insertBefore(msg, nota || null);
+                ta.value = ''; ta.style.height = '';
+                abajo(conv);
                 btn.disabled = true;
-
                 try {
-                    const res = await fetch('/clases-particulares/enviar-mensaje', {
+                    var res = await fetch('/clases-particulares/enviar-mensaje', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ consultaId, mensaje })
+                        body: JSON.stringify({ consultaId: f.dataset.consulta, mensaje: texto })
                     });
-
-                    const resData = await res.json();
-
-                    if (resData.success) {
-                        window.location.reload();
-                    } else {
-                        alert(resData.message || 'Error al enviar mensaje.');
-                        btn.disabled = false;
-                    }
+                    var data = await res.json();
+                    if (!data.success) throw new Error(data.message);
+                    msg.classList.remove('fx-msg--pending');
+                    msg.lastChild.textContent = 'Vos, ' + new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+                    var item = chat.querySelector('.fx-chat__item[data-consulta="' + f.dataset.consulta + '"] .fx-chat__item-prev');
+                    if (item) item.textContent = 'Vos: ' + texto;
                 } catch (err) {
-                    console.error(err);
-                    alert('Error de conexión.');
+                    msg.classList.remove('fx-msg--pending');
+                    msg.classList.add('fx-msg--failed');
+                    msg.lastChild.textContent = 'No se envió. Tocá para reintentar.';
+                    msg.style.cursor = 'pointer';
+                    msg.addEventListener('click', function () { ta.value = texto; msg.remove(); ta.focus(); }, { once: true });
+                } finally {
                     btn.disabled = false;
                 }
             });
         });
+    })();
     </script>
 </body>
 </html>

@@ -4,325 +4,239 @@
     <link rel="icon" type="image/png" href="/img/favicon.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Particulares - INGLÉS SUEZ</title>
-    <link rel="stylesheet" href="/css/styles.css">
-    <style>
-        body { background-color: #f4f7f6; margin: 0; font-family: system-ui, -apple-system, sans-serif; }
-        
-        /* Pestañas de Navegación del Profesor */
-        .teacher-nav-tabs {
-            max-width: 1400px;
-            margin: 1.5rem auto 0 auto;
-            display: flex;
-            gap: 0.5rem;
-            padding: 0 1rem;
-        }
-        .teacher-tab {
-            padding: 0.8rem 1.5rem;
-            background: #cbd5e0;
-            color: #0b2238;
-            text-decoration: none;
-            font-weight: bold;
-            border-radius: 8px 8px 0 0;
-            font-size: 0.95rem;
-            transition: background 0.2s, color 0.2s;
-        }
-        .teacher-tab:hover { background: #a0aec0; }
-        .teacher-tab.active {
-            background: #ffffff;
-            color: #184168;
-            border-top: 3px solid #184168;
-        }
-
-        .teacher-layout { display: flex; height: calc(100vh - 140px); max-width: 1400px; margin: 0 auto 2rem auto; background: #ffffff; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-radius: 0 0 8px 8px; }
-        
-        /* Sidebar de Alumnos */
-        .sidebar-alumnos { width: 340px; background: #ffffff; border-right: 1px solid #cbd5e0; flex-shrink: 0; display: flex; flex-direction: column; }
-        .sidebar-header { padding: 1.2rem 1.5rem; background: #0b2238; color: #ffffff; }
-        .sidebar-header h2 { margin: 0; font-size: 1.1rem; }
-        .lista-alumnos { overflow-y: auto; flex-grow: 1; }
-        
-        .alumno-item { padding: 1rem 1.2rem; border-bottom: 1px solid #edf2f7; cursor: pointer; transition: background 0.2s; display: flex; justify-content: space-between; align-items: center; }
-        .alumno-item:hover { background: #f8fafc; }
-        .alumno-item.active { background: #ebf8ff; border-left: 4px solid #3182ce; }
-        .alumno-nombre { font-weight: bold; color: #0b2238; display: block; font-size: 0.95rem; }
-        .alumno-email { font-size: 0.8rem; color: #718096; }
-        .badge-pendiente { background: #e53e3e; color: #ffffff; border-radius: 12px; padding: 0.15rem 0.5rem; font-size: 0.75rem; font-weight: bold; }
-
-        /* Área Central */
-        .chat-container { flex-grow: 1; display: flex; flex-direction: column; background: #f8fafc; }
-        .chat-header { padding: 1.2rem 2rem; background: #ffffff; border-bottom: 1px solid #cbd5e0; }
-        .chat-body { flex-grow: 1; padding: 2rem; overflow-y: auto; }
-        .chat-placeholder { text-align: center; color: #a0aec0; margin-top: 6rem; }
-
-        /* Tarjetas de Consultas Particulares */
-        .consulta-card { background: #ffffff; border: 1px solid #cbd5e0; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.8rem; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
-        .badge { background: #e2ebd5; color: #184168; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
-        .badge-objetivo { background: #edf2f7; color: #2d3748; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.8rem; font-weight: 600; margin-left: 0.4rem; }
-        
-        /* Estilos del Hilo Interactivo de Chat */
-        .chat-thread-box {
-            display: flex;
-            flex-direction: column;
-            gap: 0.6rem;
-            margin: 1rem 0;
-            max-height: 300px;
-            overflow-y: auto;
-            padding-right: 0.4rem;
-        }
-        .chat-msg-item {
-            padding: 0.8rem 1rem;
-            border-radius: 8px;
-            font-size: 0.92rem;
-            max-width: 85%;
-            white-space: pre-wrap;
-            line-height: 1.4;
-        }
-        .msg-alumno {
-            background: #f1f5f9;
-            color: #1e293b;
-            align-self: flex-start;
-            border-left: 3px solid #3182ce;
-        }
-        .msg-profesor {
-            background: #ebf8ff;
-            color: #2b6cb0;
-            align-self: flex-end;
-            border-right: 3px solid #184168;
-        }
-        .msg-header {
-            font-size: 0.75rem;
-            font-weight: bold;
-            margin-bottom: 0.3rem;
-            display: flex;
-            justify-content: space-between;
-            gap: 1rem;
-        }
-
-        .respuesta-box { margin-top: 1.2rem; background: #f7fafc; padding: 1.2rem; border-radius: 6px; border: 1px solid #e2e8f0; }
-
-        @media (max-width: 850px) {
-            .teacher-layout { flex-direction: column; height: auto; }
-            .sidebar-alumnos { width: 100%; height: 250px; }
-        }
-    </style>
+    <title>Clases particulares · Panel del profesor</title>
 </head>
-<body>
+<body class="tema-flyer">
 
     <%- include('partials/header') %>
 
-    <!-- Navegación de Pestañas del Profesor -->
-    <div class="teacher-nav-tabs">
-        <a href="/profesor/entregas" class="teacher-tab">Entregas de Cursos</a>
-        <a href="/profesor/gestion" class="teacher-tab">Gestión de Cursos</a>
-        <a href="/profesor/consultas" class="teacher-tab">Consultas de Alumnos</a>
-        <a href="/profesor/particulares" class="teacher-tab active">Clases Particulares</a>
-    </div>
+    <%
+        const lista = Array.isArray(consultas) ? consultas : [];
 
-    <div class="teacher-layout">
-        <!-- Sidebar -->
-        <aside class="sidebar-alumnos">
-            <div class="sidebar-header">
-                <h2>Consultas Particulares</h2>
-            </div>
-            <div class="lista-alumnos" id="lista-alumnos">
-                <!-- Dinámico -->
-            </div>
-        </aside>
+        // Mismo criterio que la vista del alumno: no duplicar el primer mensaje
+        const hiloDe = (c) => {
+            const chat = Array.isArray(c.mensajesChat) ? c.mensajesChat : [];
+            const msgs = [];
+            if (!(chat.length && chat[0].emisor === 'ALUMNO' && chat[0].mensaje === c.mensaje_alumno)) {
+                msgs.push({ emisor: 'ALUMNO', mensaje: c.mensaje_alumno, fecha: c.fecha_consulta });
+            }
+            chat.forEach(m => msgs.push(m));
+            if (!chat.length && c.respuesta_profesor) {
+                msgs.push({ emisor: 'PROFESOR', mensaje: c.respuesta_profesor, fecha: c.fecha_respuesta || c.fecha_consulta });
+            }
+            return msgs;
+        };
+        const hilos = lista.map(c => {
+            const h = hiloDe(c);
+            const ult = h[h.length - 1] || {};
+            return { c, h, ult, pendiente: ult.emisor !== 'PROFESOR' };
+        });
+        // Primero las que esperan respuesta, después por fecha del último mensaje
+        hilos.sort((a, b) => (b.pendiente - a.pendiente) || (new Date(b.ult.fecha || 0) - new Date(a.ult.fecha || 0)));
+        const pendientes = hilos.filter(x => x.pendiente).length;
 
-        <!-- Chat Container -->
-        <main class="chat-container">
-            <div class="chat-header" id="chat-header" style="display: none;">
-                <h3 id="chat-alumno-nombre" style="margin: 0; color: #0b2238;"></h3>
-                <span id="chat-alumno-email" style="color: #718096; font-size: 0.85rem;"></span>
-            </div>
+        const dia = (f) => f ? new Date(f).toLocaleDateString('es-AR', { day: 'numeric', month: 'long' }) : '';
+        const diaCorto = (f) => f ? new Date(f).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' }) : '';
+        const hora = (f) => f ? new Date(f).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }) : '';
+        const inicial = (n) => (n || '?').trim().charAt(0).toUpperCase();
+    %>
 
-            <div class="chat-body" id="chat-body">
-                <div class="chat-placeholder" id="chat-placeholder">
-                    <div style="font-size: 3rem; margin-bottom: 0.5rem;">🎓</div>
-                    <h3 style="color: #0b2238; margin-top: 0;">Consultas de Clases Particulares</h3>
-                    <p>Selecciona un alumno para revisar su solicitud de clase particular y responderle.</p>
+    <main class="fx-page">
+        <nav class="fx-tabs" aria-label="Secciones del profesor">
+            <a href="/profesor/entregas">Entregas de cursos</a>
+            <a href="/profesor/gestion">Gestión de cursos</a>
+            <a href="/profesor/consultas">Consultas de alumnos</a>
+            <a href="/profesor/particulares" aria-current="page">Clases particulares</a>
+        </nav>
+
+        <div class="fx-block__head" style="margin: 2.2rem 0 0;">
+            <h1 class="fx-page__title">Clases <span class="fx-steel">particulares</span></h1>
+            <p><%= pendientes === 0 ? 'Estás al día: no hay consultas esperando respuesta.' : (pendientes === 1 ? 'Hay 1 consulta esperando tu respuesta.' : 'Hay ' + pendientes + ' consultas esperando tu respuesta.') %></p>
+        </div>
+
+        <% if (hilos.length === 0) { %>
+            <div class="fx-panel" style="margin-top: 2rem; text-align: center; padding: 3rem 1.5rem;">
+                <h2>Todavía no llegaron consultas</h2>
+                <p style="margin: 0;">Cuando un alumno pida una clase desde la página de particulares, la vas a ver acá.</p>
+            </div>
+        <% } else { %>
+        <div class="fx-chat" id="fx-chat">
+            <aside class="fx-chat__side">
+                <div class="fx-chat__side-head" style="flex-wrap: wrap;">
+                    <div class="fx-seg" role="group" aria-label="Filtrar consultas">
+                        <button type="button" data-filtro="pendientes" aria-pressed="<%= pendientes > 0 ? 'true' : 'false' %>">Sin responder <span class="fx-badge-count"><%= pendientes %></span></button>
+                        <button type="button" data-filtro="todas" aria-pressed="<%= pendientes > 0 ? 'false' : 'true' %>">Todas</button>
+                    </div>
+                    <input type="search" class="fx-input" id="fx-buscar" placeholder="Buscar alumno" aria-label="Buscar alumno" style="padding: 0.55rem 0.9rem; border-radius: 999px;">
                 </div>
+                <ul class="fx-chat__list" role="tablist" aria-label="Consultas">
+                    <% hilos.forEach(({ c, ult, pendiente }) => { %>
+                        <li data-pendiente="<%= pendiente ? '1' : '0' %>" data-nombre="<%= ((c.usuario_nombre || '') + ' ' + (c.usuario_email || '')).toLowerCase() %>">
+                            <button type="button" class="fx-chat__item fx-chat__item--avatar" role="tab" data-consulta="<%= c.id %>" aria-selected="false">
+                                <span class="fx-avatar" aria-hidden="true"><%= inicial(c.usuario_nombre) %></span>
+                                <span style="min-width: 0;">
+                                    <span class="fx-chat__item-top">
+                                        <span class="fx-chat__item-name"><%= c.usuario_nombre %></span>
+                                        <span class="fx-chat__item-date"><%= diaCorto(ult.fecha || c.fecha_consulta) %></span>
+                                    </span>
+                                    <span class="fx-chat__item-prev" style="display: block;">
+                                        <% if (pendiente) { %><span class="fx-chat__dot" title="Esperando respuesta"></span><% } %><%= ult.emisor === 'PROFESOR' ? 'Vos: ' : '' %><%= ult.mensaje %>
+                                    </span>
+                                </span>
+                            </button>
+                        </li>
+                    <% }) %>
+                </ul>
+                <p class="fx-chat__empty-list" id="fx-lista-vacia" hidden>No hay consultas con ese filtro.</p>
+            </aside>
 
-                <div id="contenedor-consultas-alumno" style="display: none;"></div>
+            <div class="fx-chat__main">
+                <div class="fx-chat__blank" id="fx-blank">Elegí una consulta para ver la conversación.</div>
+                <% hilos.forEach(({ c, h }) => { let ultimoDia = ''; %>
+                    <div class="fx-chat__conv" data-consulta="<%= c.id %>" role="tabpanel" style="display: none; flex-direction: column; flex: 1; min-height: 0;">
+                        <div class="fx-chat__head">
+                            <button type="button" class="fx-chat__back" aria-label="Volver a la lista">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </button>
+                            <span class="fx-avatar" aria-hidden="true"><%= inicial(c.usuario_nombre) %></span>
+                            <span style="min-width: 0;">
+                                <span class="fx-chat__head-title" style="display: block;"><%= c.usuario_nombre %></span>
+                                <a href="mailto:<%= c.usuario_email %>" class="fx-chat__head-meta" style="text-decoration: none;"><%= c.usuario_email %></a>
+                            </span>
+                            <span style="margin-left: auto; display: flex; gap: 0.4rem; flex-wrap: wrap;">
+                                <span class="fx-tag"><%= c.modalidad %></span>
+                                <span class="fx-tag"><%= c.objetivo %></span>
+                            </span>
+                        </div>
+
+                        <div class="fx-thread" aria-live="polite">
+                            <% h.forEach(m => { const d = dia(m.fecha); %>
+                                <% if (d && d !== ultimoDia) { ultimoDia = d; %>
+                                    <div class="fx-thread__day"><%= d %></div>
+                                <% } %>
+                                <div class="fx-msg <%= m.emisor === 'PROFESOR' ? 'fx-msg--me' : 'fx-msg--them' %>">
+                                    <div class="fx-msg__bubble"><%= m.mensaje %></div>
+                                    <span class="fx-msg__time"><%= m.emisor === 'PROFESOR' ? 'Vos' : c.usuario_nombre %><%= hora(m.fecha) ? ', ' + hora(m.fecha) : '' %></span>
+                                </div>
+                            <% }) %>
+                        </div>
+
+                        <form class="fx-composer" data-consulta="<%= c.id %>">
+                            <label for="r-<%= c.id %>" style="position: absolute; left: -9999px;">Respuesta</label>
+                            <textarea id="r-<%= c.id %>" rows="1" placeholder="Responder a <%= c.usuario_nombre %>" required></textarea>
+                            <button type="submit" class="fx-send" aria-label="Enviar respuesta">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h13M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </button>
+                        </form>
+                        <p class="fx-composer__hint">Enter para enviar, Shift + Enter para un salto de línea</p>
+                    </div>
+                <% }) %>
             </div>
-        </main>
-    </div>
+        </div>
+        <% } %>
+    </main>
 
     <%- include('partials/footer') %>
 
     <script>
-        const consultasGlobales = <%- JSON.stringify(typeof consultas !== 'undefined' ? consultas : []) %>;
-        const mapaAlumnos = new Map();
+    (function () {
+        var chat = document.getElementById('fx-chat');
+        if (!chat) return;
+        var items = Array.prototype.slice.call(chat.querySelectorAll('.fx-chat__list li'));
+        var buscar = document.getElementById('fx-buscar');
+        var filtro = chat.querySelector('[data-filtro][aria-pressed="true"]').dataset.filtro;
 
-        consultasGlobales.forEach(c => {
-            if (!mapaAlumnos.has(c.usuario_id)) {
-                mapaAlumnos.set(c.usuario_id, {
-                    id: c.usuario_id,
-                    nombre: c.usuario_nombre,
-                    email: c.usuario_email,
-                    consultas: [],
-                    pendientes: 0
-                });
-            }
-
-            const alumno = mapaAlumnos.get(c.usuario_id);
-            alumno.consultas.push(c);
-
-            // Contar pendientes si no hay respuesta todavía
-            if (!c.respuesta_profesor && (!c.mensajesChat || c.mensajesChat.length === 0)) {
-                alumno.pendientes++;
-            }
+        function abajo(conv) { var t = conv.querySelector('.fx-thread'); if (t) t.scrollTop = t.scrollHeight; }
+        function abrir(id, enMovil, foco) {
+            if (enMovil) chat.classList.add('is-thread');
+            document.getElementById('fx-blank').style.display = 'none';
+            chat.querySelectorAll('.fx-chat__item').forEach(function (b) { b.setAttribute('aria-selected', b.dataset.consulta === id ? 'true' : 'false'); });
+            chat.querySelectorAll('.fx-chat__conv').forEach(function (c) {
+                var on = c.dataset.consulta === id;
+                c.style.display = on ? 'flex' : 'none';
+                if (on) { abajo(c); if (foco && !enMovil) c.querySelector("textarea").focus({ preventScroll: true }); }
+            });
+        }
+        function aplicarFiltro() {
+            var q = (buscar.value || '').trim().toLowerCase();
+            var visibles = 0;
+            items.forEach(function (li) {
+                var ok = (filtro === 'todas' || li.dataset.pendiente === '1') && (!q || li.dataset.nombre.indexOf(q) !== -1);
+                li.hidden = !ok;
+                if (ok) visibles++;
+            });
+            document.getElementById('fx-lista-vacia').hidden = visibles > 0;
+        }
+        chat.querySelectorAll('[data-filtro]').forEach(function (b) {
+            b.addEventListener('click', function () {
+                filtro = b.dataset.filtro;
+                chat.querySelectorAll('[data-filtro]').forEach(function (o) { o.setAttribute('aria-pressed', o === b ? 'true' : 'false'); });
+                aplicarFiltro();
+            });
         });
-
-        const contenedorLista = document.getElementById('lista-alumnos');
-
-        if (mapaAlumnos.size === 0) {
-            contenedorLista.innerHTML = '<p style="padding: 1.5rem; color: #718096; text-align: center;">No hay solicitudes registradas.</p>';
-        } else {
-            mapaAlumnos.forEach(alumno => {
-                const div = document.createElement('div');
-                div.className = 'alumno-item';
-                div.id = `item-alumno-${alumno.id}`;
-                div.onclick = () => abrirChatAlumno(alumno.id);
-
-                div.innerHTML = `
-                    <div>
-                        <span class="alumno-nombre">${alumno.nombre}</span>
-                        <span class="alumno-email">${alumno.email}</span>
-                    </div>
-                    ${alumno.pendientes > 0 ? `<span class="badge-pendiente">${alumno.pendientes} pend.</span>` : ''}
-                `;
-                contenedorLista.appendChild(div);
-            });
+        buscar.addEventListener('input', aplicarFiltro);
+        chat.querySelectorAll('.fx-chat__item').forEach(function (b) {
+            b.addEventListener('click', function () { abrir(b.dataset.consulta, window.matchMedia("(max-width: 860px)").matches, true); });
+        });
+        chat.querySelectorAll('.fx-chat__back').forEach(function (b) {
+            b.addEventListener('click', function () { chat.classList.remove('is-thread'); });
+        });
+        aplicarFiltro();
+        // En escritorio, abrir directo la primera consulta visible
+        if (!window.matchMedia('(max-width: 860px)').matches) {
+            var primera = items.find(function (li) { return !li.hidden; });
+            if (primera) abrir(primera.querySelector('.fx-chat__item').dataset.consulta, false);
         }
 
-        function abrirChatAlumno(usuarioId) {
-            const alumno = mapaAlumnos.get(usuarioId);
-            if (!alumno) return;
-
-            document.querySelectorAll('.alumno-item').forEach(el => el.classList.remove('active'));
-            document.getElementById(`item-alumno-${usuarioId}`).classList.add('active');
-
-            document.getElementById('chat-placeholder').style.display = 'none';
-            document.getElementById('chat-header').style.display = 'block';
-            document.getElementById('chat-alumno-nombre').innerText = alumno.nombre;
-            document.getElementById('chat-alumno-email').innerText = `(${alumno.email})`;
-
-            const contenedor = document.getElementById('contenedor-consultas-alumno');
-            contenedor.style.display = 'block';
-            contenedor.innerHTML = '';
-
-            alumno.consultas.forEach(c => {
-                const card = document.createElement('div');
-                card.className = 'consulta-card';
-
-                let chatHtml = '';
-
-                // Si hay historial en chat_mensajes_particulares, renderizamos exactamente lo guardado
-                if (c.mensajesChat && c.mensajesChat.length > 0) {
-                    c.mensajesChat.forEach(m => {
-                        const esProfesor = m.emisor === 'PROFESOR';
-                        chatHtml += `
-                            <div class="chat-msg-item ${esProfesor ? 'msg-profesor' : 'msg-alumno'}">
-                                <div class="msg-header">
-                                    <span>${esProfesor ? 'Tú (Profesor)' : alumno.nombre}</span>
-                                    <span>${new Date(m.fecha).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}</span>
-                                </div>
-                                ${m.mensaje}
-                            </div>
-                        `;
+        chat.querySelectorAll('.fx-composer').forEach(function (f) {
+            var ta = f.querySelector('textarea');
+            var btn = f.querySelector('button');
+            ta.addEventListener('input', function () { ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 160) + 'px'; });
+            ta.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); f.requestSubmit(); }
+            });
+            f.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                var texto = ta.value.trim();
+                if (!texto) return;
+                var id = f.dataset.consulta;
+                var hilo = f.closest('.fx-chat__conv').querySelector('.fx-thread');
+                var msg = document.createElement('div');
+                msg.className = 'fx-msg fx-msg--me fx-msg--pending';
+                msg.innerHTML = '<div class="fx-msg__bubble"></div><span class="fx-msg__time">Enviando…</span>';
+                msg.firstChild.textContent = texto;
+                hilo.appendChild(msg);
+                hilo.scrollTop = hilo.scrollHeight;
+                ta.value = ''; ta.style.height = '';
+                btn.disabled = true;
+                try {
+                    var res = await fetch('/profesor/particulares/responder', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ consultaId: id, respuesta: texto })
                     });
-                } else {
-                    // Fallback para consultas antiguas creadas antes de la migración del chat
-                    chatHtml = `
-                        <div class="chat-msg-item msg-alumno">
-                            <div class="msg-header">
-                                <span>${alumno.nombre}</span>
-                                <span>${new Date(c.fecha_consulta).toLocaleDateString('es-AR')}</span>
-                            </div>
-                            ${c.mensaje_alumno}
-                        </div>
-                    `;
-                    if (c.respuesta_profesor) {
-                        chatHtml += `
-                            <div class="chat-msg-item msg-profesor">
-                                <div class="msg-header">
-                                    <span>Tú (Profesor)</span>
-                                    <span>${c.fecha_respuesta ? new Date(c.fecha_respuesta).toLocaleDateString('es-AR') : ''}</span>
-                                </div>
-                                ${c.respuesta_profesor}
-                            </div>
-                        `;
-                    }
-                }
-
-                card.innerHTML = `
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
-                        <div>
-                            <span class="badge">Modalidad: ${c.modalidad}</span>
-                            <span class="badge-objetivo">Objetivo: ${c.objetivo}</span>
-                        </div>
-                        <span style="color: #718096; font-size: 0.85rem;">Iniciada el ${new Date(c.fecha_consulta).toLocaleDateString('es-AR')}</span>
-                    </div>
-
-                    <!-- Hilo de Conversación del Chat -->
-                    <div class="chat-thread-box">
-                        ${chatHtml}
-                    </div>
-
-                    <!-- Cuadro de Respuesta -->
-                    <div class="respuesta-box">
-                        <h4 style="margin-top: 0; color: #0b2238;">Enviar Mensaje / Respuesta</h4>
-                        
-                        <textarea id="resp-text-${c.id}" placeholder="Escribe tu mensaje, propuesta o aclaración..." style="width: 100%; height: 80px; padding: 0.7rem; border: 1px solid #cbd5e0; border-radius: 6px; font-family: inherit; font-size: 0.95rem; margin-bottom: 0.8rem;"></textarea>
-
-                        <button type="button" onclick="enviarRespuesta(${c.id}, this)" style="background: #184168; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 6px; font-weight: bold; cursor: pointer;">
-                            Enviar Mensaje
-                        </button>
-                    </div>
-                `;
-
-                contenedor.appendChild(card);
-            });
-        }
-
-        async function enviarRespuesta(consultaId, btn) {
-            const textarea = document.getElementById(`resp-text-${consultaId}`);
-            const respuesta = textarea.value.trim();
-
-            if (!respuesta) {
-                alert('Por favor escribe una respuesta antes de enviar.');
-                return;
-            }
-
-            const textoOriginal = btn.innerText;
-            btn.innerText = 'Enviando...';
-            btn.disabled = true;
-
-            try {
-                const res = await fetch('/profesor/particulares/responder', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ consultaId, respuesta })
-                });
-
-                const data = await res.json();
-
-                if (data.success) {
-                    window.location.reload();
-                } else {
-                    alert(data.message || 'Error al guardar la respuesta.');
-                    btn.innerText = textoOriginal;
+                    var data = await res.json();
+                    if (!data.success) throw new Error(data.message);
+                    msg.classList.remove('fx-msg--pending');
+                    msg.lastChild.textContent = 'Vos, ' + new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+                    // La consulta deja de estar pendiente
+                    var li = chat.querySelector('.fx-chat__item[data-consulta="' + id + '"]').closest('li');
+                    li.dataset.pendiente = '0';
+                    li.querySelector('.fx-chat__item-prev').textContent = 'Vos: ' + texto;
+                    var badge = chat.querySelector('[data-filtro="pendientes"] .fx-badge-count');
+                    badge.textContent = items.filter(function (x) { return x.dataset.pendiente === '1'; }).length;
+                } catch (err) {
+                    msg.classList.remove('fx-msg--pending');
+                    msg.classList.add('fx-msg--failed');
+                    msg.lastChild.textContent = 'No se envió. Tocá para reintentar.';
+                    msg.style.cursor = 'pointer';
+                    msg.addEventListener('click', function () { ta.value = texto; msg.remove(); ta.focus(); }, { once: true });
+                } finally {
                     btn.disabled = false;
                 }
-            } catch (err) {
-                console.error(err);
-                alert('Error de conexión al enviar la respuesta.');
-                btn.innerText = textoOriginal;
-                btn.disabled = false;
-            }
-        }
+            });
+        });
+    })();
     </script>
 </body>
 </html>
