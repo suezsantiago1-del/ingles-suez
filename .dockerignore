@@ -1,0 +1,23 @@
+# Lo que NO entra al contexto de build.
+#
+# node_modules es lo importante: son 42 MB que además se instalan adentro de
+# la imagen con `npm ci`. Copiarlos desde el host mezclaría binarios nativos
+# compilados para Windows con una imagen Linux, y bcrypt reventaría al cargar.
+node_modules/
+.git/
+.gitignore
+.env
+.env.*
+!.env.example
+
+# Videos subidos a mano en desarrollo. En producción los videos van por
+# YouTube; ver ALLOW_LOCAL_VIDEO_UPLOAD en .env.example.
+public/videos/
+
+# Documentación y herramientas: no las necesita el runtime.
+AGENTS.md
+DEPLOY.md
+README.md
+.vscode/
+.DS_Store
+database.db

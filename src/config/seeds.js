@@ -6,6 +6,71 @@
 export async function seedLecciones(adapter) {
         // Lecciones iniciales (SOLO SI LA TABLA LECCIONES ESTÁ VACÍA)
         const countLecciones = await adapter.pgPool.query("SELECT COUNT(*) FROM lecciones");
+
+        // Corrección idempotente: quitar el encabezado "Ejercicios de Alto Rendimiento"
+        // de las clases 3, 4 y 5. También aplica a bases ya pobladas, donde el bloque
+        // de seeds condicional (IF COUNT = 0) no vuelve a correr.
+        const encabezadosARendimiento = [
+            '<h2 style="color: #0b2238; margin-top: 0.8rem; margin-bottom: 0;">Ejercicios de Alto Rendimiento — Clase 3</h2>',
+            '<h2 style="color: #0b2238; margin-top: 0.8rem; margin-bottom: 0;">Ejercicios de Alto Rendimiento — Clase 4</h2>',
+            '<h2 style="color: #0b2238; margin-top: 0.8rem; margin-bottom: 0;">Ejercicios de Alto Rendimiento — Clase 5</h2>'
+        ];
+        for (const h of encabezadosARendimiento) {
+            await adapter.pgPool.query(
+                "UPDATE lecciones SET contenido_html = REPLACE(contenido_html, $1, '')",
+                [h]
+            );
+        }
+        // Limpieza idempotente: quita los banners de "progreso" del contenido de las lecciones
+        // ("Impacto en Progreso: +XX%", "Restante para 100%: +XX%", etc.). Aplica también a
+        // bases ya pobladas, sin depender del seed condicional (IF COUNT = 0), igual que el
+        // bloque "Ejercicios de Alto Rendimiento" de arriba.
+        try {
+            const leccionesConContenido = await adapter.pgPool.query('SELECT id, contenido_html FROM lecciones');
+            for (const fila of leccionesConContenido.rows) {
+                const htmlOriginal = fila.contenido_html;
+                if (!htmlOriginal) continue;
+                const htmlLimpio = htmlOriginal
+                    .replace(/Impacto en Progreso[^\n]{0,120}?%/gi, '')
+                    .replace(/Restante para 100%[^\n]{0,120}?%/gi, '');
+                if (htmlLimpio !== htmlOriginal) {
+                    await adapter.pgPool.query(
+                        'UPDATE lecciones SET contenido_html = $1 WHERE id = $2',
+                        [htmlLimpio, fila.id]
+                    );
+                }
+            }
+        } catch (errorLimpieza) {
+            console.error('Error al limpiar banners de progreso de las lecciones:', errorLimpieza);
+        }
+
+        // Lección de bienvenida "Welcome!" (orden 0, antes de la Clase 1).
+        // Se crea si no existe (también en bases ya pobladas donde el bloque
+        // IF COUNT = 0 no vuelve a correr). El texto se edita desde Gestión de Cursos.
+        const bienvenidaExistente = await adapter.pgPool.query("SELECT id FROM lecciones WHERE curso_id = 1 AND orden = 0");
+        if (bienvenidaExistente.rows.length === 0) {
+            const contenidoBienvenida = `
+                <div class="clase-contenido" style="color: #1a202c; font-family: system-ui, -apple-system, sans-serif; text-align: center; padding: 2rem 1rem;">
+                    <h2 style="color: #0b2238; margin: 0 0 1rem 0;">¡Bienvenido/a a INGLÉS SUEZ!</h2>
+                    <p style="font-size: 1.1rem; color: #4a5568; max-width: 640px; margin: 0 auto 1rem auto; line-height: 1.7;">
+                        Nos alegra muchísimo que estés acá. Este curso está diseñado para que aprendas inglés de forma
+                        práctica, desde cero y a tu propio ritmo.
+                    </p>
+                    <p style="font-size: 1rem; color: #4a5568; max-width: 640px; margin: 0 auto 1rem auto; line-height: 1.7;">
+                        Empezá por la clase 1 y avanzá a tu ritmo: cada clase tiene ejercicios interactivos y un
+                        entregable final que el profesor revisa personalmente.
+                    </p>
+                    <p style="font-size: 1rem; color: #184168; font-weight: bold; margin: 0 auto; line-height: 1.7;">
+                        ¡Mucha suerte y a aprender!
+                    </p>
+                </div>
+            `;
+            await adapter.run(`
+                INSERT INTO lecciones (curso_id, titulo, modulo, orden, video_url, contenido_html)
+                VALUES (?, ?, ?, ?, ?, ?)
+            `, [1, 'Welcome!', 'Bienvenida', 0, '', contenidoBienvenida]);
+        }
+
         if (parseInt(countLecciones.rows[0].count) === 0) {
 
             // ==========================================
@@ -104,8 +169,8 @@ export async function seedLecciones(adapter) {
 
                             <div class="quiz-question" style="margin-bottom: 1.5rem;">
                                 <p><strong>2. Querés contar que tus hermanos no comen carne:</strong></p>
-                                <button class="option-btn" onclick="checkAnswer(this, false, 'c2_2', 'Doesn\'t se usa solo para He/She/It. My brothers es plural (They).')">( A ) My brothers doesn't eat meat.</button>
-                                <button class="option-btn" onclick="checkAnswer(this, true, 'c2_2', 'Don\'t es el auxiliar negativo correcto para They.')">( B ) My brothers don't eat meat.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, false, 'c2_2', 'Doesn&amp;apos;t se usa solo para He/She/It. My brothers es plural (They).')">( A ) My brothers doesn't eat meat.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, true, 'c2_2', 'Don&amp;apos;t es el auxiliar negativo correcto para They.')">( B ) My brothers don't eat meat.</button>
                                 <button class="option-btn" onclick="checkAnswer(this, false, 'c2_2', 'Falta el auxiliar do/does para formar la negación.')">( C ) My brothers not eat meat.</button>
                                 <div id="c2_2" style="display:none; padding: 0.8rem; border-radius: 6px; margin-top: 0.5rem; font-size: 0.9rem;"></div>
                             </div>
@@ -132,19 +197,18 @@ export async function seedLecciones(adapter) {
                 <div class="clase-contenido" style="color: #1a202c; font-family: system-ui, -apple-system, sans-serif;">
                     <header style="margin-bottom: 2rem; border-bottom: 2px solid #0b2238; padding-bottom: 1rem;">
                         <span style="background: #0b2238; color: white; padding: 0.3rem 0.8rem; border-radius: 4px; font-size: 0.75rem; text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px;">FASE DE PRÁCTICA INTERACTIVA</span>
-                        <h2 style="color: #0b2238; margin-top: 0.8rem; margin-bottom: 0;">Ejercicios de Alto Rendimiento — Clase 3</h2>
-                    </header>
+                        </header>
 
                     <section class="bloque-fase" style="margin-bottom: 3rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
+                        <div style="background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
                             <h3 style="margin: 0; color: #0b2238; font-size: 1.1rem; text-transform: uppercase;">FASE 1: Existencia y Ubicación (There is / There are y Preposiciones)</h3>
-                            <span style="font-size: 0.85rem; font-weight: bold; color: #184168;">Impacto en Progreso: +20%</span>
+
                         </div>
 
                         <div class="ejercicio-card" style="background: white; border: 1px solid #c0d4e5; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
                                 <h4 style="margin: 0; color: #0b2238; font-size: 1.05rem;">Ejercicio 1.1: Descripción de Espacios y Objetos (Elección Múltiple)</h4>
-                                <span style="background: #edf2f7; color: #4a5568; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Estado: En Progreso</span>
+
                             </div>
 
                             <p style="font-size: 0.95rem; color: #4a5568; margin-bottom: 1.2rem;"><strong>Indicaciones:</strong> Lee las 5 situaciones e identifica la forma correcta de expresar existencia (there is / there are) y ubicación espacial (in, on, at, under).</p>
@@ -167,7 +231,7 @@ export async function seedLecciones(adapter) {
 
                             <div class="quiz-question" style="margin-bottom: 1.5rem;">
                                 <p><strong>3. Buscás tus llaves y tu hermano te avisa que no hay nada debajo de la mesa:</strong></p>
-                                <button class="option-btn" onclick="checkAnswer(this, true, 'c3_3', 'Under es debajo y isn\'t anything evita la doble negación.')">( A ) There isn't anything under the table.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, true, 'c3_3', 'Under es debajo y isn&amp;apos;t anything evita la doble negación.')">( A ) There isn't anything under the table.</button>
                                 <button class="option-btn" onclick="checkAnswer(this, false, 'c3_3', 'Anything va con estructura singular en este contexto.')">( B ) There aren't anything on the table.</button>
                                 <button class="option-btn" onclick="checkAnswer(this, false, 'c3_3', 'Not nothing es una doble negación incorrecta en inglés.')">( C ) There is not nothing under the table.</button>
                                 <div id="f3_3" style="display:none; padding: 0.8rem; border-radius: 6px; margin-top: 0.5rem; font-size: 0.9rem;"></div>
@@ -178,7 +242,7 @@ export async function seedLecciones(adapter) {
                     <section class="bloque-fase" style="margin-bottom: 2rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center; background: #0b2238; color: white; padding: 0.8rem 1.2rem; border-radius: 6px 6px 0 0;">
                             <h3 style="margin: 0; font-size: 1.1rem; text-transform: uppercase;">ENTREGABLE FINAL (Práctica Manual con Corrección del Profesor)</h3>
-                            <span style="font-size: 0.85rem; font-weight: bold; color: #a4c4de;">Restante para 100%: +20%</span>
+
                         </div>
 
                         <div style="background: white; border: 1px solid #0b2238; border-top: none; border-radius: 0 0 8px 8px; padding: 1.8rem;">
@@ -197,19 +261,18 @@ export async function seedLecciones(adapter) {
                 <div class="clase-contenido" style="color: #1a202c; font-family: system-ui, -apple-system, sans-serif;">
                     <header style="margin-bottom: 2rem; border-bottom: 2px solid #0b2238; padding-bottom: 1rem;">
                         <span style="background: #0b2238; color: white; padding: 0.3rem 0.8rem; border-radius: 4px; font-size: 0.75rem; text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px;">FASE DE PRÁCTICA INTERACTIVA</span>
-                        <h2 style="color: #0b2238; margin-top: 0.8rem; margin-bottom: 0;">Ejercicios de Alto Rendimiento — Clase 4</h2>
-                    </header>
+                        </header>
 
                     <section class="bloque-fase" style="margin-bottom: 3rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
+                        <div style="background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
                             <h3 style="margin: 0; color: #0b2238; font-size: 1.1rem; text-transform: uppercase;">FASE 1: Verbos Regulares e Irregulares en Pasado</h3>
-                            <span style="font-size: 0.85rem; font-weight: bold; color: #184168;">Impacto en Progreso: +20%</span>
+
                         </div>
 
                         <div class="ejercicio-card" style="background: white; border: 1px solid #c0d4e5; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
                                 <h4 style="margin: 0; color: #0b2238; font-size: 1.05rem;">Ejercicio 1.1: Conjugación y Conectores Temporales (Elección Múltiple)</h4>
-                                <span style="background: #edf2f7; color: #4a5568; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Estado: En Progreso</span>
+
                             </div>
 
                             <p style="font-size: 0.95rem; color: #4a5568; margin-bottom: 1.2rem;"><strong>Indicaciones:</strong> Lee las 5 situaciones e identifica la forma verbal en Pasado Simple (Past Simple) y la expresión de tiempo correcta.</p>
@@ -232,9 +295,9 @@ export async function seedLecciones(adapter) {
 
                             <div class="quiz-question" style="margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #edf2f7;">
                                 <p><strong>3. Querés decir que anoche no dormiste bien:</strong></p>
-                                <button class="option-btn" onclick="checkAnswer(this, false, 'c4_3', 'Tras el auxiliar didn\'t el verbo debe ir en forma base (sleep), no slept.')">( A ) Last night I didn't slept well.</button>
-                                <button class="option-btn" onclick="checkAnswer(this, true, 'c4_3', 'Con didn\'t se utiliza el verbo en forma base (sleep).')">( B ) Last night I didn't sleep well.</button>
-                                <button class="option-btn" onclick="checkAnswer(this, false, 'c4_3', 'Wasn\'t no se utiliza para negar verbos de acción en pasado simple.')">( C ) Last night I wasn't sleep well.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, false, 'c4_3', 'Tras el auxiliar didn&amp;apos;t el verbo debe ir en forma base (sleep), no slept.')">( A ) Last night I didn't slept well.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, true, 'c4_3', 'Con didn&amp;apos;t se utiliza el verbo en forma base (sleep).')">( B ) Last night I didn't sleep well.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, false, 'c4_3', 'Wasn&amp;apos;t no se utiliza para negar verbos de acción en pasado simple.')">( C ) Last night I wasn't sleep well.</button>
                                 <div id="c4_3" style="display:none; padding: 0.8rem; border-radius: 6px; margin-top: 0.5rem; font-size: 0.9rem;"></div>
                             </div>
 
@@ -259,7 +322,7 @@ export async function seedLecciones(adapter) {
                     <section class="bloque-fase" style="margin-bottom: 2rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center; background: #0b2238; color: white; padding: 0.8rem 1.2rem; border-radius: 6px 6px 0 0;">
                             <h3 style="margin: 0; font-size: 1.1rem; text-transform: uppercase;">ENTREGABLE FINAL (Práctica Manual con Corrección del Profesor)</h3>
-                            <span style="font-size: 0.85rem; font-weight: bold; color: #a4c4de;">Restante para 100%: +20%</span>
+
                         </div>
 
                         <div style="background: white; border: 1px solid #0b2238; border-top: none; border-radius: 0 0 8px 8px; padding: 1.8rem;">
@@ -278,19 +341,18 @@ export async function seedLecciones(adapter) {
                 <div class="clase-contenido" style="color: #1a202c; font-family: system-ui, -apple-system, sans-serif;">
                     <header style="margin-bottom: 2rem; border-bottom: 2px solid #0b2238; padding-bottom: 1rem;">
                         <span style="background: #0b2238; color: white; padding: 0.3rem 0.8rem; border-radius: 4px; font-size: 0.75rem; text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px;">FASE DE PRÁCTICA INTERACTIVA</span>
-                        <h2 style="color: #0b2238; margin-top: 0.8rem; margin-bottom: 0;">Ejercicios de Alto Rendimiento — Clase 5</h2>
-                    </header>
+                        </header>
 
                     <section class="bloque-fase" style="margin-bottom: 3rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
+                        <div style="background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
                             <h3 style="margin: 0; color: #0b2238; font-size: 1.1rem; text-transform: uppercase;">FASE 1: Planes e Intenciones (Be Going To)</h3>
-                            <span style="font-size: 0.85rem; font-weight: bold; color: #184168;">Impacto en Progreso: +20%</span>
+
                         </div>
 
                         <div class="ejercicio-card" style="background: white; border: 1px solid #c0d4e5; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
                                 <h4 style="margin: 0; color: #0b2238; font-size: 1.05rem;">Ejercicio 1.1: Estructura de Planes e Intenciones (Elección Múltiple)</h4>
-                                <span style="background: #edf2f7; color: #4a5568; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Estado: En Progreso</span>
+
                             </div>
 
                             <p style="font-size: 0.95rem; color: #4a5568; margin-bottom: 1.2rem;"><strong>Indicaciones:</strong> Lee las 5 situaciones e identifica la forma correcta de expresar un plan futuro ya decidido usando la estructura Sujeto + Verbo To Be + going to + Verbo base.</p>
@@ -305,8 +367,8 @@ export async function seedLecciones(adapter) {
 
                             <div class="quiz-question" style="margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #edf2f7;">
                                 <p><strong>2. Le contás a un compañero que Laura no va a asistir a la reunión de mañana:</strong></p>
-                                <button class="option-btn" onclick="checkAnswer(this, true, 'c5_2', 'La negación se realiza sobre el verbo To Be (Laura is not / isn\'t), no con doesn\'t.')">( A ) Laura isn't going to attend the meeting tomorrow.</button>
-                                <button class="option-btn" onclick="checkAnswer(this, false, 'c5_2', 'Doesn\'t no se utiliza con la estructura going to.')">( B ) Laura doesn't going to attend the meeting tomorrow.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, true, 'c5_2', 'La negación se realiza sobre el verbo To Be (Laura is not / isn&amp;apos;t), no con doesn&amp;apos;t.')">( A ) Laura isn't going to attend the meeting tomorrow.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, false, 'c5_2', 'Doesn&amp;apos;t no se utiliza con la estructura going to.')">( B ) Laura doesn't going to attend the meeting tomorrow.</button>
                                 <button class="option-btn" onclick="checkAnswer(this, false, 'c5_2', 'Falta el auxiliar To Be (is) para formar la negación.')">( C ) Laura not going to attend the meeting tomorrow.</button>
                                 <div id="c5_2" style="display:none; padding: 0.8rem; border-radius: 6px; margin-top: 0.5rem; font-size: 0.9rem;"></div>
                             </div>
@@ -329,24 +391,24 @@ export async function seedLecciones(adapter) {
 
                             <div class="quiz-question" style="margin-bottom: 1.5rem;">
                                 <p><strong>5. Querés decir que ustedes no van a trabajar este fin de semana largo:</strong></p>
-                                <button class="option-btn" onclick="checkAnswer(this, false, 'c5_5', 'Don\'t es un auxiliar de presente simple, no de futuro con going to.')">( A ) We don't going to work this long weekend.</button>
-                                <button class="option-btn" onclick="checkAnswer(this, true, 'c5_5', 'We combina obligatoriamente con are not / aren\'t.')">( B ) We aren't going to work this long weekend.</button>
-                                <button class="option-btn" onclick="checkAnswer(this, false, 'c5_5', 'Isn\'t se usa solo con He, She o It.')">( C ) We isn't going to work this long weekend.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, false, 'c5_5', 'Don&amp;apos;t es un auxiliar de presente simple, no de futuro con going to.')">( A ) We don't going to work this long weekend.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, true, 'c5_5', 'We combina obligatoriamente con are not / aren&amp;apos;t.')">( B ) We aren't going to work this long weekend.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, false, 'c5_5', 'Isn&amp;apos;t se usa solo con He, She o It.')">( C ) We isn't going to work this long weekend.</button>
                                 <div id="c5_5" style="display:none; padding: 0.8rem; border-radius: 6px; margin-top: 0.5rem; font-size: 0.9rem;"></div>
                             </div>
                         </div>
                     </section>
 
                     <section class="bloque-fase" style="margin-bottom: 3rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
+                        <div style="background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
                             <h3 style="margin: 0; color: #0b2238; font-size: 1.1rem; text-transform: uppercase;">FASE 2: Laboratorio Intensivo de Planes y Predicciones con Evidencia</h3>
-                            <span style="font-size: 0.85rem; font-weight: bold; color: #184168;">Impacto en Progreso: +60%</span>
+
                         </div>
 
                         <div class="ejercicio-card" style="background: white; border: 1px solid #c0d4e5; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
                                 <h4 style="margin: 0; color: #0b2238; font-size: 1.05rem;">Ejercicio 2.1: Transformación y Detección de Errores Gramaticales</h4>
-                                <span style="background: #edf2f7; color: #4a5568; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Estado: En Progreso</span>
+
                             </div>
 
                             <p style="font-size: 0.95rem; color: #4a5568;"><strong>Indicaciones:</strong> Revisa las respuestas y correcciones gramaticales del laboratorio:</p>
@@ -371,7 +433,7 @@ export async function seedLecciones(adapter) {
                         <div class="ejercicio-card" style="background: white; border: 1px solid #c0d4e5; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
                                 <h4 style="margin: 0; color: #0b2238; font-size: 1.05rem;">Ejercicio 2.2: Traducción Compleja de Planes a Futuro</h4>
-                                <span style="background: #edf2f7; color: #4a5568; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Estado: En Progreso</span>
+
                             </div>
 
                             <p style="font-size: 0.95rem; color: #4a5568;"><strong>Indicaciones:</strong> Traduce este diálogo sobre proyectos futuros aplicando la estructura de be going to en afirmativo, negativo e interrogativo.</p>
@@ -385,8 +447,8 @@ export async function seedLecciones(adapter) {
 
                             <div class="quiz-question" style="margin-top: 1.5rem;">
                                 <p><strong>¿Cuál es la traducción correcta para el diálogo completo?</strong></p>
-                                <button class="option-btn" onclick="checkAnswer(this, true, 'c5_dial', 'Traducción exacta respetando what are you going to do, I\'m not going to work e is your brother going to.')">( A ) A: "What are you going to do this weekend?" / B: "I am going to rest. I'm not going to work on Saturday or Sunday." / A: "And is your brother going to paint the house with you?" / B: "No, he is going to travel to Rosario to visit some friends."</button>
-                                <button class="option-btn" onclick="checkAnswer(this, false, 'c5_dial', 'What you going to do y I don\'t going to work contienen errores de auxilares.')">( B ) A: "What you going to do this weekend?" / B: "I am going to rest. I don't going to work..."</button>
+                                <button class="option-btn" onclick="checkAnswer(this, true, 'c5_dial', 'Traducción exacta respetando what are you going to do, I&amp;apos;m not going to work e is your brother going to.')">( A ) A: "What are you going to do this weekend?" / B: "I am going to rest. I'm not going to work on Saturday or Sunday." / A: "And is your brother going to paint the house with you?" / B: "No, he is going to travel to Rosario to visit some friends."</button>
+                                <button class="option-btn" onclick="checkAnswer(this, false, 'c5_dial', 'What you going to do y I don&amp;apos;t going to work contienen errores de auxilares.')">( B ) A: "What you going to do this weekend?" / B: "I am going to rest. I don't going to work..."</button>
                                 <div id="c5_dial" style="display:none; padding: 0.8rem; border-radius: 6px; margin-top: 0.5rem; font-size: 0.9rem;"></div>
                             </div>
                         </div>
@@ -395,30 +457,9 @@ export async function seedLecciones(adapter) {
                     <section class="bloque-fase" style="margin-bottom: 2rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center; background: #0b2238; color: white; padding: 0.8rem 1.2rem; border-radius: 6px 6px 0 0;">
                             <h3 style="margin: 0; font-size: 1.1rem; text-transform: uppercase;">ENTREGABLE FINAL (Práctica Manual con Corrección del Profesor)</h3>
-                            <span style="font-size: 0.85rem; font-weight: bold; color: #a4c4de;">Restante para 100%: +20%</span>
+
                         </div>
 
-                        <div style="background: white; border: 1px solid #0b2238; border-top: none; border-radius: 0 0 8px 8px; padding: 1.8rem; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
-                                <h4 style="margin: 0; color: #0b2238; font-size: 1.05rem;">Trabajo Práctico Integrador — Clase 5</h4>
-                                <span style="background: #fffaf0; color: #c05621; border: 1px solid #fbd38d; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Estado: Pendiente de Envío</span>
-                            </div>
-
-                            <p style="font-size: 0.95rem; color: #2d3748; line-height: 1.6;"><strong>Consigna:</strong> Redactá un texto sobre tus planes personales o profesionales para los próximos meses de mínimo 6 oraciones...</p>
-
-                            <div style="margin-top: 1.5rem;">
-                                <textarea placeholder="Escribe aquí tu entrega de texto para la revisión del profesor..." style="width: 100%; height: 120px; padding: 0.8rem; border: 1px solid #cbd5e0; border-radius: 6px; font-family: inherit; font-size: 0.95rem; margin-bottom: 1rem; resize: vertical;"></textarea>
-                            
-                                <div style="display: flex; gap: 1rem; justify-content: flex-end; flex-wrap: wrap;">
-                                    <button type="button" style="background: #edf2f7; color: #2d3748; border: 1px solid #cbd5e0; padding: 0.7rem 1.2rem; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.9rem;">
-                                        [ CAJA DE TEXTO / BOTÓN SUBIR AUDIO ]
-                                    </button>
-                                    <button type="button" style="background: #184168; color: white; border: none; padding: 0.7rem 1.4rem; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.9rem;">
-                                        ENVIAR A REVISIÓN MANUAL
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
                     </section>
 
                 </div>
@@ -463,15 +504,15 @@ export async function seedLecciones(adapter) {
                     </header>
 
                     <section class="bloque-fase" style="margin-bottom: 3rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
+                        <div style="background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
                             <h3 style="margin: 0; color: #0b2238; font-size: 1.1rem; text-transform: uppercase;">FASE 1: Acciones en el Momento Exacto</h3>
-                            <span style="font-size: 0.85rem; font-weight: bold; color: #184168;">Impacto en Progreso: +20%</span>
+
                         </div>
 
                         <div class="ejercicio-card" style="background: white; border: 1px solid #c0d4e5; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
                                 <h4 style="margin: 0; color: #0b2238; font-size: 1.05rem;">Ejercicio 6.1: Selección de Estructura de Presente Continuo</h4>
-                                <span style="background: #edf2f7; color: #4a5568; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Estado: En Progreso</span>
+
                             </div>
 
                             <p style="font-size: 0.95rem; color: #4a5568; margin-bottom: 1.2rem;"><strong>Indicaciones:</strong> Lee las 5 situaciones e identifica la estructura correcta del Presente Continuo (To Be + Verbo con -ing).</p>
@@ -494,8 +535,8 @@ export async function seedLecciones(adapter) {
 
                             <div class="quiz-question" style="margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #edf2f7;">
                                 <p><strong>3. Avisás que tu hermana no está trabajando hoy porque se pidió el día:</strong></p>
-                                <button class="option-btn" onclick="checkAnswer(this, false, 'c6_3', 'No se usa el auxiliar doesn\'t con el presente continuo.')">( A ) My sister doesn't working today.</button>
-                                <button class="option-btn" onclick="checkAnswer(this, true, 'c6_3', 'La negación del presente continuo se forma con isn\'t / is not.')">( B ) My sister isn't working today.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, false, 'c6_3', 'No se usa el auxiliar doesn&amp;apos;t con el presente continuo.')">( A ) My sister doesn't working today.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, true, 'c6_3', 'La negación del presente continuo se forma con isn&amp;apos;t / is not.')">( B ) My sister isn't working today.</button>
                                 <button class="option-btn" onclick="checkAnswer(this, false, 'c6_3', 'Falta el verbo To Be (is) para formar la negación.')">( C ) My sister not working today.</button>
                                 <div id="c6_3" style="display:none; padding: 0.8rem; border-radius: 6px; margin-top: 0.5rem; font-size: 0.9rem;"></div>
                             </div>
@@ -510,8 +551,8 @@ export async function seedLecciones(adapter) {
 
                             <div class="quiz-question" style="margin-bottom: 1.5rem;">
                                 <p><strong>5. Querés decir que no está lloviendo afuera en este instante:</strong></p>
-                                <button class="option-btn" onclick="checkAnswer(this, true, 'c6_5', 'Estructura correcta para tiempo atmosférico actual: It + isn\'t + raining.')">( A ) It isn't raining outside right now.</button>
-                                <button class="option-btn" onclick="checkAnswer(this, false, 'c6_5', 'Don\'t no se utiliza con el presente continuo.')">( B ) It don't raining outside right now.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, true, 'c6_5', 'Estructura correcta para tiempo atmosférico actual: It + isn&amp;apos;t + raining.')">( A ) It isn't raining outside right now.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, false, 'c6_5', 'Don&amp;apos;t no se utiliza con el presente continuo.')">( B ) It don't raining outside right now.</button>
                                 <button class="option-btn" onclick="checkAnswer(this, false, 'c6_5', 'Falta el auxiliar isn\'t para estructurar la negación.')">( C ) It not raining outside right now.</button>
                                 <div id="c6_5" style="display:none; padding: 0.8rem; border-radius: 6px; margin-top: 0.5rem; font-size: 0.9rem;"></div>
                             </div>
@@ -519,15 +560,15 @@ export async function seedLecciones(adapter) {
                     </section>
 
                     <section class="bloque-fase" style="margin-bottom: 3rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
+                        <div style="background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
                             <h3 style="margin: 0; color: #0b2238; font-size: 1.1rem; text-transform: uppercase;">FASE 2: Detección de Errores y Contraste</h3>
-                            <span style="font-size: 0.85rem; font-weight: bold; color: #184168;">Impacto en Progreso: +60%</span>
+
                         </div>
 
                         <div class="ejercicio-card" style="background: white; border: 1px solid #c0d4e5; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
                                 <h4 style="margin: 0; color: #0b2238; font-size: 1.05rem;">Ejercicio 6.2: Corrección y Traducción en Tiempo Real</h4>
-                                <span style="background: #edf2f7; color: #4a5568; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Estado: En Progreso</span>
+
                             </div>
 
                             <p style="font-size: 0.95rem; color: #4a5568;"><strong>Indicaciones:</strong> Revisa las correcciones gramaticales y la traducción oficial del ejercicio:</p>
@@ -543,35 +584,20 @@ export async function seedLecciones(adapter) {
                                 <p style="margin: 0;"><strong>Persona A:</strong> "What are you doing now?"</p>
                                 <p style="margin: 0;"><strong>Persona B:</strong> "I am cooking dinner and my brother is watching TV."</p>
                             </div>
+                            <div class="quiz-question" style="margin-top: 1.5rem;">
+                                <p><strong>¿Cuál es la traducción correcta para el diálogo completo?</strong></p>
+                                <button class="option-btn" onclick="checkAnswer(this, false, 'c6_trad', 'El español de are you doing no es hacer, sino estar haciendo.')">( A ) ¿Qué hacés ahora? / Estoy cocinando la cena y mi hermano está viendo la tele.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, true, 'c6_trad', 'Traducción correcta del presente continuo: What are you doing now = Qué estás haciendo ahora.')">( B ) ¿Qué estás haciendo ahora? / Estoy cocinando la cena y mi hermano está mirando la televisión.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, false, 'c6_trad', 'Contiene el auxiliar incorrecto para traducir la acción en curso.')">( C ) ¿Qué haces ahora? / Yo cocino la cena y mi hermano ve la televisión.</button>
+                                <div id="c6_trad" style="display:none; padding: 0.8rem; border-radius: 6px; margin-top: 0.5rem; font-size: 0.9rem;"></div>
+                            </div>
                         </div>
                     </section>
 
                     <section class="bloque-fase" style="margin-bottom: 2rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center; background: #0b2238; color: white; padding: 0.8rem 1.2rem; border-radius: 6px 6px 0 0;">
                             <h3 style="margin: 0; font-size: 1.1rem; text-transform: uppercase;">ENTREGABLE FINAL (Práctica Manual con Corrección del Profesor)</h3>
-                            <span style="font-size: 0.85rem; font-weight: bold; color: #a4c4de;">Restante para 100%: +20%</span>
-                        </div>
 
-                        <div style="background: white; border: 1px solid #0b2238; border-top: none; border-radius: 0 0 8px 8px; padding: 1.8rem; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
-                                <h4 style="margin: 0; color: #0b2238; font-size: 1.05rem;">Trabajo Práctico Integrador — Clase 6</h4>
-                                <span style="background: #fffaf0; color: #c05621; border: 1px solid #fbd38d; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Estado: Pendiente de Envío</span>
-                            </div>
-
-                            <p style="font-size: 0.95rem; color: #2d3748; line-height: 1.6;"><strong>Consigna:</strong> Redactá un texto o graba una respuesta de 6 oraciones describiendo qué están haciendo las personas en tu casa u oficina en este instante...</p>
-
-                            <div style="margin-top: 1.5rem;">
-                                <textarea placeholder="Escribe aquí tu entrega de texto para la revisión del profesor..." style="width: 100%; height: 120px; padding: 0.8rem; border: 1px solid #cbd5e0; border-radius: 6px; font-family: inherit; font-size: 0.95rem; margin-bottom: 1rem; resize: vertical;"></textarea>
-                            
-                                <div style="display: flex; gap: 1rem; justify-content: flex-end; flex-wrap: wrap;">
-                                    <button type="button" style="background: #edf2f7; color: #2d3748; border: 1px solid #cbd5e0; padding: 0.7rem 1.2rem; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.9rem;">
-                                        [ CAJA DE TEXTO / BOTÓN SUBIR AUDIO ]
-                                    </button>
-                                    <button type="button" style="background: #184168; color: white; border: none; padding: 0.7rem 1.4rem; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.9rem;">
-                                        ENVIAR A REVISIÓN MANUAL
-                                    </button>
-                                </div>
-                            </div>
                         </div>
                     </section>
 
@@ -599,15 +625,15 @@ export async function seedLecciones(adapter) {
 
                     <!-- FASE 1 CLASE 7 -->
                     <section class="bloque-fase" style="margin-bottom: 3rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
+                        <div style="background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
                             <h3 style="margin: 0; color: #0b2238; font-size: 1.1rem; text-transform: uppercase;">FASE 1: Habilidades y Peticiones</h3>
-                            <span style="font-size: 0.85rem; font-weight: bold; color: #184168;">Impacto en Progreso: +20%</span>
+
                         </div>
 
                         <div class="ejercicio-card" style="background: white; border: 1px solid #c0d4e5; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
                                 <h4 style="margin: 0; color: #0b2238; font-size: 1.05rem;">Ejercicio 7.1: Selección de Modales Can y Can't</h4>
-                                <span style="background: #edf2f7; color: #4a5568; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Estado: En Progreso</span>
+
                             </div>
 
                             <p style="font-size: 0.95rem; color: #4a5568; margin-bottom: 1.2rem;"><strong>Indicaciones:</strong> Selecciona la respuesta con el uso modal gramaticalmente adecuado:</p>
@@ -616,7 +642,7 @@ export async function seedLecciones(adapter) {
                             <div class="quiz-question" style="margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #edf2f7;">
                                 <p><strong>1. Querés decir que sabés hablar inglés pero no sabés hablar alemán:</strong></p>
                                 <button class="option-btn" onclick="checkAnswer(this, true, 'c7_1', 'Can/Can\'t van seguidos directamente del verbo en infinitivo sin to.')">( A ) I can speak English, but I can't speak German.</button>
-                                <button class="option-btn" onclick="checkAnswer(this, false, 'c7_1', 'No debe llevar \'to\' entre can/can\'t y el verbo.')">( B ) I can to speak English, but I can't to speak German.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, false, 'c7_1', 'No debe llevar \'to\' entre can/can&amp;apos;t y el verbo.')">( B ) I can to speak English, but I can't to speak German.</button>
                                 <button class="option-btn" onclick="checkAnswer(this, false, 'c7_1', 'Can es invariable y no agrega \'s\'.')">( C ) I cans speak English, but I can't speak German.</button>
                                 <div id="c7_1" style="display:none; padding: 0.8rem; border-radius: 6px; margin-top: 0.5rem; font-size: 0.9rem;"></div>
                             </div>
@@ -633,9 +659,9 @@ export async function seedLecciones(adapter) {
                             <!-- Pregunta 3 -->
                             <div class="quiz-question" style="margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #edf2f7;">
                                 <p><strong>3. Contás que tu jefe no puede asistir a la reunión de hoy:</strong></p>
-                                <button class="option-btn" onclick="checkAnswer(this, true, 'c7_3', 'Negación correcta sin to: can\'t attend.')">( A ) My boss can't attend the meeting today.</button>
-                                <button class="option-btn" onclick="checkAnswer(this, false, 'c7_3', 'Doesn\'t no se usa junto a can.')">( B ) My boss doesn't can attend the meeting today.</button>
-                                <button class="option-btn" onclick="checkAnswer(this, false, 'c7_3', 'Omitir \'to\' entre can\'t y attend.')">( C ) My boss can't to attend the meeting today.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, true, 'c7_3', 'Negación correcta sin to: can&amp;apos;t attend.')">( A ) My boss can't attend the meeting today.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, false, 'c7_3', 'Doesn&amp;apos;t no se usa junto a can.')">( B ) My boss doesn't can attend the meeting today.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, false, 'c7_3', 'Omitir \'to\' entre can&amp;apos;t y attend.')">( C ) My boss can't to attend the meeting today.</button>
                                 <div id="c7_3" style="display:none; padding: 0.8rem; border-radius: 6px; margin-top: 0.5rem; font-size: 0.9rem;"></div>
                             </div>
 
@@ -651,9 +677,9 @@ export async function seedLecciones(adapter) {
                             <!-- Pregunta 5 -->
                             <div class="quiz-question" style="margin-bottom: 1.5rem;">
                                 <p><strong>5. Avisás que ellos no pueden estacionar el auto acá:</strong></p>
-                                <button class="option-btn" onclick="checkAnswer(this, true, 'c7_5', 'Indica prohibición o imposibilidad directa: can\'t park.')">( A ) They can't park the car here.</button>
-                                <button class="option-btn" onclick="checkAnswer(this, false, 'c7_5', 'No combinar don\'t con can.')">( B ) They don't can park the car here.</button>
-                                <button class="option-btn" onclick="checkAnswer(this, false, 'c7_5', 'Aren\'t no se utiliza antes de can.')">( C ) They aren't can park the car here.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, true, 'c7_5', 'Indica prohibición o imposibilidad directa: can&amp;apos;t park.')">( A ) They can't park the car here.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, false, 'c7_5', 'No combinar don&amp;apos;t con can.')">( B ) They don't can park the car here.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, false, 'c7_5', 'Aren&amp;apos;t no se utiliza antes de can.')">( C ) They aren't can park the car here.</button>
                                 <div id="c7_5" style="display:none; padding: 0.8rem; border-radius: 6px; margin-top: 0.5rem; font-size: 0.9rem;"></div>
                             </div>
                         </div>
@@ -661,15 +687,15 @@ export async function seedLecciones(adapter) {
 
                     <!-- FASE 2 CLASE 7 -->
                     <section class="bloque-fase" style="margin-bottom: 3rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
+                        <div style="background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
                             <h3 style="margin: 0; color: #0b2238; font-size: 1.1rem; text-transform: uppercase;">FASE 2: Detección de Errores y Traducción</h3>
-                            <span style="font-size: 0.85rem; font-weight: bold; color: #184168;">Impacto en Progreso: +60%</span>
+
                         </div>
 
                         <div class="ejercicio-card" style="background: white; border: 1px solid #c0d4e5; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
                                 <h4 style="margin: 0; color: #0b2238; font-size: 1.05rem;">Ejercicio 7.2: Detección y Traducción de Habilidades</h4>
-                                <span style="background: #edf2f7; color: #4a5568; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Estado: En Progreso</span>
+
                             </div>
 
                             <p style="font-size: 0.95rem; color: #4a5568;"><strong>Indicaciones:</strong> Revisa las soluciones gramaticales de la Fase 2:</p>
@@ -685,6 +711,13 @@ export async function seedLecciones(adapter) {
                                 <p style="margin: 0;"><strong>Persona A:</strong> "Can you use this design software?"</p>
                                 <p style="margin: 0;"><strong>Persona B:</strong> "No, I can't use it, but I can learn quickly."</p>
                             </div>
+                            <div class="quiz-question" style="margin-top: 1.5rem;">
+                                <p><strong>¿Cuál es la traducción correcta para el diálogo completo?</strong></p>
+                                <button class="option-btn" onclick="checkAnswer(this, true, 'c7_trad', 'Traducción correcta: can you use = ¿sabés usar?, can learn = puede aprender.')">( A ) ¿Podés usar este software de diseño? / No, no puedo usarlo, pero puedo aprender rápido.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, false, 'c7_trad', 'Could se usa para cortesía o pasado, no para capacidad presente.')">( B ) ¿Podrías usar este software de diseño? / No, no podría usarlo, pero podría aprender rápido.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, false, 'c7_trad', 'Omite el verbo modal can en la segunda parte de la respuesta.')">( C ) ¿Puedes usar este software de diseño? / No lo uso, pero aprendo rápido.</button>
+                                <div id="c7_trad" style="display:none; padding: 0.8rem; border-radius: 6px; margin-top: 0.5rem; font-size: 0.9rem;"></div>
+                            </div>
                         </div>
                     </section>
 
@@ -692,30 +725,9 @@ export async function seedLecciones(adapter) {
                     <section class="bloque-fase" style="margin-bottom: 2rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center; background: #0b2238; color: white; padding: 0.8rem 1.2rem; border-radius: 6px 6px 0 0;">
                             <h3 style="margin: 0; font-size: 1.1rem; text-transform: uppercase;">ENTREGABLE FINAL (Práctica Manual con Corrección del Profesor)</h3>
-                            <span style="font-size: 0.85rem; font-weight: bold; color: #a4c4de;">Restante para 100%: +20%</span>
+
                         </div>
 
-                        <div style="background: white; border: 1px solid #0b2238; border-top: none; border-radius: 0 0 8px 8px; padding: 1.8rem; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
-                                <h4 style="margin: 0; color: #0b2238; font-size: 1.05rem;">Trabajo Práctico Integrador — Clase 7</h4>
-                                <span style="background: #fffaf0; color: #c05621; border: 1px solid #fbd38d; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Estado: Pendiente de Envío</span>
-                            </div>
-
-                            <p style="font-size: 0.95rem; color: #2d3748; line-height: 1.6;"><strong>Consigna:</strong> Escribí una lista estilo perfil profesional de 6 oraciones detallando 3 habilidades que podés hacer en el trabajo (<em>I can...</em>) y 3 que no podés hacer todavía (<em>I can't...</em>):</p>
-
-                            <div style="margin-top: 1.5rem;">
-                                <textarea placeholder="Escribe aquí tu entrega de texto para la revisión del profesor..." style="width: 100%; height: 120px; padding: 0.8rem; border: 1px solid #cbd5e0; border-radius: 6px; font-family: inherit; font-size: 0.95rem; margin-bottom: 1rem; resize: vertical;"></textarea>
-                            
-                                <div style="display: flex; gap: 1rem; justify-content: flex-end; flex-wrap: wrap;">
-                                    <button type="button" style="background: #edf2f7; color: #2d3748; border: 1px solid #cbd5e0; padding: 0.7rem 1.2rem; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.9rem;">
-                                        [ CAJA DE TEXTO / BOTÓN SUBIR AUDIO ]
-                                    </button>
-                                    <button type="button" style="background: #184168; color: white; border: none; padding: 0.7rem 1.4rem; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.9rem;">
-                                        ENVIAR A REVISIÓN MANUAL
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
                     </section>
 
                 </div>
@@ -742,15 +754,15 @@ export async function seedLecciones(adapter) {
 
                     <!-- FASE 1 CLASE 8 -->
                     <section class="bloque-fase" style="margin-bottom: 3rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
+                        <div style="background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
                             <h3 style="margin: 0; color: #0b2238; font-size: 1.1rem; text-transform: uppercase;">FASE 1: Cuantificadores y Compras</h3>
-                            <span style="font-size: 0.85rem; font-weight: bold; color: #184168;">Impacto en Progreso: +20%</span>
+
                         </div>
 
                         <div class="ejercicio-card" style="background: white; border: 1px solid #c0d4e5; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
                                 <h4 style="margin: 0; color: #0b2238; font-size: 1.05rem;">Ejercicio 8.1: Selección de Cuantificadores</h4>
-                                <span style="background: #edf2f7; color: #4a5568; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Estado: En Progreso</span>
+
                             </div>
 
                             <p style="font-size: 0.95rem; color: #4a5568; margin-bottom: 1.2rem;"><strong>Indicaciones:</strong> Selecciona la opción adecuada en función del carácter contable o incontable del sustantivo:</p>
@@ -804,15 +816,15 @@ export async function seedLecciones(adapter) {
 
                     <!-- FASE 2 CLASE 8 -->
                     <section class="bloque-fase" style="margin-bottom: 3rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
+                        <div style="background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
                             <h3 style="margin: 0; color: #0b2238; font-size: 1.1rem; text-transform: uppercase;">FASE 2: Detección de Errores y Traducción</h3>
-                            <span style="font-size: 0.85rem; font-weight: bold; color: #184168;">Impacto en Progreso: +60%</span>
+
                         </div>
 
                         <div class="ejercicio-card" style="background: white; border: 1px solid #c0d4e5; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
                                 <h4 style="margin: 0; color: #0b2238; font-size: 1.05rem;">Ejercicio 8.2: Corrección y Traducción de Cantidades</h4>
-                                <span style="background: #edf2f7; color: #4a5568; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Estado: En Progreso</span>
+
                             </div>
 
                             <p style="font-size: 0.95rem; color: #4a5568;"><strong>Indicaciones:</strong> Revisa la validación de errores y la traducción oficial del ejercicio:</p>
@@ -828,6 +840,13 @@ export async function seedLecciones(adapter) {
                                 <p style="margin: 0;"><strong>Persona A:</strong> "How much coffee do you drink in the morning?"</p>
                                 <p style="margin: 0;"><strong>Persona B:</strong> "I drink a lot of coffee, but I don't put any sugar in it."</p>
                             </div>
+                            <div class="quiz-question" style="margin-top: 1.5rem;">
+                                <p><strong>¿Cuál es la traducción correcta para el diálogo completo?</strong></p>
+                                <button class="option-btn" onclick="checkAnswer(this, false, 'c8_trad', 'How much es para sustantivos incontables (café), y la negación lleva any.')">( A ) ¿Cuántos cafés tomás en la mañana? / Tomo muchos cafés, pero no les pongo azúcar.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, true, 'c8_trad', 'Traducción correcta: how much coffee = cuánto café, any sugar = nada de azúcar.')">( B ) ¿Cuánto café tomás en la mañana? / Tomo mucho café, pero no le pongo azúcar.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, false, 'c8_trad', 'Change el sentido: la respuesta B no toma café en la mañana.')">( C ) ¿Cuánto café tomás en la mañana? / Tomo poco café, pero le pongo mucha azúcar.</button>
+                                <div id="c8_trad" style="display:none; padding: 0.8rem; border-radius: 6px; margin-top: 0.5rem; font-size: 0.9rem;"></div>
+                            </div>
                         </div>
                     </section>
 
@@ -835,30 +854,9 @@ export async function seedLecciones(adapter) {
                     <section class="bloque-fase" style="margin-bottom: 2rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center; background: #0b2238; color: white; padding: 0.8rem 1.2rem; border-radius: 6px 6px 0 0;">
                             <h3 style="margin: 0; font-size: 1.1rem; text-transform: uppercase;">ENTREGABLE FINAL (Práctica Manual con Corrección del Profesor)</h3>
-                            <span style="font-size: 0.85rem; font-weight: bold; color: #a4c4de;">Restante para 100%: +20%</span>
+
                         </div>
 
-                        <div style="background: white; border: 1px solid #0b2238; border-top: none; border-radius: 0 0 8px 8px; padding: 1.8rem; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
-                                <h4 style="margin: 0; color: #0b2238; font-size: 1.05rem;">Trabajo Práctico Integrador — Clase 8</h4>
-                                <span style="background: #fffaf0; color: #c05621; border: 1px solid #fbd38d; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Estado: Pendiente de Envío</span>
-                            </div>
-
-                            <p style="font-size: 0.95rem; color: #2d3748; line-height: 1.6;"><strong>Consigna:</strong> Armá tu lista de compras para el supermercado y escribí un texto de 6 oraciones contando qué cosas tenés en tu cocina y qué cosas te faltan comprar (ejemplo: <em>I have some..., I don't have any...</em>):</p>
-
-                            <div style="margin-top: 1.5rem;">
-                                <textarea placeholder="Escribe aquí tu entrega de texto para la revisión del profesor..." style="width: 100%; height: 120px; padding: 0.8rem; border: 1px solid #cbd5e0; border-radius: 6px; font-family: inherit; font-size: 0.95rem; margin-bottom: 1rem; resize: vertical;"></textarea>
-                            
-                                <div style="display: flex; gap: 1rem; justify-content: flex-end; flex-wrap: wrap;">
-                                    <button type="button" style="background: #edf2f7; color: #2d3748; border: 1px solid #cbd5e0; padding: 0.7rem 1.2rem; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.9rem;">
-                                        [ CAJA DE TEXTO / BOTÓN SUBIR AUDIO ]
-                                    </button>
-                                    <button type="button" style="background: #184168; color: white; border: none; padding: 0.7rem 1.4rem; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.9rem;">
-                                        ENVIAR A REVISIÓN MANUAL
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
                     </section>
 
                 </div>
@@ -885,15 +883,15 @@ export async function seedLecciones(adapter) {
 
                     <!-- FASE 1 CLASE 9 -->
                     <section class="bloque-fase" style="margin-bottom: 3rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
+                        <div style="background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
                             <h3 style="margin: 0; color: #0b2238; font-size: 1.1rem; text-transform: uppercase;">FASE 1: Estructuras de Comparación</h3>
-                            <span style="font-size: 0.85rem; font-weight: bold; color: #184168;">Impacto en Progreso: +20%</span>
+
                         </div>
 
                         <div class="ejercicio-card" style="background: white; border: 1px solid #c0d4e5; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
                                 <h4 style="margin: 0; color: #0b2238; font-size: 1.05rem;">Ejercicio 9.1: Selección de Comparativos y Superlativos</h4>
-                                <span style="background: #edf2f7; color: #4a5568; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Estado: En Progreso</span>
+
                             </div>
 
                             <p style="font-size: 0.95rem; color: #4a5568; margin-bottom: 1.2rem;"><strong>Indicaciones:</strong> Lee las 5 situaciones e identifica la estructura comparativa o superlativa correcta:</p>
@@ -947,15 +945,15 @@ export async function seedLecciones(adapter) {
 
                     <!-- FASE 2 CLASE 9 -->
                     <section class="bloque-fase" style="margin-bottom: 3rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
+                        <div style="background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
                             <h3 style="margin: 0; color: #0b2238; font-size: 1.1rem; text-transform: uppercase;">FASE 2: Detección de Errores y Traducción</h3>
-                            <span style="font-size: 0.85rem; font-weight: bold; color: #184168;">Impacto en Progreso: +60%</span>
+
                         </div>
 
                         <div class="ejercicio-card" style="background: white; border: 1px solid #c0d4e5; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
                                 <h4 style="margin: 0; color: #0b2238; font-size: 1.05rem;">Ejercicio 9.2: Corrección y Traducción de Comparaciones</h4>
-                                <span style="background: #edf2f7; color: #4a5568; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Estado: En Progreso</span>
+
                             </div>
 
                             <p style="font-size: 0.95rem; color: #4a5568;"><strong>Indicaciones:</strong> Revisa la validación de errores y la traducción oficial del ejercicio:</p>
@@ -971,6 +969,13 @@ export async function seedLecciones(adapter) {
                                 <p style="margin: 0;"><strong>Persona A:</strong> "Is your new job more difficult than the previous one?"</p>
                                 <p style="margin: 0;"><strong>Persona B:</strong> "Yes, it is more difficult, but it is the best job I had."</p>
                             </div>
+                            <div class="quiz-question" style="margin-top: 1.5rem;">
+                                <p><strong>¿Cuál es la traducción correcta para el diálogo completo?</strong></p>
+                                <button class="option-btn" onclick="checkAnswer(this, false, 'c9_trad', 'Las comparaciones con adjetivos largos usan more + adjetivo, y el superlativo de the best.')">( A ) ¿Tu nuevo trabajo es más difícil que el anterior? / Sí, es más difícil, pero es el trabajo que tengo.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, true, 'c9_trad', 'Traducción correcta: more difficult than = más difícil que, the best job = el mejor trabajo.')">( B ) ¿Tu nuevo trabajo es más difícil que el anterior? / Sí, es más difícil, pero es el mejor trabajo que tuve.</button>
+                                <button class="option-btn" onclick="checkAnswer(this, false, 'c9_trad', 'Coloca el comparativo en el lugar equivocado y cambia el superlativo.')">( C ) ¿Es tu trabajo nuevo difícil más que el anterior? / Sí, es más difícil, pero es el trabajo mejor que tenía.</button>
+                                <div id="c9_trad" style="display:none; padding: 0.8rem; border-radius: 6px; margin-top: 0.5rem; font-size: 0.9rem;"></div>
+                            </div>
                         </div>
                     </section>
 
@@ -978,30 +983,9 @@ export async function seedLecciones(adapter) {
                     <section class="bloque-fase" style="margin-bottom: 2rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center; background: #0b2238; color: white; padding: 0.8rem 1.2rem; border-radius: 6px 6px 0 0;">
                             <h3 style="margin: 0; font-size: 1.1rem; text-transform: uppercase;">ENTREGABLE FINAL (Práctica Manual con Corrección del Profesor)</h3>
-                            <span style="font-size: 0.85rem; font-weight: bold; color: #a4c4de;">Restante para 100%: +20%</span>
+
                         </div>
 
-                        <div style="background: white; border: 1px solid #0b2238; border-top: none; border-radius: 0 0 8px 8px; padding: 1.8rem; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
-                                <h4 style="margin: 0; color: #0b2238; font-size: 1.05rem;">Trabajo Práctico Integrador — Clase 9</h4>
-                                <span style="background: #fffaf0; color: #c05621; border: 1px solid #fbd38d; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Estado: Pendiente de Envío</span>
-                            </div>
-
-                            <p style="font-size: 0.95rem; color: #2d3748; line-height: 1.6;"><strong>Consigna:</strong> Elegí dos celulares, dos ciudades o dos trabajos y escribí un texto comparativo de 6 oraciones usando al menos 3 comparativos y 2 superlativos (ejemplo: <em>is cheaper than, is the most popular...</em>):</p>
-
-                            <div style="margin-top: 1.5rem;">
-                                <textarea placeholder="Escribe aquí tu entrega de texto para la revisión del profesor..." style="width: 100%; height: 120px; padding: 0.8rem; border: 1px solid #cbd5e0; border-radius: 6px; font-family: inherit; font-size: 0.95rem; margin-bottom: 1rem; resize: vertical;"></textarea>
-                            
-                                <div style="display: flex; gap: 1rem; justify-content: flex-end; flex-wrap: wrap;">
-                                    <button type="button" style="background: #edf2f7; color: #2d3748; border: 1px solid #cbd5e0; padding: 0.7rem 1.2rem; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.9rem;">
-                                        [ CAJA DE TEXTO / BOTÓN SUBIR AUDIO ]
-                                    </button>
-                                    <button type="button" style="background: #184168; color: white; border: none; padding: 0.7rem 1.4rem; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.9rem;">
-                                        ENVIAR A REVISIÓN MANUAL
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
                     </section>
 
                 </div>
@@ -1028,15 +1012,15 @@ export async function seedLecciones(adapter) {
 
                     <!-- FASE 1 CLASE 10: READING COMPREHENSION -->
                     <section class="bloque-fase" style="margin-bottom: 3rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
+                        <div style="background: #e2ebd5; padding: 0.8rem 1.2rem; border-radius: 6px; margin-bottom: 1.5rem; border-left: 4px solid #184168;">
                             <h3 style="margin: 0; color: #0b2238; font-size: 1.1rem; text-transform: uppercase;">FASE 1: Lectura Comprensiva y Análisis de Texto (Reading Comprehension)</h3>
-                            <span style="font-size: 0.85rem; font-weight: bold; color: #184168;">Impacto en Progreso: +30%</span>
+
                         </div>
 
                         <div class="ejercicio-card" style="background: white; border: 1px solid #c0d4e5; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
                                 <h4 style="margin: 0; color: #0b2238; font-size: 1.05rem;">Ejercicio 10.1: Comprensión Lectora e Identificación de Tiempos Verbales</h4>
-                                <span style="background: #edf2f7; color: #4a5568; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Estado: En Progreso</span>
+
                             </div>
 
                             <p style="font-size: 0.95rem; color: #4a5568; margin-bottom: 1.2rem;"><strong>Indicaciones:</strong> Lee atentamente el siguiente caso de estudio sobre la historia de Mateo y responde las 5 preguntas de comprensión seleccionando la opción correcta.</p>
@@ -1096,69 +1080,7 @@ export async function seedLecciones(adapter) {
                         </div>
                     </section>
 
-                    <!-- ENTREGABLE FINAL CLASE 10: PROYECTO INTEGRADOR DE CIERRE DE NIVEL -->
-                    <section class="bloque-fase" style="margin-bottom: 2rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; background: #0b2238; color: white; padding: 0.8rem 1.2rem; border-radius: 6px 6px 0 0;">
-                            <h3 style="margin: 0; font-size: 1.1rem; text-transform: uppercase;">PROYECTO INTEGRADOR FINAL DE CIERRE DE NIVEL — My Life Journey</h3>
-                            <span style="font-size: 0.85rem; font-weight: bold; color: #a4c4de;">Restante para 100%: +70%</span>
-                        </div>
 
-                        <div style="background: white; border: 1px solid #0b2238; border-top: none; border-radius: 0 0 8px 8px; padding: 1.8rem; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
-                                <h4 style="margin: 0; color: #0b2238; font-size: 1.05rem;">Consigna de Producción Escrita Integradora</h4>
-                                <span style="background: #fffaf0; color: #c05621; border: 1px solid #fbd38d; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Estado: Pendiente de Envío</span>
-                            </div>
-
-                            <p style="font-size: 0.95rem; color: #2d3748; line-height: 1.6;">
-                                Tomando como inspiración el texto de Mateo, redactá tu propia biografía laboral/personal integradora en un ensayo estructurado de mínimo 3 párrafos (entre 120 y 180 palabras en total).
-                            </p>
-                        
-                            <p style="font-size: 0.95rem; color: #2d3748; line-height: 1.6;">
-                                Tu escrito debe estar dividido exactamente en estas tres secciones e incluir todos los elementos gramaticales trabajados durante el curso:
-                            </p>
-
-                            <div style="background: #f7fafc; padding: 1.2rem; border-radius: 6px; border: 1px solid #e2e8f0; margin: 1rem 0;">
-                                <h5 style="margin-top: 0; color: #184168; font-size: 0.95rem;">📄 PÁRRAFO 1: Mi Pasado (My Past)</h5>
-                                <p style="font-size: 0.9rem; color: #4a5568; margin-bottom: 0.5rem;"><strong>Objetivo:</strong> Describir cómo era tu vida hace 1 o 2 años.</p>
-                                <ul style="font-size: 0.88rem; color: #2d3748; line-height: 1.6; margin-bottom: 1rem;">
-                                    <li>Uso del verbo To Be en pasado (<em>was / were</em>).</li>
-                                    <li>Al menos 2 verbos en Pasado Simple (un regular como <em>studied, worked, lived</em> y un irregular como <em>went, bought, had</em>).</li>
-                                    <li>Una oración en negativo con <em>didn't</em>.</li>
-                                    <li>Una habilidad o imposibilidad del pasado usando <em>could</em> o <em>couldn't</em>.</li>
-                                </ul>
-
-                                <h5 style="margin-top: 1rem; color: #184168; font-size: 0.95rem;">📄 PÁRRAFO 2: Mi Presente y Entorno (My Present)</h5>
-                                <p style="font-size: 0.9rem; color: #4a5568; margin-bottom: 0.5rem;"><strong>Objetivo:</strong> Describir tu rutina actual, tu espacio y lo que estás haciendo hoy.</p>
-                                <ul style="font-size: 0.88rem; color: #2d3748; line-height: 1.6; margin-bottom: 1rem;">
-                                    <li>Una oración de rutina en Presente Simple (<em>I work, I study, I live</em>).</li>
-                                    <li>Descripción de existencia de tu entorno usando <em>There is</em> o <em>There are</em>.</li>
-                                    <li>Una cantidad usando <em>some, any, much</em> o <em>many</em>.</li>
-                                    <li>Una oración en Presente Continuo describiendo qué estás haciendo en este período de tu vida (<em>Right now, I am studying English at Inglés Suez...</em>).</li>
-                                </ul>
-
-                                <h5 style="margin-top: 1rem; color: #184168; font-size: 0.95rem;">📄 PÁRRAFO 3: Mis Comparaciones y Planes Futuros (My Future & Goals)</h5>
-                                <p style="font-size: 0.9rem; color: #4a5568; margin-bottom: 0.5rem;"><strong>Objetivo:</strong> Comparar tu situación actual con el pasado y detallar tus próximos proyectos.</p>
-                                <ul style="font-size: 0.88rem; color: #2d3748; line-height: 1.6; margin-bottom: 0;">
-                                    <li>Una comparación entre tu presente y tu pasado usando un adjetivo comparativo (<em>better than, easier than, more interesting than</em>).</li>
-                                    <li>Al menos 2 oraciones con planes futuros usando la estructura <em>be going to</em> (<em>I am going to travel, I am going to apply...</em>).</li>
-                                    <li>Una oración de habilidad actual usando <em>can</em> o <em>can't</em>.</li>
-                                </ul>
-                            </div>
-
-                            <div style="margin-top: 1.5rem;">
-                                <textarea placeholder="Escribe aquí tu Proyecto Integrador Final de 3 párrafos para la corrección detallada del profesor..." style="width: 100%; height: 180px; padding: 0.8rem; border: 1px solid #cbd5e0; border-radius: 6px; font-family: inherit; font-size: 0.95rem; margin-bottom: 1rem; resize: vertical;"></textarea>
-                            
-                                <div style="display: flex; gap: 1rem; justify-content: flex-end; flex-wrap: wrap;">
-                                    <button type="button" style="background: #edf2f7; color: #2d3748; border: 1px solid #cbd5e0; padding: 0.7rem 1.2rem; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.9rem;">
-                                        [ CAJA DE TEXTO EXTENSA / SUBIR DOCUMENTO ]
-                                    </button>
-                                    <button type="button" style="background: #184168; color: white; border: none; padding: 0.7rem 1.4rem; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.9rem;">
-                                        ENVIAR PROYECTO FINAL A REVISIÓN MANUAL
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
 
                 </div>
             `;

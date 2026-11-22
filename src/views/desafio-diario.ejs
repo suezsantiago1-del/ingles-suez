@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <link rel="icon" type="image/png" href="/img/favicon.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desafío del día - INGLÉS SUEZ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=GFS+Didot&family=Tenor+Sans&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        body, p, span, div, a, li, button { font-family: 'GFS Didot', serif; }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Tenor Sans', sans-serif !important; }
+        body { background-color: #e3edf5; margin: 0; padding: 0; color: #1a202c; }
+        .desafio-opcion {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: left;
+            font-size: 1rem;
+            transition: all 0.2s;
+            font-family: 'GFS Didot', serif;
+            width: 100%;
+        }
+        .desafio-opcion:hover:not(:disabled) {
+            background: rgba(255,255,255,0.2);
+            border-color: rgba(255,255,255,0.3);
+        }
+        .desafio-opcion:disabled { cursor: not-allowed; opacity: 0.7; }
+        .desafio-opcion.correcta {
+            background: #c6f6d5 !important;
+            border-color: #38a169 !important;
+            color: #22543d !important;
+            font-weight: bold;
+        }
+        .desafio-opcion.incorrecta {
+            background: #fed7d7 !important;
+            border-color: #e53e3e !important;
+            color: #742a2a !important;
+        }
+        @media (max-width: 768px) {
+            #desafio-del-dia { margin: 2rem 1rem; padding: 1.5rem; }
+            #desafio-del-dia h2 { font-size: 1.2rem; }
+            .desafio-opcion { font-size: 0.9rem; padding: 0.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+<%- include('partials/header') %>
+
+<main style="max-width: 900px; margin: 3rem auto; padding: 0 1.5rem;">
+
+    <% if (usuario) { %>
+    <!-- Panel de racha: muy visible -->
+    <section id="panel-racha" style="background: linear-gradient(135deg, #0b2238 0%, #184168 100%); border-radius: 12px; padding: 1.5rem 2rem; margin-bottom: 1.5rem; box-shadow: 0 6px 18px rgba(0,0,0,0.14);">
+        <div style="display: flex; align-items: center; gap: 1.4rem;">
+            <img id="rango-logo" src="/logosracha/sinrango.jpg" alt="Sin rango" style="width: 132px; height: 132px; object-fit: contain; border-radius: 16px; flex-shrink: 0; background: rgba(255,255,255,0.35);">
+            <div style="text-align: left; min-width: 0;">
+                <div id="rango-nombre" style="font-family: 'Tenor Sans', sans-serif; font-size: 1.6rem; font-weight: 800; color: white; line-height: 1.15;">Sin rango</div>
+                <div style="color: #cbd5e0; margin-top: 0.45rem; font-size: 1.05rem;">Racha: <span id="racha-val">0</span> días</div>
+                <div style="color: #cbd5e0; margin-top: 0.25rem; font-size: 1.05rem;">Total XP: <span id="xp-val">0</span></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Aviso flotante de XP al completar -->
+    <div id="toast-xp" style="display:none; position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%); background: #38a169; color: white; padding: 1rem 1.6rem; border-radius: 10px; font-weight: 800; font-size: 1.05rem; box-shadow: 0 8px 20px rgba(0,0,0,0.25); z-index: 400; font-family: 'Tenor Sans', sans-serif;"></div>
+    <% } %>
+
+    <% if (desafio) { %>
+    <section id="desafio-del-dia">
+        <div style="background: linear-gradient(135deg, #0b2238 0%, #184168 100%); border-radius: 12px; padding: 2rem; box-shadow: 0 4px 15px rgba(11, 34, 56, 0.1);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <span style="background: rgba(255,255,255,0.15); color: #a4c4de; padding: 0.35rem 0.8rem; border-radius: 4px; font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase;">
+                        Desafío del día
+                    </span>
+                    <h2 style="color: white; margin: 0.5rem 0 0 0; font-size: 1.5rem;">Resolvé el desafío de hoy</h2>
+                </div>
+                <span id="desafio-categoria" style="background: rgba(255,255,255,0.1); color: #cbd5e0; padding: 0.3rem 0.8rem; border-radius: 4px; font-size: 0.8rem; font-weight: 600;"><%= ({ quiz: 'Quiz', situacion: 'Situación conversacional', error: 'Detectá el error', real: 'English real', conversacion: 'Completar conversación', dificil: 'Desafío difícil', listening: 'Listening', listening_corto: 'Escuchá y elegí' })[desafio.tipo] || desafio.categoria %></span>
+            </div>
+
+            <div id="desafio-contenido" style="color: white;">
+                <p style="font-size: 1.1rem; margin-bottom: 1.5rem; line-height: 1.6;"><%= desafio.pregunta %></p>
+                <% if (desafio.tipo === 'listening' || desafio.tipo === 'listening_corto') { %>
+                <div style="margin-bottom: 1.2rem;">
+                    <button type="button" id="btn-escuchar" onclick="reproducirAudio()" style="background: #f6e05e; color: #0b2238; padding: 0.75rem 1.6rem; border: none; border-radius: 6px; font-weight: 800; font-size: 1rem; cursor: pointer; font-family: 'Tenor Sans', sans-serif;">
+                        Escuchar
+                    </button>
+                    <span id="escuchar-ayuda" style="display: inline-block; color: #cbd5e0; font-size: 0.85rem; margin-left: 0.8rem;">Presioná el botón para escuchar la frase antes de responder.</span>
+                </div>
+                <% } %>
+                <div class="desafio-opciones" style="display: flex; flex-direction: column; gap: 0.8rem;">
+                    <button type="button" class="desafio-opcion" onclick="responderDesafio(this, 'A')" data-opcion="A">
+                        <span>A) <%= desafio.opcion_a %></span>
+                    </button>
+                    <button type="button" class="desafio-opcion" onclick="responderDesafio(this, 'B')" data-opcion="B">
+                        <span>B) <%= desafio.opcion_b %></span>
+                    </button>
+                    <button type="button" class="desafio-opcion" onclick="responderDesafio(this, 'C')" data-opcion="C">
+                        <span>C) <%= desafio.opcion_c %></span>
+                    </button>
+                </div>
+                <div id="desafio-feedback" style="display: none; margin-top: 1.5rem; padding: 1rem; border-radius: 8px; background: #c6f6d5; border: 1px solid #38a169; color: #22543d;"></div>
+            </div>
+        </div>
+    </section>
+    <% } else { %>
+    <section style="background: white; border-radius: 12px; padding: 3rem; box-shadow: 0 15px 35px rgba(11, 34, 56, 0.15), 0 5px 15px rgba(0, 0, 0, 0.05); border: 1px solid #c0d4e5; text-align: center;">
+        <h1 style="color: #0b2238; margin: 0 0 1rem 0;">Desafío del día</h1>
+        <p style="color: #4a5568; font-size: 1.05rem; line-height: 1.7; margin: 0 0 1.5rem 0;">
+            No se encontró un desafío disponible para hoy. Intentá de nuevo más tarde.
+        </p>
+        <a href="/" style="display: inline-block; background: #0b2238; color: white; padding: 0.85rem 1.8rem; border-radius: 6px; text-decoration: none; font-size: 0.95rem; font-family: 'Tenor Sans', sans-serif;">Volver al inicio</a>
+    </section>
+    <% } %>
+
+    <% if (usuario) { %>
+    <!-- Ranking semanal -->
+    <section style="background: #ffffff; border: 1px solid #c0d4e5; border-radius: 12px; padding: 1.5rem; margin-top: 1.5rem; box-shadow: 0 4px 12px rgba(11,34,56,0.08);">
+        <h3 style="color: #0b2238; margin: 0 0 1rem 0; font-size: 1.1rem;">Ranking de esta semana</h3>
+        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <% if (usuario.ranking && usuario.ranking.length) { %>
+                <% usuario.ranking.forEach(r => { %>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0.9rem; border-radius: 8px; <%= r.esYo ? 'background:#fef3c7; border:1px solid #f59e0b;' : 'background:#f7fafc;' %>">
+                        <span style="<%= r.esYo ? 'font-weight:800;' : '' %>"><%= r.nombre %><% if (r.esYo) { %> <em>(Vos)</em><% } %></span>
+                        <strong><%= r.puntos %> XP</strong>
+                    </div>
+                <% }) %>
+            <% } else { %>
+                <p style="color:#718096; margin:0;">Todavía no hay participantes esta semana. ¡Completá el desafío para sumar XP!</p>
+            <% } %>
+        </div>
+    </section>
+
+    <!-- Recompensas personalizadas del profesor -->
+    <section style="background: #ffffff; border: 1px solid #c0d4e5; border-radius: 12px; padding: 1.5rem; margin-top: 1.5rem; box-shadow: 0 4px 12px rgba(11,34,56,0.08);">
+        <h3 style="color: #0b2238; margin: 0 0 1rem 0; font-size: 1.1rem;">Recompensas del profesor</h3>
+        <% if (usuario.recompensas && usuario.recompensas.length) { %>
+            <% usuario.recompensas.forEach(r => { %>
+                <div style="background:#f0fff4; border-left: 4px solid #38a169; padding: 0.8rem 1rem; border-radius: 6px; margin-bottom: 0.6rem;">
+                    <div style="color:#22543d; margin:0; font-size:0.95rem;"><%= r.texto %></div>
+                    <div style="color:#a0aec0; font-size:0.75rem; margin-top:0.3rem;"><%= new Date(r.creado_en).toLocaleDateString('es-AR') %></div>
+                </div>
+            <% }) %>
+        <% } else { %>
+            <p style="color:#718096; margin:0;">El profesor puede enviarte recompensas personalizadas cuando alcances rachas importantes.</p>
+        <% } %>
+    </section>
+    <% } %>
+
+</main>
+
+<%- include('partials/footer') %>
+<script>
+    const desafioActual = <%- JSON.stringify(desafio) %>;
+    const usuarioSesion = <%- JSON.stringify(usuario) %>;
+
+    const HITOS_RACHA_UI = [
+        { minimo: 3, emoji: '🥉', nombre: 'Beginner', logo: '/logosracha/beginner.png' },
+        { minimo: 7, emoji: '🥈', nombre: 'Consistent', logo: '/logosracha/consistent.png' },
+        { minimo: 30, emoji: '🥇', nombre: 'English Streak', logo: '/logosracha/englishstreak.png' },
+        { minimo: 100, emoji: '💎', nombre: 'English Master', logo: '/logosracha/englishmaster.png' }
+    ];
+
+    let estadoUsuario = usuarioSesion
+        ? { racha: usuarioSesion.racha || 0, xpTotal: usuarioSesion.xpTotal || 0, hito: usuarioSesion.hito || null }
+        : null;
+
+    function renderPanelDatos() {
+        if (!estadoUsuario) return;
+        const racha = estadoUsuario.racha;
+        document.getElementById('racha-val').textContent = racha;
+        document.getElementById('xp-val').textContent = estadoUsuario.xpTotal;
+
+        const img = document.getElementById('rango-logo');
+        const nomEl = document.getElementById('rango-nombre');
+        if (!img || !nomEl) return;
+        const actual = estadoUsuario.hito
+            ? HITOS_RACHA_UI.find(h => h.minimo === estadoUsuario.hito.minimo)
+            : null;
+        if (actual) {
+            img.src = actual.logo;
+            img.alt = actual.nombre;
+            nomEl.textContent = actual.nombre;
+        } else {
+            img.src = '/logosracha/sinrango.jpg';
+            img.alt = 'Sin rango';
+            nomEl.textContent = 'Sin rango';
+        }
+    }
+
+    function mostrarToastAviso(mensaje) {
+        const t = document.getElementById('toast-xp');
+        if (!t) return;
+        t.textContent = mensaje;
+        t.style.display = 'block';
+        clearTimeout(window.__toastTimer);
+        window.__toastTimer = setTimeout(() => { t.style.display = 'none'; }, 3200);
+    }
+
+    async function registrarCompletado() {
+        if (!estadoUsuario) return;
+        try {
+            const res = await fetch('/desafio-diario/completar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            const data = await res.json();
+            if (data.success) {
+                estadoUsuario.racha = data.racha;
+                estadoUsuario.xpTotal = data.xpTotal;
+                estadoUsuario.hito = data.hito;
+                renderPanelDatos();
+                if (data.xp > 0) mostrarToastAviso('¡Desafío completado! +10 XP');
+                if (data.desbloqueo) {
+                    setTimeout(() => mostrarToastAviso('🎁 ¡Desbloqueaste ' + data.desbloqueo.nombre + '! ' + data.desbloqueo.emoji), 3500);
+                }
+            }
+        } catch (e) { console.error('Error al registrar el desafío:', e); }
+    }
+
+    let audioEscuchado = false;
+
+    function esDesafioAudio() {
+        return !!(desafioActual && (desafioActual.tipo === 'listening' || desafioActual.tipo === 'listening_corto'));
+    }
+
+    function reproducirAudio() {
+        if (!('speechSynthesis' in window)) { return; }
+        const texto = (desafioActual && (desafioActual.texto_audio || desafioActual.pregunta)) || '';
+        if (!texto) { return; }
+
+        // Cargar voces de forma asíncrona por si aún no están disponibles.
+        if (window.speechSynthesis.getVoices().length === 0) {
+            window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+        }
+        const voces = window.speechSynthesis.getVoices();
+        const utt = new SpeechSynthesisUtterance(texto);
+        utt.lang = 'en-US';
+        const voz = voces.find(v => v.lang && v.lang.includes('en-US'));
+        if (voz) utt.voice = voz;
+        utt.rate = 0.9;
+
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utt);
+
+        audioEscuchado = true;
+        const btn = document.getElementById('btn-escuchar');
+        if (btn) btn.textContent = 'Escuchar de nuevo';
+        const ayuda = document.getElementById('escuchar-ayuda');
+        if (ayuda) ayuda.style.display = 'none';
+        habilitarOpciones();
+    }
+
+    function habilitarOpciones() {
+        document.querySelectorAll('.desafio-opcion').forEach(op => { op.disabled = false; });
+    }
+
+    function responderDesafio(boton, opcion) {
+        const opciones = document.querySelectorAll('.desafio-opcion');
+        const feedback = document.getElementById('desafio-feedback');
+        const correcta = desafioActual.respuesta_correcta;
+
+        opciones.forEach(op => op.disabled = true);
+
+        if (opcion === correcta) {
+            boton.classList.add('correcta');
+            feedback.style.display = 'block';
+            feedback.style.background = '#c6f6d5';
+            feedback.style.border = '1px solid #38a169';
+            feedback.style.color = '#22543d';
+            feedback.innerHTML = `
+                <strong>¡Correcto! 🎉</strong>
+                <p style="margin: 0.5rem 0 0 0;">${document.querySelector('.desafio-opcion[data-opcion="' + correcta + '"]').textContent}</p>
+                <p style="margin: 0.5rem 0 0.5rem 0; font-size: 0.9rem;"><strong>Explicación:</strong> ${desafioActual.explicacion}</p>
+                <p style="margin: 0; font-size: 0.9rem;"><strong>Ejemplo:</strong> ${desafioActual.ejemplo}</p>
+            `;
+
+            const hoy = new Date().toDateString();
+            localStorage.setItem('desafio_completado_' + hoy, String(desafioActual.numero));
+
+            document.querySelector('#desafio-del-dia h2').innerHTML = `Resolvé el desafío de hoy ✅`;
+
+            registrarCompletado();
+        } else {
+            boton.classList.add('incorrecta');
+            feedback.style.display = 'block';
+            feedback.style.background = '#fed7d7';
+            feedback.style.border = '1px solid #e53e3e';
+            feedback.style.color = '#742a2a';
+            feedback.innerHTML = `
+                <strong>Incorrecto ❌</strong>
+                <p style="margin: 0.5rem 0 0 0;">La respuesta correcta era: <strong>${correcta})</strong></p>
+                <p style="margin: 0.5rem 0 0.5rem 0; font-size: 0.9rem;"><strong>Explicación:</strong> ${desafioActual.explicacion}</p>
+                <p style="margin: 0; font-size: 0.9rem;"><strong>Ejemplo:</strong> ${desafioActual.ejemplo}</p>
+            `;
+        }
+    }
+
+    function marcarComoCompletado() {
+        const opciones = document.querySelectorAll('.desafio-opcion');
+        opciones.forEach(op => {
+            op.disabled = true;
+            if (op.getAttribute('data-opcion') === desafioActual.respuesta_correcta) {
+                op.classList.add('correcta');
+            }
+        });
+
+        document.querySelector('#desafio-del-dia h2').innerHTML = `Resolvé el desafío de hoy ✅`;
+
+        const feedback = document.getElementById('desafio-feedback');
+        feedback.style.display = 'block';
+        feedback.style.background = '#c6f6d5';
+        feedback.style.border = '1px solid #38a169';
+        feedback.style.color = '#22543d';
+        feedback.innerHTML = '<strong>¡Ya completaste este desafío hoy! 🎉</strong><p style="margin: 0.5rem 0 0 0;">Vuelve mañana para un nuevo desafío.</p>';
+    }
+
+    // Al cargar: render del panel de racha/hitos y verificar si ya completó hoy
+    renderPanelDatos();
+    if (desafioActual) {
+        // Para tipos de listening, las opciones quedan bloqueadas hasta que se reproduzca el audio.
+        if (esDesafioAudio()) {
+            document.querySelectorAll('.desafio-opcion').forEach(op => { op.disabled = true; });
+        }
+        const hoy = new Date().toDateString();
+        const completadoHoy = localStorage.getItem('desafio_completado_' + hoy);
+        if (completadoHoy === desafioActual.numero.toString() || (usuarioSesion && usuarioSesion.completadoHoy)) {
+            marcarComoCompletado();
+        }
+    }
+</script>
+
+</body>
+</html>

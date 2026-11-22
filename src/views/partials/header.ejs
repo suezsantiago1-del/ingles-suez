@@ -155,6 +155,8 @@
             <a href="/cursos-todos" style="color: white; text-decoration: none; font-size: 1.05rem; opacity: 0.45; font-family: 'GFS Didot', serif; transition: opacity 0.2s ease;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.45'">Cursos</a>
             <a href="/clases-particulares" style="color: white; text-decoration: none; font-size: 1.05rem; opacity: 0.45; font-family: 'GFS Didot', serif; transition: opacity 0.2s ease;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.45'">Clases Particulares</a>
             <a href="/about" style="color: white; text-decoration: none; font-size: 1.05rem; opacity: 0.45; font-family: 'GFS Didot', serif; transition: opacity 0.2s ease;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.45'">Acerca de</a>
+            <a href="/test-nivel" style="color: white; text-decoration: none; font-size: 1.05rem; opacity: 0.45; font-family: 'GFS Didot', serif; transition: opacity 0.2s ease;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.45'">Test de Nivel</a>
+            <a href="/desafio-diario" style="color: white; text-decoration: none; font-size: 1.05rem; opacity: 0.45; font-family: 'GFS Didot', serif; transition: opacity 0.2s ease;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.45'">Desafío del día</a>
         </div>
     </div>
     
@@ -170,18 +172,29 @@
         <a href="/" style="color: white; text-decoration: none; font-size: 1rem; font-family: 'GFS Didot', serif;">Inicio</a>
         
         <% if (locals.user) { %>
+            
             <% if (locals.user.email === 'suezsantiago1@gmail.com') { %>
                 <!-- Botón exclusivo para el Profesor -->
                 <a href="/profesor/entregas" style="background: #e2ebd5; color: #0b2238; padding: 0.4rem 0.9rem; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 0.95rem; font-family: 'Tenor Sans', sans-serif;">Panel Profesor</a>
+                <a href="/profesor/rachas" style="background: #fbd38d; color: #7c2d12; padding: 0.4rem 0.9rem; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 0.95rem; font-family: 'Tenor Sans', sans-serif;">Rachas</a>
             <% } %>
 
-            <!-- Enlace a Bandeja de Mensajes para Alumnos -->
-            <a href="/messages" style="color: white; text-decoration: none; font-size: 1rem; font-family: 'GFS Didot', serif; position: relative;">
-                Mis Mensajes
-                <% if (locals.mensajesNoLeidos && locals.mensajesNoLeidos > 0) { %>
-                    <span style="background: #e53e3e; color: white; border-radius: 50%; padding: 0.1rem 0.4rem; font-size: 0.75rem; font-weight: bold; margin-left: 0.3rem;"><%= locals.mensajesNoLeidos %></span>
-                <% } %>
-            </a>
+            <!-- Menú desplegable de Mis Mensajes: el texto navega directo a /messages, la flechita abre las opciones -->
+            <div style="position: relative;">
+                <div style="display: flex; align-items: center; gap: 0.2rem;">
+                    <a href="/messages" style="color: white; text-decoration: none; font-size: 1rem; font-family: 'GFS Didot', serif; white-space: nowrap;">Mis Mensajes</a>
+                    <% if (locals.mensajesNoLeidos && locals.mensajesNoLeidos > 0) { %>
+                        <span style="background: #e53e3e; color: white; border-radius: 50%; padding: 0.1rem 0.4rem; font-size: 0.75rem; font-weight: bold;"><%= locals.mensajesNoLeidos %></span>
+                    <% } %>
+                    <span id="mensajesMenuBtn" title="Opciones" style="display: flex; align-items: center; cursor: pointer; padding: 0.1rem 0.25rem;">
+                        <svg style="width:0.6rem; height:0.6rem;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6" /></svg>
+                    </span>
+                </div>
+                <div id="mensajesMenuDesplegable" style="display: none; position: absolute; right: 0; top: 100%; background: #ffffff; border: 1px solid #cbd5e0; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); min-width: 190px; z-index: 300; padding: 0.45rem 0;">
+                    <a href="/messages" style="display: block; padding: 0.55rem 1rem; color: #0b2238; text-decoration: none; font-size: 0.9rem;">Ver mensajes</a>
+                    <button type="button" onclick="marcarMensajesLeidos()" id="btnMarcarLeidosMenu" style="display: block; width: 100%; text-align: left; background: none; border: none; padding: 0.55rem 1rem; color: #0b2238; font-size: 0.9rem; cursor: pointer;">Marcar como leídos</button>
+                </div>
+            </div>
 
             <a href="/mis-cursos" style="color: white; text-decoration: none; font-size: 1rem; font-family: 'GFS Didot', serif;">Mis Cursos</a>
             <a href="/auth/profile" style="color: white; text-decoration: none; font-size: 1rem; font-family: 'GFS Didot', serif;">Mi Perfil</a>
@@ -210,20 +223,34 @@
         <a href="/cursos-todos" onclick="toggleMobileMenu()" style="padding: 0.75rem 0;">Cursos</a>
         <a href="/clases-particulares" onclick="toggleMobileMenu()" style="padding: 0.75rem 0;">Clases Particulares</a>
         <a href="/about" onclick="toggleMobileMenu()" style="padding: 0.75rem 0;">Acerca de</a>
+        <a href="/test-nivel" onclick="toggleMobileMenu()" style="padding: 0.75rem 0;">Test de Nivel</a>
+        <a href="/desafio-diario" onclick="toggleMobileMenu()" style="padding: 0.75rem 0;">Desafío del día</a>
         
         <% if (locals.user) { %>
             <div style="border-top: 1px solid rgba(255,255,255,0.1); margin: 1rem 0;"></div>
             
+            
+
             <% if (locals.user.email === 'suezsantiago1@gmail.com') { %>
                 <a href="/profesor/entregas" onclick="toggleMobileMenu()" style="background: #e2ebd5; color: #0b2238; padding: 0.75rem; border-radius: 6px; text-align: center; margin-top: 0.5rem;">Panel Profesor</a>
+                <a href="/profesor/rachas" onclick="toggleMobileMenu()" style="background: #fbd38d; color: #7c2d12; padding: 0.75rem; border-radius: 6px; text-align: center; margin-top: 0.5rem;">Rachas</a>
             <% } %>
 
-            <a href="/messages" onclick="toggleMobileMenu()" style="padding: 0.75rem 0; display: flex; justify-content: space-between; align-items: center;">
-                <span>Mis Mensajes</span>
-                <% if (locals.mensajesNoLeidos && locals.mensajesNoLeidos > 0) { %>
-                    <span style="background: #e53e3e; color: white; border-radius: 50%; padding: 0.2rem 0.5rem; font-size: 0.75rem; font-weight: bold;"><%= locals.mensajesNoLeidos %></span>
-                <% } %>
-            </a>
+            <div style="position: relative;">
+                <a href="/messages" onclick="toggleMobileMenu()" style="padding: 0.75rem 0; display: flex; justify-content: space-between; align-items: center;">
+                    <span>Mis Mensajes</span>
+                    <% if (locals.mensajesNoLeidos && locals.mensajesNoLeidos > 0) { %>
+                        <span style="background: #e53e3e; color: white; border-radius: 50%; padding: 0.2rem 0.5rem; font-size: 0.75rem; font-weight: bold;"><%= locals.mensajesNoLeidos %></span>
+                    <% } %>
+                    <span id="mensajesMenuBtnMobile" onclick="event.stopPropagation(); toggleMensajesMenuMobile()" style="display: flex; align-items: center; cursor: pointer; padding: 0.1rem 0.25rem;">
+                        <svg style="width:0.6rem; height:0.6rem;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6" /></svg>
+                    </span>
+                </a>
+                <div id="mensajesMenuDesplegableMobile" style="display: none; position: absolute; right: 0; top: 100%; background: #ffffff; border: 1px solid #cbd5e0; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); min-width: 190px; z-index: 300; padding: 0.45rem 0;">
+                    <a href="/messages" onclick="toggleMobileMenu()" style="display: block; padding: 0.55rem 1rem; color: #0b2238; text-decoration: none; font-size: 0.9rem;">Ver mensajes</a>
+                    <button type="button" onclick="marcarMensajesLeidos(); toggleMobileMenu();" id="btnMarcarLeidosMenuMobile" style="display: block; width: 100%; text-align: left; background: none; border: none; padding: 0.55rem 1rem; color: #0b2238; font-size: 0.9rem; cursor: pointer;">Marcar como leídos</button>
+                </div>
+            </div>
 
             <a href="/mis-cursos" onclick="toggleMobileMenu()" style="padding: 0.75rem 0;">Mis Cursos</a>
             <a href="/auth/profile" onclick="toggleMobileMenu()" style="padding: 0.75rem 0;">Mi Perfil</a>
@@ -250,5 +277,59 @@ function toggleMobileMenu() {
         overlay.classList.add('active');
         document.body.style.overflow = 'hidden';
     }
+}
+
+// Menú desplegable de Mis Mensajes: se abre solo con la flechita
+function toggleMensajesMenu() {
+    const menu = document.getElementById('mensajesMenuDesplegable');
+    if (!menu) return;
+    const visible = menu.style.display === 'block';
+    menu.style.display = visible ? 'none' : 'block';
+}
+
+// Menú desplegable de Mis Mensajes para móvil
+function toggleMensajesMenuMobile() {
+    const menu = document.getElementById('mensajesMenuDesplegableMobile');
+    if (!menu) return;
+    const visible = menu.style.display === 'block';
+    menu.style.display = visible ? 'none' : 'block';
+}
+
+document.addEventListener('click', function (e) {
+    const btn = document.getElementById('mensajesMenuBtn');
+    const menu = document.getElementById('mensajesMenuDesplegable');
+    if (!btn || !menu) return;
+    if (btn.contains(e.target)) {
+        toggleMensajesMenu();
+    } else if (!menu.contains(e.target)) {
+        menu.style.display = 'none';
+    }
+    
+    // Para el menú móvil
+    const btnMobile = document.getElementById('mensajesMenuBtnMobile');
+    const menuMobile = document.getElementById('mensajesMenuDesplegableMobile');
+    if (!btnMobile || !menuMobile) return;
+    if (btnMobile.contains(e.target)) {
+        toggleMensajesMenuMobile();
+    } else if (!menuMobile.contains(e.target)) {
+        menuMobile.style.display = 'none';
+    }
+});
+
+// Marca todas las devoluciones del alumno como leídas y actualiza la UI
+function marcarMensajesLeidos() {
+    const menu = document.getElementById('mensajesMenuDesplegable');
+    fetch('/messages/leer', { method: 'POST' })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                if (menu) menu.style.display = 'none';
+                alert('Mensajes marcados como leídos.');
+                window.location.reload();
+            } else {
+                alert(data.message || 'No se pudieron marcar como leídos.');
+            }
+        })
+        .catch(() => alert('Error de conexión al marcar como leídos.'));
 }
 </script>
