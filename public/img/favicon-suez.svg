@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <radialGradient id="brillo" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#F1F2F4" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#F1F2F4" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="#0D1420"/>
+  <!-- Órbita del logo -->
+  <path d="M10 50 C 26 47, 50 38, 54 22 C 57 9, 40 8, 22 17" fill="none" stroke="#8FADD6" stroke-width="4" stroke-linecap="round"/>
+  <!-- Estrella de 4 puntas -->
+  <circle cx="34" cy="31" r="17" fill="url(#brillo)"/>
+  <path d="M34 9 C35.6 25 38 28.6 54 31 C38 33.4 35.6 37 34 53 C32.4 37 30 33.4 14 31 C30 28.6 32.4 25 34 9Z" fill="#F1F2F4"/>
+</svg>
