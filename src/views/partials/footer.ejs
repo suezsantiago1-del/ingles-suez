@@ -45,3 +45,52 @@
         <p class="fx-footer__copy" style="max-width: none;">&copy; <%= new Date().getFullYear() %> Inglés Suez</p>
     </div>
 </footer>
+
+<script>
+// Animaciones del sitio: aparición al hacer scroll y estrellitas en los hero
+(function () {
+    if (!document.documentElement.classList.contains('fx-anim')) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    // Estrellitas que titilan en el fondo de los hero
+    document.querySelectorAll('.fx-hero, .fx-pc-hero').forEach(function (hero) {
+        var sky = document.createElement('div');
+        sky.className = 'fx-sky';
+        sky.setAttribute('aria-hidden', 'true');
+        for (var n = 0; n < 14; n++) {
+            var s = document.createElement('i');
+            var t = 6 + Math.random() * 16;
+            s.style.cssText = '--s:' + t.toFixed(0) + 'px;left:' + (Math.random() * 100).toFixed(1) + '%;top:' + (Math.random() * 100).toFixed(1) + '%;'
+                + '--d:' + (4 + Math.random() * 5).toFixed(1) + 's;--w:' + (Math.random() * 5).toFixed(1) + 's;--o:' + (0.25 + Math.random() * 0.55).toFixed(2) + ';'
+                + '--dx:' + (Math.random() * 30 - 15).toFixed(0) + 'px;--dy:' + (Math.random() * -30).toFixed(0) + 'px;';
+            sky.appendChild(s);
+        }
+        hero.insertBefore(sky, hero.firstChild);
+    });
+
+    // Aparición escalonada al entrar en pantalla
+    if (!('IntersectionObserver' in window)) return;
+    var grupos = '.fx-grid, .fx-pick-grid, .fx-steps, .fx-points, .fx-contact, .fx-footer__inner';
+    var sueltos = '.fx-block__head, .fx-section__head, .fx-panel, .fx-quiz--band, .fx-chat, .fx-feedback, .fx-msgs__title, .fx-split > div';
+    var objetivos = [];
+    document.querySelectorAll(grupos).forEach(function (g) {
+        Array.prototype.forEach.call(g.children, function (el, i) { el.style.setProperty('--fx-i', Math.min(i, 6)); objetivos.push(el); });
+    });
+    document.querySelectorAll(sueltos).forEach(function (el) { if (objetivos.indexOf(el) === -1) objetivos.push(el); });
+    var io = new IntersectionObserver(function (entradas) {
+        entradas.forEach(function (e) {
+            if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); }
+        });
+    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.12 });
+    objetivos.forEach(function (el) {
+        if (el.closest('.fx-hero, .fx-pc-hero')) return;
+        el.classList.add('fx-reveal');
+        io.observe(el);
+    });
+    // Los títulos grandes de sección se "barren" de izquierda a derecha
+    document.querySelectorAll('.fx-block__head h2, .fx-section__head h2').forEach(function (h) {
+        h.classList.add('fx-reveal-title');
+        io.observe(h);
+    });
+})();
+</script>

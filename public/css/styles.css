@@ -640,7 +640,7 @@ input, button, select, textarea {
   --fx-surface: #131C2A;
   --fx-star: #1C2635;
   --fx-text: #F1F2F4;
-  --fx-steel: #A9BBCE;
+  --fx-steel: #8FADD6;
   --fx-muted: #8B98AA;
   --fx-line: rgba(241, 242, 244, 0.28);
   --fx-font: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
@@ -871,7 +871,7 @@ html body.tema-flyer { background: var(--fx-bg) !important; color: var(--fx-text
 /* ---------- Logo: wordmark con órbita y estrella ---------- */
 .fx-logo {
   position: relative; display: inline-block; text-decoration: none; color: var(--fx-text);
-  font-size: 13px; margin: 0.7em 1.6em 0.15em 0; line-height: 1; flex: none;
+  font-size: 13px; margin: 1em 2.8em 0.2em 0; line-height: 1; flex: none;
 }
 .fx-logo--lg { font-size: 22px; }
 .fx-logo__text {
@@ -880,11 +880,11 @@ html body.tema-flyer { background: var(--fx-bg) !important; color: var(--fx-text
 }
 .fx-logo__text span { display: block; color: var(--fx-steel); }
 .fx-logo__orbit {
-  position: absolute; left: 6%; top: -22%; width: 112%; height: 140%;
+  position: absolute; left: 0; top: 0; width: 100%; height: 100%;
   color: var(--fx-text); pointer-events: none; overflow: visible;
 }
 .fx-logo__star {
-  position: absolute; left: 122.5%; top: -17.8%; width: 1.1em; margin: -0.55em 0 0 -0.55em;
+  position: absolute; left: 124%; top: -16%; width: 1.3em; margin: -0.65em 0 0 -0.65em;
   color: var(--fx-text); filter: drop-shadow(0 0 4px rgba(241, 242, 244, 0.5));
   transition: transform 0.4s ease;
 }
@@ -1174,3 +1174,73 @@ a.fx-lesson:hover { color: var(--fx-text); background: rgba(241, 242, 244, 0.04)
   .fx-lesson { flex: none; max-width: 240px; border-color: var(--fx-line); }
 }
 .fx-block__head > div { flex: 1 1 320px; }
+
+/* =========================================================
+   ANIMACIONES — solo con JS activo (html.fx-anim) y sin
+   "reducir movimiento" en el sistema
+   ========================================================= */
+@media (prefers-reduced-motion: no-preference) {
+
+  /* Logo: la órbita se dibuja y la estrella aparece (1 vez por visita) */
+  html.fx-anim.fx-intro .fx-nav .fx-logo__orbit path { stroke-dasharray: 1; stroke-dashoffset: 1; animation: fx-draw 1.4s 0.2s cubic-bezier(.6,0,.2,1) forwards; }
+  html.fx-anim.fx-intro .fx-nav .fx-logo__star { opacity: 0; animation: fx-pop 0.5s 1.35s ease-out forwards; }
+  .fx-logo__star { animation: fx-twinkle 4s 3s ease-in-out infinite; }
+
+  /* Hero: el título entra línea por línea, después el resto */
+  html.fx-anim .fx-hero h1, html.fx-anim .fx-pc-title { animation: fx-rise 0.9s cubic-bezier(.2,.8,.2,1) both; }
+  html.fx-anim .fx-hero h1 .fx-steel { display: block; animation: fx-rise 0.9s 0.18s cubic-bezier(.2,.8,.2,1) both; }
+  html.fx-anim .fx-hero__lead, html.fx-anim .fx-pc-lead, html.fx-anim .fx-pc-kicker { animation: fx-fade-up 0.8s 0.35s ease-out both; }
+  html.fx-anim .fx-hero__ctas, html.fx-anim .fx-pc-ctas { animation: fx-fade-up 0.8s 0.5s ease-out both; }
+  html.fx-anim .fx-hero .fx-quiz, html.fx-anim .fx-live { animation: fx-float-in 1s 0.45s cubic-bezier(.2,.8,.2,1) both; }
+  html.fx-anim .fx-goals a { animation: fx-pop-soft 0.45s cubic-bezier(.2,.8,.2,1.3) both; }
+  html.fx-anim .fx-goals a:nth-child(1) { animation-delay: 0.85s; }
+  html.fx-anim .fx-goals a:nth-child(2) { animation-delay: 0.95s; }
+  html.fx-anim .fx-goals a:nth-child(3) { animation-delay: 1.05s; }
+  html.fx-anim .fx-goals a:nth-child(4) { animation-delay: 1.15s; }
+  .fx-quiz__star { animation: fx-twinkle 3.6s 1.6s ease-in-out infinite; }
+
+  /* Aparición al hacer scroll (la clase la pone el script del footer) */
+  html.fx-anim .fx-reveal { opacity: 0; transform: translateY(26px); transition: opacity 0.7s ease, transform 0.7s cubic-bezier(.2,.8,.2,1); transition-delay: calc(var(--fx-i, 0) * 90ms); }
+  html.fx-anim .fx-reveal.is-in { opacity: 1; transform: none; }
+  html.fx-anim .fx-reveal-title { clip-path: inset(0 100% 0 0); transition: clip-path 0.9s cubic-bezier(.6,0,.2,1); }
+  html.fx-anim .fx-reveal-title.is-in { clip-path: inset(-10% -5% -10% 0); }
+
+  /* Estrellitas de fondo en los hero */
+  .fx-sky { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+  .fx-sky i {
+    position: absolute; width: var(--s, 10px); height: var(--s, 10px); color: var(--fx-text); opacity: 0;
+    background: currentColor;
+    clip-path: polygon(50% 0, 58% 42%, 100% 50%, 58% 58%, 50% 100%, 42% 58%, 0 50%, 42% 42%);
+    animation: fx-sparkle var(--d, 5s) var(--w, 0s) ease-in-out infinite, fx-drift calc(var(--d, 5s) * 4) var(--w, 0s) ease-in-out infinite alternate;
+  }
+  .fx-hero__inner, .fx-pc-hero__grid { position: relative; z-index: 1; }
+
+  /* Botón de WhatsApp: un pulso cada tanto */
+  .fx-btn--wa { position: relative; }
+  .fx-btn--wa::after {
+    content: ""; position: absolute; inset: -2px; border-radius: inherit; pointer-events: none;
+    box-shadow: 0 0 0 0 rgba(143, 173, 214, 0.55); animation: fx-ring 3.2s 2s ease-out infinite;
+  }
+
+  /* Microinteracciones */
+  .fx-btn { transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease; }
+  .fx-btn:hover { transform: translateY(-2px); }
+  .fx-btn:active { transform: translateY(0) scale(0.98); }
+  .fx-card { transition: border-color 0.25s ease, transform 0.25s ease; }
+  .fx-card:hover { transform: translateY(-4px); border-color: var(--fx-steel); }
+  .fx-card__media img { transition: transform 0.6s cubic-bezier(.2,.8,.2,1); }
+  .fx-card:hover .fx-card__media img { transform: scale(1.04); }
+  .fx-steps li::before { transition: transform 0.3s ease, color 0.3s ease; }
+  .fx-steps li:hover::before { transform: translateX(6px) rotate(-4deg); color: var(--fx-text); }
+}
+
+@keyframes fx-draw { to { stroke-dashoffset: 0; } }
+@keyframes fx-pop { from { opacity: 0; transform: scale(0.2) rotate(-60deg); } to { opacity: 1; transform: none; } }
+@keyframes fx-twinkle { 0%, 100% { transform: scale(1) rotate(0); } 50% { transform: scale(0.75) rotate(45deg); } }
+@keyframes fx-rise { from { opacity: 0; transform: translateY(0.45em) skewY(3deg); } to { opacity: 1; transform: none; } }
+@keyframes fx-fade-up { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+@keyframes fx-float-in { from { opacity: 0; transform: translateY(30px) rotate(1.5deg); } to { opacity: 1; transform: none; } }
+@keyframes fx-pop-soft { from { opacity: 0; transform: scale(0.85); } to { opacity: 1; transform: none; } }
+@keyframes fx-sparkle { 0%, 100% { opacity: 0; transform: scale(0.4) rotate(0); } 45%, 55% { opacity: var(--o, 0.7); transform: scale(1) rotate(45deg); } }
+@keyframes fx-drift { from { translate: 0 0; } to { translate: var(--dx, 12px) var(--dy, -18px); } }
+@keyframes fx-ring { 0% { box-shadow: 0 0 0 0 rgba(143, 173, 214, 0.55); } 70%, 100% { box-shadow: 0 0 0 14px rgba(143, 173, 214, 0); } }

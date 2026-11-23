@@ -54,15 +54,12 @@
                 </h1>
                 <p class="fx-pc-lead">Clases 1 a 1 con Santiago, armadas según lo que necesitás: soltarte para hablar, rendir un examen o llegar seguro a una entrevista de trabajo.</p>
                 <div class="fx-pc-ctas">
+                    <a href="#pedir" class="fx-btn fx-btn--solid fx-btn--wa">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3.5 20.5l1.3-4.2A8.5 8.5 0 1 1 8 19.4z" stroke-linejoin="round"/></svg>
+                        Pedir mi clase por WhatsApp
+                    </a>
                     <% if (tieneConsultas) { %>
-                        <a href="#mis-consultas" class="fx-btn fx-btn--solid">Ver mis consultas</a>
-                        <a href="#pedir" class="fx-btn">Pedir otra clase</a>
-                    <% } else { %>
-                        <a href="#pedir" class="fx-btn fx-btn--solid">Pedir mi clase</a>
-                        <a href="https://api.whatsapp.com/send?phone=5493412161767" target="_blank" rel="noopener" class="fx-btn">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3.5 20.5l1.3-4.2A8.5 8.5 0 1 1 8 19.4z" stroke-linejoin="round"/></svg>
-                            Escribir por WhatsApp
-                        </a>
+                        <a href="#mis-consultas" class="fx-btn">Ver consultas anteriores</a>
                     <% } %>
                 </div>
             </div>
@@ -84,8 +81,8 @@
     <!-- CHAT CON EL PROFESOR -->
     <section class="fx-block" id="mis-consultas" style="padding-top: 3.5rem;">
         <div class="fx-block__head">
-            <h2>Tus consultas</h2>
-            <p>Acá hablás directo con el profesor para coordinar horarios y resolver dudas.</p>
+            <h2>Consultas anteriores</h2>
+            <p>Tus conversaciones de antes siguen acá. Para pedir una clase nueva, usá el pedido por WhatsApp.</p>
         </div>
 
         <div class="fx-chat" id="fx-chat">
@@ -221,8 +218,8 @@
             <h2>Cómo empezar</h2>
         </div>
         <ol class="fx-steps">
-            <li><strong>Contás qué necesitás</strong><span>Completás el pedido de abajo con tu objetivo y tus horarios.</span></li>
-            <li><strong>Acordamos el horario</strong><span>Te respondo por el chat de esta página para coordinar día, hora y modalidad.</span></li>
+            <li><strong>Contás qué necesitás</strong><span>Elegís modalidad y objetivo abajo, y se abre WhatsApp con tu mensaje listo.</span></li>
+            <li><strong>Acordamos el horario</strong><span>Te respondo por WhatsApp para coordinar día, hora y modalidad.</span></li>
             <li><strong>Primera clase</strong><span>Arrancamos con una charla para ver tu nivel y armar el plan.</span></li>
         </ol>
     </section>
@@ -232,7 +229,7 @@
         <div class="fx-split">
             <div>
                 <h2 class="fx-page__title">Pedí tu <span class="fx-steel">clase</span></h2>
-                <p class="fx-page__lead">Te contesto en esta misma página, en el chat de tus consultas. Si preferís, también podés escribir por WhatsApp.</p>
+                <p class="fx-page__lead">Sin registrarte: completás lo básico y se abre WhatsApp con el mensaje armado. Solo tenés que tocar enviar.</p>
                 <ul class="fx-points" style="margin-top: 2rem;">
                     <li><svg viewBox="0 0 100 100" aria-hidden="true"><path class="fx-star" d="<%= estrella %>"/></svg><span>Sin compromiso<small>Primero hablamos y después decidís.</small></span></li>
                     <li><svg viewBox="0 0 100 100" aria-hidden="true"><path class="fx-star" d="<%= estrella %>"/></svg><span>Horarios flexibles<small>Mañana, tarde o noche, según tu semana.</small></span></li>
@@ -241,10 +238,13 @@
             </div>
 
             <div class="fx-panel">
-                <% if (locals.user) { %>
                     <h2>Tu pedido</h2>
-                    <p>Contame lo básico y seguimos por chat.</p>
+                    <p>Contame lo básico y seguimos por WhatsApp.</p>
                     <form id="form-consulta-particular">
+                        <div class="fx-field">
+                            <label for="f-nombre">Tu nombre <span style="color: var(--fx-muted); font-weight: 400;">(opcional)</span></label>
+                            <input id="f-nombre" name="nombre" class="fx-input" autocomplete="given-name" placeholder="Ej.: Lucía" value="<%= locals.user ? locals.user.nombre : '' %>">
+                        </div>
                         <div class="fx-field">
                             <label for="f-modalidad">Modalidad</label>
                             <select id="f-modalidad" name="modalidad" class="fx-input" required>
@@ -263,21 +263,15 @@
                             </select>
                         </div>
                         <div class="fx-field">
-                            <label for="f-mensaje">Tu nivel y disponibilidad</label>
-                            <textarea id="f-mensaje" name="mensaje" class="fx-input" required placeholder="Ej.: tengo nivel intermedio, puedo martes y jueves después de las 18 h."></textarea>
+                            <label for="f-mensaje">Tu nivel y disponibilidad <span style="color: var(--fx-muted); font-weight: 400;">(opcional)</span></label>
+                            <textarea id="f-mensaje" name="mensaje" class="fx-input" placeholder="Ej.: tengo nivel intermedio, puedo martes y jueves después de las 18 h."></textarea>
                         </div>
-                        <button type="submit" id="btn-enviar" class="fx-btn fx-btn--solid" style="width: 100%;">Enviar pedido</button>
+                        <button type="submit" id="btn-enviar" class="fx-btn fx-btn--solid fx-btn--wa" style="width: 100%;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3.5 20.5l1.3-4.2A8.5 8.5 0 1 1 8 19.4z" stroke-linejoin="round"/></svg>
+                            Enviar por WhatsApp
+                        </button>
                         <p class="fx-status" id="form-status" role="status"></p>
                     </form>
-                <% } else { %>
-                    <h2>Creá tu cuenta para pedir la clase</h2>
-                    <p>Con tu cuenta podés chatear con el profesor y seguir tus consultas desde acá.</p>
-                    <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
-                        <a href="/auth/register" class="fx-btn fx-btn--solid">Crear cuenta</a>
-                        <a href="/auth/login" class="fx-btn">Ya tengo cuenta</a>
-                    </div>
-                    <p style="margin: 1.4rem 0 0; color: var(--fx-muted);">¿Preferís no registrarte? <a href="https://api.whatsapp.com/send?phone=5493412161767" target="_blank" rel="noopener" style="color: var(--fx-steel);">Escribime por WhatsApp</a>.</p>
-                <% } %>
             </div>
         </div>
     </section>
@@ -357,36 +351,31 @@
             if (sel) sel.addEventListener('change', function () { elegir(g, sel.value, false); });
         });
 
-        // ---------- Nuevo pedido ----------
+        // ---------- Nuevo pedido: directo por WhatsApp, sin login ----------
+        var WHATSAPP = '5493412161767';
         var form = document.getElementById('form-consulta-particular');
         if (form) {
-            form.addEventListener('submit', async function (e) {
+            form.addEventListener('submit', function (e) {
                 e.preventDefault();
-                var btn = document.getElementById('btn-enviar');
+                var texto = function (id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; };
+                var etiqueta = function (id) { var el = document.getElementById(id); return el ? el.options[el.selectedIndex].text : ''; };
+                var lineas = [
+                    '¡Hola Santiago! Quiero tomar clases particulares de inglés.',
+                    '',
+                    'Modalidad: ' + etiqueta('f-modalidad'),
+                    'Objetivo: ' + etiqueta('f-objetivo')
+                ];
+                if (texto('f-mensaje')) lineas.push('Mi nivel y disponibilidad: ' + texto('f-mensaje'));
+                if (texto('f-nombre')) lineas.push('', 'Soy ' + texto('f-nombre') + '.');
+                var url = 'https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent(lineas.join('\n'));
+
                 var status = document.getElementById('form-status');
-                btn.disabled = true;
-                btn.textContent = 'Enviando…';
+                var abierta = window.open(url, '_blank');
+                if (abierta) abierta.opener = null;
                 status.classList.remove('is-error');
-                status.textContent = '';
-                try {
-                    var res = await fetch('/clases-particulares/enviar', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(Object.fromEntries(new FormData(form).entries()))
-                    });
-                    var data = await res.json();
-                    if (data.success) {
-                        status.textContent = 'Pedido enviado. Abriendo tu chat con el profesor…';
-                        setTimeout(function () { location.href = '/clases-particulares#mis-consultas'; location.reload(); }, 900);
-                        return;
-                    }
-                    throw new Error(data.message || 'No se pudo enviar el pedido.');
-                } catch (err) {
-                    status.classList.add('is-error');
-                    status.textContent = (err && err.message && err.message !== 'Failed to fetch') ? err.message : 'No hay conexión. Probá de nuevo en un momento.';
-                    btn.disabled = false;
-                    btn.textContent = 'Enviar pedido';
-                }
+                status.innerHTML = 'Abrimos WhatsApp con tu mensaje listo. Si no se abrió, <a href="" target="_blank" rel="noopener" style="color: var(--fx-text);">tocá acá</a>.';
+                status.querySelector('a').href = url;
+                if (!abierta) location.href = url;
             });
         }
 
