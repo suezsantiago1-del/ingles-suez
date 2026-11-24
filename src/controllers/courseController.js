@@ -651,12 +651,12 @@ export const paymentSuccess = async (req, res) => {
 };
 
 export const paymentFailure = (req, res) => {
-    return res.send(`
-        <div style="text-align: center; font-family: sans-serif; margin-top: 4rem;">
-            <h2>El pago no pudo completarse.</h2>
-            <a href="/" style="color: #009ee3; font-weight: bold;">Volver al inicio</a>
-        </div>
-    `);
+    return res.render('aviso', {
+        titulo: 'El pago no se completó',
+        mensaje: 'MercadoPago no pudo procesar el pago. Podés intentarlo de nuevo o escribirnos si el problema sigue.',
+        boton: { href: '/cursos-todos', texto: 'Volver a los cursos' },
+        secundario: { href: '/', texto: 'Ir al inicio' }
+    });
 };
 
 export const renderMyCourses = async (req, res) => {
@@ -713,7 +713,11 @@ export const renderClassroom = async (req, res) => {
         const lecciones = await db.all('SELECT * FROM lecciones WHERE curso_id = ? ORDER BY orden ASC', [cursoId]);
 
         if (!lecciones || lecciones.length === 0) {
-            return res.send('<h1>Este curso aún no tiene lecciones cargadas.</h1>');
+            return res.render('aviso', {
+                titulo: 'Este curso todavía no tiene clases',
+                mensaje: 'Las clases se están preparando. Volvé en unos días.',
+                boton: { href: '/mis-cursos', texto: 'Volver a mis cursos' }
+            });
         }
 
         const entregasAlumno = await db.all(`

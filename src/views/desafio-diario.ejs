@@ -4,156 +4,113 @@
     <link rel="icon" type="image/svg+xml" href="/img/favicon-suez.svg">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Desafío del día - INGLÉS SUEZ</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=GFS+Didot&family=Tenor+Sans&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/styles.css">
-    <style>
-        body, p, span, div, a, li, button { font-family: 'GFS Didot', serif; }
-        h1, h2, h3, h4, h5, h6 { font-family: 'Tenor Sans', sans-serif !important; }
-        body { background-color: #e3edf5; margin: 0; padding: 0; color: #1a202c; }
-        .desafio-opcion {
-            background: rgba(255,255,255,0.1);
-            color: white;
-            border: 1px solid rgba(255,255,255,0.2);
-            padding: 1rem;
-            border-radius: 8px;
-            cursor: pointer;
-            text-align: left;
-            font-size: 1rem;
-            transition: all 0.2s;
-            font-family: 'GFS Didot', serif;
-            width: 100%;
-        }
-        .desafio-opcion:hover:not(:disabled) {
-            background: rgba(255,255,255,0.2);
-            border-color: rgba(255,255,255,0.3);
-        }
-        .desafio-opcion:disabled { cursor: not-allowed; opacity: 0.7; }
-        .desafio-opcion.correcta {
-            background: #c6f6d5 !important;
-            border-color: #38a169 !important;
-            color: #22543d !important;
-            font-weight: bold;
-        }
-        .desafio-opcion.incorrecta {
-            background: #fed7d7 !important;
-            border-color: #e53e3e !important;
-            color: #742a2a !important;
-        }
-        @media (max-width: 768px) {
-            #desafio-del-dia { margin: 2rem 1rem; padding: 1.5rem; }
-            #desafio-del-dia h2 { font-size: 1.2rem; }
-            .desafio-opcion { font-size: 0.9rem; padding: 0.8rem; }
-        }
-    </style>
+    <title>Desafío del día · Inglés Suez</title>
 </head>
-<body>
+<body class="tema-flyer">
 
 <%- include('partials/header') %>
 
-<main style="max-width: 900px; margin: 3rem auto; padding: 0 1.5rem;">
+<main class="fx-page fx-reto">
+    <div class="fx-reto__head">
+        <span class="fx-auth__eyebrow">Cambia todos los días a las 20 h</span>
+        <h1 class="fx-page__title">Desafío <span class="fx-steel">del día</span></h1>
+    </div>
 
-    <% if (usuario) { %>
-    <!-- Panel de racha: muy visible -->
-    <section id="panel-racha" style="background: linear-gradient(135deg, #0b2238 0%, #184168 100%); border-radius: 12px; padding: 1.5rem 2rem; margin-bottom: 1.5rem; box-shadow: 0 6px 18px rgba(0,0,0,0.14);">
-        <div style="display: flex; align-items: center; gap: 1.4rem;">
-            <img id="rango-logo" src="/logosracha/sinrango.jpg" alt="Sin rango" style="width: 132px; height: 132px; object-fit: contain; border-radius: 16px; flex-shrink: 0; background: rgba(255,255,255,0.35);">
-            <div style="text-align: left; min-width: 0;">
-                <div id="rango-nombre" style="font-family: 'Tenor Sans', sans-serif; font-size: 1.6rem; font-weight: 800; color: white; line-height: 1.15;">Sin rango</div>
-                <div style="color: #cbd5e0; margin-top: 0.45rem; font-size: 1.05rem;">Racha: <span id="racha-val">0</span> días</div>
-                <div style="color: #cbd5e0; margin-top: 0.25rem; font-size: 1.05rem;">Total XP: <span id="xp-val">0</span></div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Aviso flotante de XP al completar -->
-    <div id="toast-xp" style="display:none; position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%); background: #38a169; color: white; padding: 1rem 1.6rem; border-radius: 10px; font-weight: 800; font-size: 1.05rem; box-shadow: 0 8px 20px rgba(0,0,0,0.25); z-index: 400; font-family: 'Tenor Sans', sans-serif;"></div>
-    <% } %>
-
-    <% if (desafio) { %>
-    <section id="desafio-del-dia">
-        <div style="background: linear-gradient(135deg, #0b2238 0%, #184168 100%); border-radius: 12px; padding: 2rem; box-shadow: 0 4px 15px rgba(11, 34, 56, 0.1);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
-                <div>
-                    <span style="background: rgba(255,255,255,0.15); color: #a4c4de; padding: 0.35rem 0.8rem; border-radius: 4px; font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase;">
-                        Desafío del día
-                    </span>
-                    <h2 style="color: white; margin: 0.5rem 0 0 0; font-size: 1.5rem;">Resolvé el desafío de hoy</h2>
+    <div class="fx-reto__layout<%= usuario ? '' : ' is-solo' %>">
+        <div>
+            <% if (desafio) { %>
+            <section id="desafio-del-dia" class="fx-reto__card">
+                <div class="fx-reto__top">
+                    <h2>Resolvé el desafío de hoy</h2>
+                    <span id="desafio-categoria" class="fx-tag"><%= ({ quiz: 'Quiz', situacion: 'Situación conversacional', error: 'Detectá el error', real: 'English real', conversacion: 'Completar conversación', dificil: 'Desafío difícil', listening: 'Listening', listening_corto: 'Escuchá y elegí' })[desafio.tipo] || desafio.categoria %></span>
                 </div>
-                <span id="desafio-categoria" style="background: rgba(255,255,255,0.1); color: #cbd5e0; padding: 0.3rem 0.8rem; border-radius: 4px; font-size: 0.8rem; font-weight: 600;"><%= ({ quiz: 'Quiz', situacion: 'Situación conversacional', error: 'Detectá el error', real: 'English real', conversacion: 'Completar conversación', dificil: 'Desafío difícil', listening: 'Listening', listening_corto: 'Escuchá y elegí' })[desafio.tipo] || desafio.categoria %></span>
-            </div>
 
-            <div id="desafio-contenido" style="color: white;">
-                <p style="font-size: 1.1rem; margin-bottom: 1.5rem; line-height: 1.6;"><%= desafio.pregunta %></p>
-                <% if (desafio.tipo === 'listening' || desafio.tipo === 'listening_corto') { %>
-                <div style="margin-bottom: 1.2rem;">
-                    <button type="button" id="btn-escuchar" onclick="reproducirAudio()" style="background: #f6e05e; color: #0b2238; padding: 0.75rem 1.6rem; border: none; border-radius: 6px; font-weight: 800; font-size: 1rem; cursor: pointer; font-family: 'Tenor Sans', sans-serif;">
-                        Escuchar
-                    </button>
-                    <span id="escuchar-ayuda" style="display: inline-block; color: #cbd5e0; font-size: 0.85rem; margin-left: 0.8rem;">Presioná el botón para escuchar la frase antes de responder.</span>
-                </div>
-                <% } %>
-                <div class="desafio-opciones" style="display: flex; flex-direction: column; gap: 0.8rem;">
-                    <button type="button" class="desafio-opcion" onclick="responderDesafio(this, 'A')" data-opcion="A">
-                        <span>A) <%= desafio.opcion_a %></span>
-                    </button>
-                    <button type="button" class="desafio-opcion" onclick="responderDesafio(this, 'B')" data-opcion="B">
-                        <span>B) <%= desafio.opcion_b %></span>
-                    </button>
-                    <button type="button" class="desafio-opcion" onclick="responderDesafio(this, 'C')" data-opcion="C">
-                        <span>C) <%= desafio.opcion_c %></span>
-                    </button>
-                </div>
-                <div id="desafio-feedback" style="display: none; margin-top: 1.5rem; padding: 1rem; border-radius: 8px; background: #c6f6d5; border: 1px solid #38a169; color: #22543d;"></div>
-            </div>
-        </div>
-    </section>
-    <% } else { %>
-    <section style="background: white; border-radius: 12px; padding: 3rem; box-shadow: 0 15px 35px rgba(11, 34, 56, 0.15), 0 5px 15px rgba(0, 0, 0, 0.05); border: 1px solid #c0d4e5; text-align: center;">
-        <h1 style="color: #0b2238; margin: 0 0 1rem 0;">Desafío del día</h1>
-        <p style="color: #4a5568; font-size: 1.05rem; line-height: 1.7; margin: 0 0 1.5rem 0;">
-            No se encontró un desafío disponible para hoy. Intentá de nuevo más tarde.
-        </p>
-        <a href="/" style="display: inline-block; background: #0b2238; color: white; padding: 0.85rem 1.8rem; border-radius: 6px; text-decoration: none; font-size: 0.95rem; font-family: 'Tenor Sans', sans-serif;">Volver al inicio</a>
-    </section>
-    <% } %>
-
-    <% if (usuario) { %>
-    <!-- Ranking semanal -->
-    <section style="background: #ffffff; border: 1px solid #c0d4e5; border-radius: 12px; padding: 1.5rem; margin-top: 1.5rem; box-shadow: 0 4px 12px rgba(11,34,56,0.08);">
-        <h3 style="color: #0b2238; margin: 0 0 1rem 0; font-size: 1.1rem;">Ranking de esta semana</h3>
-        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-            <% if (usuario.ranking && usuario.ranking.length) { %>
-                <% usuario.ranking.forEach(r => { %>
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0.9rem; border-radius: 8px; <%= r.esYo ? 'background:#fef3c7; border:1px solid #f59e0b;' : 'background:#f7fafc;' %>">
-                        <span style="<%= r.esYo ? 'font-weight:800;' : '' %>"><%= r.nombre %><% if (r.esYo) { %> <em>(Vos)</em><% } %></span>
-                        <strong><%= r.puntos %> XP</strong>
+                <div id="desafio-contenido">
+                    <p class="fx-reto__q"><%= desafio.pregunta %></p>
+                    <% if (desafio.tipo === 'listening' || desafio.tipo === 'listening_corto') { %>
+                    <div class="fx-reto__audio">
+                        <button type="button" id="btn-escuchar" class="fx-btn fx-btn--solid fx-btn--sm" onclick="reproducirAudio()">Escuchar</button>
+                        <span id="escuchar-ayuda">Escuchá la frase antes de responder.</span>
                     </div>
-                <% }) %>
+                    <% } %>
+                    <div class="desafio-opciones">
+                        <button type="button" class="desafio-opcion" onclick="responderDesafio(this, 'A')" data-opcion="A">
+                            <span>A) <%= desafio.opcion_a %></span>
+                        </button>
+                        <button type="button" class="desafio-opcion" onclick="responderDesafio(this, 'B')" data-opcion="B">
+                            <span>B) <%= desafio.opcion_b %></span>
+                        </button>
+                        <button type="button" class="desafio-opcion" onclick="responderDesafio(this, 'C')" data-opcion="C">
+                            <span>C) <%= desafio.opcion_c %></span>
+                        </button>
+                    </div>
+                    <div id="desafio-feedback" class="fx-reto__feedback" role="status" style="display: none;"></div>
+                </div>
+
+                <% if (!usuario) { %>
+                    <p class="fx-reto__login"><a href="/auth/login">Iniciá sesión</a> para sumar XP, armar tu racha y entrar al ranking semanal.</p>
+                <% } %>
+            </section>
             <% } else { %>
-                <p style="color:#718096; margin:0;">Todavía no hay participantes esta semana. ¡Completá el desafío para sumar XP!</p>
+            <section class="fx-reto__card" style="text-align: center;">
+                <h2>Hoy no hay desafío cargado</h2>
+                <p class="fx-page__lead" style="margin: 0.6rem auto 1.4rem;">Volvé más tarde. Mientras tanto, probá el test de nivel.</p>
+                <a href="/test-nivel" class="fx-btn fx-btn--sm">Hacer el test de nivel</a>
+            </section>
             <% } %>
         </div>
-    </section>
 
-    <!-- Recompensas personalizadas del profesor -->
-    <section style="background: #ffffff; border: 1px solid #c0d4e5; border-radius: 12px; padding: 1.5rem; margin-top: 1.5rem; box-shadow: 0 4px 12px rgba(11,34,56,0.08);">
-        <h3 style="color: #0b2238; margin: 0 0 1rem 0; font-size: 1.1rem;">Recompensas del profesor</h3>
-        <% if (usuario.recompensas && usuario.recompensas.length) { %>
-            <% usuario.recompensas.forEach(r => { %>
-                <div style="background:#f0fff4; border-left: 4px solid #38a169; padding: 0.8rem 1rem; border-radius: 6px; margin-bottom: 0.6rem;">
-                    <div style="color:#22543d; margin:0; font-size:0.95rem;"><%= r.texto %></div>
-                    <div style="color:#a0aec0; font-size:0.75rem; margin-top:0.3rem;"><%= new Date(r.creado_en).toLocaleDateString('es-AR') %></div>
+        <% if (usuario) { %>
+        <aside class="fx-reto__side">
+            <!-- Panel de racha -->
+            <section id="panel-racha" class="fx-reto__panel fx-reto__racha">
+                <img id="rango-logo" src="/logosracha/sinrango.jpg" alt="Sin rango">
+                <div>
+                    <div id="rango-nombre" class="fx-reto__rango">Sin rango</div>
+                    <div class="fx-reto__stats">
+                        <span><strong id="racha-val">0</strong> días de racha</span>
+                        <span><strong id="xp-val">0</strong> XP</span>
+                    </div>
                 </div>
-            <% }) %>
-        <% } else { %>
-            <p style="color:#718096; margin:0;">El profesor puede enviarte recompensas personalizadas cuando alcances rachas importantes.</p>
-        <% } %>
-    </section>
-    <% } %>
+            </section>
 
+            <!-- Ranking semanal -->
+            <section class="fx-reto__panel">
+                <h3>Ranking de la semana</h3>
+                <% if (usuario.ranking && usuario.ranking.length) { %>
+                    <ol class="fx-reto__rank">
+                        <% usuario.ranking.forEach(r => { %>
+                            <li class="<%= r.esYo ? 'is-yo' : '' %>">
+                                <span><%= r.nombre %><% if (r.esYo) { %> <em>(vos)</em><% } %></span>
+                                <strong><%= r.puntos %> XP</strong>
+                            </li>
+                        <% }) %>
+                    </ol>
+                <% } else { %>
+                    <p>Todavía nadie sumó puntos esta semana. ¡Sé el primero!</p>
+                <% } %>
+            </section>
+
+            <!-- Recompensas personalizadas del profesor -->
+            <section class="fx-reto__panel">
+                <h3>Recompensas del profesor</h3>
+                <% if (usuario.recompensas && usuario.recompensas.length) { %>
+                    <% usuario.recompensas.forEach(r => { %>
+                        <div class="fx-reto__premio">
+                            <p><%= r.texto %></p>
+                            <small><%= new Date(r.creado_en).toLocaleDateString('es-AR') %></small>
+                        </div>
+                    <% }) %>
+                <% } else { %>
+                    <p>Cuando alcances rachas importantes, el profesor te puede mandar una recompensa.</p>
+                <% } %>
+            </section>
+        </aside>
+
+        <!-- Aviso flotante de XP al completar -->
+        <div id="toast-xp" class="fx-reto__toast" role="status" style="display: none;"></div>
+        <% } %>
+    </div>
 </main>
 
 <%- include('partials/footer') %>
@@ -272,14 +229,12 @@
         if (opcion === correcta) {
             boton.classList.add('correcta');
             feedback.style.display = 'block';
-            feedback.style.background = '#c6f6d5';
-            feedback.style.border = '1px solid #38a169';
-            feedback.style.color = '#22543d';
+            feedback.className = 'fx-reto__feedback is-ok';
             feedback.innerHTML = `
                 <strong>¡Correcto! 🎉</strong>
-                <p style="margin: 0.5rem 0 0 0;">${document.querySelector('.desafio-opcion[data-opcion="' + correcta + '"]').textContent}</p>
-                <p style="margin: 0.5rem 0 0.5rem 0; font-size: 0.9rem;"><strong>Explicación:</strong> ${desafioActual.explicacion}</p>
-                <p style="margin: 0; font-size: 0.9rem;"><strong>Ejemplo:</strong> ${desafioActual.ejemplo}</p>
+                <p>${document.querySelector('.desafio-opcion[data-opcion="' + correcta + '"]').textContent}</p>
+                <p><strong>Explicación:</strong> ${desafioActual.explicacion}</p>
+                <p><strong>Ejemplo:</strong> ${desafioActual.ejemplo}</p>
             `;
 
             const hoy = new Date().toDateString();
@@ -291,14 +246,12 @@
         } else {
             boton.classList.add('incorrecta');
             feedback.style.display = 'block';
-            feedback.style.background = '#fed7d7';
-            feedback.style.border = '1px solid #e53e3e';
-            feedback.style.color = '#742a2a';
+            feedback.className = 'fx-reto__feedback is-error';
             feedback.innerHTML = `
                 <strong>Incorrecto ❌</strong>
-                <p style="margin: 0.5rem 0 0 0;">La respuesta correcta era: <strong>${correcta})</strong></p>
-                <p style="margin: 0.5rem 0 0.5rem 0; font-size: 0.9rem;"><strong>Explicación:</strong> ${desafioActual.explicacion}</p>
-                <p style="margin: 0; font-size: 0.9rem;"><strong>Ejemplo:</strong> ${desafioActual.ejemplo}</p>
+                <p>La respuesta correcta era: <strong>${correcta})</strong></p>
+                <p><strong>Explicación:</strong> ${desafioActual.explicacion}</p>
+                <p><strong>Ejemplo:</strong> ${desafioActual.ejemplo}</p>
             `;
         }
     }
@@ -316,10 +269,8 @@
 
         const feedback = document.getElementById('desafio-feedback');
         feedback.style.display = 'block';
-        feedback.style.background = '#c6f6d5';
-        feedback.style.border = '1px solid #38a169';
-        feedback.style.color = '#22543d';
-        feedback.innerHTML = '<strong>¡Ya completaste este desafío hoy! 🎉</strong><p style="margin: 0.5rem 0 0 0;">Vuelve mañana para un nuevo desafío.</p>';
+        feedback.className = 'fx-reto__feedback is-ok';
+        feedback.innerHTML = '<strong>¡Ya completaste este desafío hoy! 🎉</strong><p>Volvé mañana para uno nuevo.</p>';
     }
 
     // Al cargar: render del panel de racha/hitos y verificar si ya completó hoy

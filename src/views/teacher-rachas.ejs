@@ -4,86 +4,71 @@
     <link rel="icon" type="image/svg+xml" href="/img/favicon-suez.svg">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rachas y recompensas - INGLÉS SUEZ</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=GFS+Didot&family=Tenor+Sans&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/styles.css">
-    <style>
-        body, p, span, div, a, li, button, input, textarea { font-family: 'GFS Didot', serif; }
-        h1, h2, h3, h4, h5, h6 { font-family: 'Tenor Sans', sans-serif !important; }
-        body { background-color: #e3edf5; margin: 0; padding: 0; color: #1a202c; }
-        @media (max-width: 600px) { main > div { padding: 1.2rem !important; } main { margin: 1.5rem auto !important; padding: 0 0.8rem !important; min-width: 0; width: 100%; box-sizing: border-box; } }
-    </style>
+    <title>Rachas y recompensas · Panel del profesor · Inglés Suez</title>
 </head>
-<body>
+<body class="tema-flyer">
 
 <%- include('partials/header') %>
 
-<main style="max-width: 900px; margin: 3rem auto; padding: 0 1.5rem;">
-    <div style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 15px 35px rgba(11, 34, 56, 0.12), 0 5px 15px rgba(0,0,0,0.05); border: 1px solid #c0d4e5;">
-        <span style="background: #184168; color: white; padding: 0.35rem 0.8rem; border-radius: 4px; font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase;">Panel del profesor</span>
-        <h1 style="color: #0b2238; font-size: 1.8rem; margin: 1rem 0 0.25rem 0;">🔥 Rachas y recompensas</h1>
-        <p style="color: #4a5568; font-size: 0.95rem; margin: 0 0 1.5rem 0;">Mié las rachas de cada alumno y mandá recompensas personalizadas por texto.</p>
+<% const inicial = (n) => (n || '?').trim().charAt(0).toUpperCase(); %>
 
-        <div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
-        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
-            <thead>
-                <tr style="text-align: left; color: #184168; background: #f0f6fc;">
-                    <th style="padding: 0.7rem; border-bottom: 2px solid #c0d4e5;">Alumno</th>
-                    <th style="padding: 0.7rem; border-bottom: 2px solid #c0d4e5;">Racha</th>
-                    <th style="padding: 0.7rem; border-bottom: 2px solid #c0d4e5;">XP</th>
-                    <th style="padding: 0.7rem; border-bottom: 2px solid #c0d4e5;">Hito</th>
-                    <th style="padding: 0.7rem; border-bottom: 2px solid #c0d4e5;">Recompensa personalizada</th>
-                </tr>
-            </thead>
-            <tbody>
-            <% if (usuarios && usuarios.length) { %>
-                <% usuarios.forEach(u => { %>
-                <tr style="border-bottom: 1px solid #edf2f7; vertical-align: top;">
-                    <td style="padding: 0.8rem;">
-                        <strong><%= u.nombre %></strong><br>
-                        <span style="color:#718096; font-size:0.8rem;"><%= u.email %></span>
-                    </td>
-                    <td style="padding: 0.8rem; text-align: center; font-weight: bold; color:#b45309;"><%= u.racha %> días</td>
-                    <td style="padding: 0.8rem; text-align: center;"><%= u.xpTotal %></td>
-                    <td style="padding: 0.8rem;">
-                        <% if (u.hito) { %>
-                            <span style="font-size:1rem;"><%= u.hito.emoji %> <%= u.hito.nombre %></span>
-                        <% } else { %>
-                            <span style="color:#a0aec0;">—</span>
-                        <% } %>
-                    </td>
-                    <td style="padding: 0.8rem;">
-                        <form method="POST" action="/profesor/rachas/recompensar" style="display:flex; gap:0.4rem; align-items:stretch;">
-                            <input type="hidden" name="usuarioId" value="<%= u.id %>">
-                            <input type="text" name="texto" placeholder="Escribí la recompensa..." style="flex:1; padding:0.5rem 0.7rem; border:1px solid #cbd5e0; border-radius:6px; font-size:0.85rem;" required>
-                            <button type="submit" style="background:#38a169; color:white; border:none; padding:0.5rem 0.9rem; border-radius:6px; font-weight:bold; cursor:pointer; font-size:0.85rem;">🎁 Enviar</button>
-                        </form>
-                    </td>
-                </tr>
-                <% }) %>
-            <% } else { %>
-                <tr><td colspan="5" style="padding:1rem; color:#718096;">Todavía no hay alumnos con actividades.</td></tr>
-            <% } %>
-            </tbody>
-        </table>
-        </div>
+<main class="fx-page">
+    <%- include('partials/teacher-tabs', { activa: '/profesor/rachas' }) %>
+
+    <div class="fx-block__head" style="margin: 2.2rem 0 1.6rem;">
+        <h1 class="fx-page__title">Rachas <span class="fx-steel">y recompensas</span></h1>
+        <p>Mirá la racha de cada alumno en el desafío del día y mandale una recompensa por texto.</p>
     </div>
 
-    <div style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 4px 12px rgba(11,34,56,0.08); border: 1px solid #c0d4e5; margin-top: 1.5rem;">
-        <h2 style="color: #0b2238; font-size: 1.2rem; margin: 0 0 1rem 0;">📨 Recompensas enviadas</h2>
-        <% if (recompensas && recompensas.length) { %>
-            <% recompensas.forEach(r => { %>
-                <div style="background:#f0fff4; border-left:4px solid #38a169; padding:0.8rem 1rem; border-radius:6px; margin-bottom:0.6rem;">
-                    <div style="font-weight:bold; color:#22543d;">Para <%= r.nombre %></div>
-                    <div style="color:#2d3748;"><%= r.texto %></div>
-                    <div style="color:#a0aec0; font-size:0.8rem; margin-top:0.2rem;"><%= new Date(r.creado_en).toLocaleString('es-AR') %></div>
+    <div class="fx-rachas">
+        <section>
+            <% if (usuarios && usuarios.length) { %>
+                <div class="fx-rachas__list">
+                    <% usuarios.forEach(u => { %>
+                        <article class="fx-racha">
+                            <div class="fx-racha__who">
+                                <span class="fx-avatar" aria-hidden="true"><%= inicial(u.nombre) %></span>
+                                <div style="min-width: 0;">
+                                    <strong><%= u.nombre %></strong>
+                                    <span><%= u.email %></span>
+                                </div>
+                            </div>
+                            <dl class="fx-racha__stats">
+                                <div><dt>Racha</dt><dd><%= u.racha %> <small>días</small></dd></div>
+                                <div><dt>XP</dt><dd><%= u.xpTotal %></dd></div>
+                                <div><dt>Hito</dt><dd class="fx-racha__hito"><%= u.hito ? u.hito.emoji + ' ' + u.hito.nombre : '—' %></dd></div>
+                            </dl>
+                            <form method="POST" action="/profesor/rachas/recompensar" class="fx-racha__form">
+                                <input type="hidden" name="usuarioId" value="<%= u.id %>">
+                                <label for="premio-<%= u.id %>" class="fx-sr">Recompensa para <%= u.nombre %></label>
+                                <input class="fx-input" type="text" id="premio-<%= u.id %>" name="texto" placeholder="Escribí una recompensa" required>
+                                <button type="submit" class="fx-btn fx-btn--solid fx-btn--sm">Enviar</button>
+                            </form>
+                        </article>
+                    <% }) %>
                 </div>
-            <% }) %>
-        <% } else { %>
-            <p style="color:#718096; margin:0;">Todavía no enviaste recompensas. Elegí un alumno en la tabla de arriba.</p>
-        <% } %>
+            <% } else { %>
+                <div class="fx-panel" style="text-align: center; padding: 3rem 1.5rem;">
+                    <h2>Todavía no hay rachas</h2>
+                    <p style="margin: 0;">Cuando los alumnos completen el desafío del día, aparecen acá.</p>
+                </div>
+            <% } %>
+        </section>
+
+        <aside class="fx-reto__panel">
+            <h3>Recompensas enviadas</h3>
+            <% if (recompensas && recompensas.length) { %>
+                <% recompensas.forEach(r => { %>
+                    <div class="fx-reto__premio">
+                        <small>Para <%= r.nombre %></small>
+                        <p><%= r.texto %></p>
+                        <small><%= new Date(r.creado_en).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' }) %></small>
+                    </div>
+                <% }) %>
+            <% } else { %>
+                <p>Todavía no mandaste recompensas.</p>
+            <% } %>
+        </aside>
     </div>
 </main>
 

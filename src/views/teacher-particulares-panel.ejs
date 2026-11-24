@@ -42,12 +42,7 @@
     %>
 
     <main class="fx-page">
-        <nav class="fx-tabs" aria-label="Secciones del profesor">
-            <a href="/profesor/entregas">Entregas de cursos</a>
-            <a href="/profesor/gestion">Gestión de cursos</a>
-            <a href="/profesor/consultas">Consultas de alumnos</a>
-            <a href="/profesor/particulares" aria-current="page">Clases particulares</a>
-        </nav>
+        <%- include('partials/teacher-tabs', { activa: '/profesor/particulares' }) %>
 
         <div class="fx-block__head" style="margin: 2.2rem 0 0;">
             <h1 class="fx-page__title">Clases <span class="fx-steel">particulares</span></h1>

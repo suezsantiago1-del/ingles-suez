@@ -4,84 +4,52 @@
     <link rel="icon" type="image/svg+xml" href="/img/favicon-suez.svg">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test de Nivel de Inglés - INGLÉS SUEZ</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=GFS+Didot&family=Tenor+Sans&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/styles.css">
-    <style>
-        body, p, span, div, a, li, button { font-family: 'GFS Didot', serif; }
-        h1, h2, h3, h4, h5, h6 { font-family: 'Tenor Sans', sans-serif !important; }
-        body { background-color: #e3edf5; margin: 0; padding: 0; color: #1a202c; }
-        .tarjeta { background: #ffffff; border-radius: 12px; padding: 2rem; border: 1px solid #c0d4e5; box-shadow: 0 10px 30px rgba(11,34,56,0.10); }
-        .opcion {
-            background: #ffffff; border: 1px solid #cbd5e0; color: #1a202c;
-            padding: 0.9rem 1.1rem; border-radius: 8px; cursor: pointer;
-            text-align: left; font-size: 1rem; width: 100%;
-            transition: border-color 0.15s, background 0.15s; font-family: 'GFS Didot', serif;
-        }
-        .opcion:hover:not(:disabled) { border-color: #184168; background: #f7fafc; }
-        .opcion:disabled { cursor: default; }
-        .opcion.seleccionada { border: 2px solid #f59e0b; background: #fffbeb; font-weight: bold; }
-        #barra-track { height: 8px; background: #e2e8f0; border-radius: 6px; overflow: hidden; }
-        #barra-progreso { height: 100%; width: 0%; background: #f6e05e; border-radius: 6px; transition: width 0.25s; }
-        @media (max-width: 640px) { .tarjeta { padding: 1.4rem; } }
-    </style>
+    <title>Test de nivel de inglés · Inglés Suez</title>
 </head>
-<body>
+<body class="tema-flyer">
 
 <%- include('partials/header') %>
 
-<main style="max-width: 760px; margin: 3rem auto; padding: 0 1.5rem;">
+<main class="fx-page fx-test">
 
     <!-- Pantalla de bienvenida -->
-    <section id="pantalla-bienvenida" class="tarjeta" style="text-align: center;">
-        <span style="background: #184168; color: white; padding: 0.35rem 0.8rem; border-radius: 4px; font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase;">
-            Test de ubicación
-        </span>
-        <h1 style="color: #0b2238; font-size: 2rem; margin: 1.2rem 0 0.8rem 0;">Test de Nivel de Inglés</h1>
-        <p style="color: #4a5568; font-size: 1.05rem; line-height: 1.7; margin: 0 0 1.2rem 0;">
-            Este test dura aproximadamente <strong>15 minutos</strong> y te dice tu nivel de inglés
-            según el Marco Común Europeo (A1 a C1).
-        </p>
-        <div style="text-align: left; background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1rem 1.2rem; margin-bottom: 1.5rem; font-size: 0.95rem; color: #4a5568;">
-            <p style="margin: 0 0 0.4rem 0;">• Son 30 preguntas de opción múltiple, una por pantalla.</p>
-            <p style="margin: 0 0 0.4rem 0;">• La dificultad aumenta a medida que avanzás.</p>
-            <p style="margin: 0 0 0.4rem 0;">• No podés volver atrás una vez respondida cada pregunta.</p>
-            <p style="margin: 0;">• El cronómetro de 15 minutos es solo de referencia.</p>
-        </div>
-        <button id="btn-comenzar" style="background: #f6e05e; color: #0b2238; font-weight: 800; padding: 0.9rem 2.2rem; border: none; border-radius: 6px; cursor: pointer; font-size: 1rem; font-family: 'Tenor Sans', sans-serif; box-shadow: 0 3px 8px rgba(0,0,0,0.15);">
-            Comenzar el test
-        </button>
+    <section id="pantalla-bienvenida" class="fx-test__card">
+        <span class="fx-auth__eyebrow">Test de ubicación · 15 minutos</span>
+        <h1 class="fx-page__title">¿Qué nivel de <span class="fx-steel">inglés</span> tenés?</h1>
+        <p class="fx-page__lead">Respondé 30 preguntas y te decimos tu nivel según el Marco Común Europeo, de A1 a C1.</p>
+        <ul class="fx-checks fx-test__rules">
+            <li>Una pregunta por pantalla, de opción múltiple.</li>
+            <li>La dificultad aumenta a medida que avanzás.</li>
+            <li>Una vez respondida, no podés volver atrás.</li>
+            <li>El cronómetro es solo de referencia.</li>
+        </ul>
+        <button id="btn-comenzar" type="button" class="fx-btn fx-btn--solid">Empezar el test</button>
     </section>
 
     <!-- Pantalla de preguntas -->
-    <section id="pantalla-preguntas" class="tarjeta" style="display: none;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; flex-wrap: wrap; gap: 0.5rem;">
-            <span id="contador" style="color: #718096; font-size: 0.85rem; font-weight: bold;">Pregunta 1 de 30</span>
-            <span style="color: #718096; font-size: 0.85rem;">Tiempo de referencia: <strong id="cronometro">15:00</strong></span>
+    <section id="pantalla-preguntas" class="fx-test__card" style="display: none;">
+        <div class="fx-test__meta">
+            <span id="contador">Pregunta 1 de 30</span>
+            <span>Tiempo: <strong id="cronometro">15:00</strong></span>
         </div>
-        <div id="barra-track" style="margin-bottom: 1.5rem;">
+        <div id="barra-track">
             <div id="barra-progreso"></div>
         </div>
-        <h2 id="pregunta-texto" style="color: #0b2238; font-size: 1.25rem; line-height: 1.5; margin: 0 0 1.4rem 0;"></h2>
-        <div id="opciones" style="display: flex; flex-direction: column; gap: 0.7rem;"></div>
+        <h2 id="pregunta-texto" class="fx-test__q" aria-live="polite"></h2>
+        <div id="opciones" class="fx-test__opts"></div>
     </section>
 
     <!-- Pantalla de resultado -->
-    <section id="pantalla-resultado" class="tarjeta" style="display: none; text-align: center;">
-        <div style="background: linear-gradient(135deg, #0b2238 0%, #184168 100%); border-radius: 12px; padding: 2rem 1.5rem; margin-bottom: 1.5rem;">
-            <div style="color: #a4c4de; font-size: 0.8rem; letter-spacing: 1px; text-transform: uppercase;">Tu nivel de inglés es</div>
-            <div id="nivel-badge" style="color: white; font-size: 3.5rem; font-weight: 800; font-family: 'Tenor Sans', sans-serif; line-height: 1.2;">A1</div>
-            <div id="resultado-score" style="color: #cbd5e0; font-size: 0.95rem;"></div>
+    <section id="pantalla-resultado" class="fx-test__card fx-test__result" style="display: none;">
+        <span class="fx-auth__eyebrow">Tu nivel de inglés es</span>
+        <div id="nivel-badge" class="fx-test__level">A1</div>
+        <p id="resultado-score" class="fx-test__score"></p>
+        <p id="resultado-descripcion" class="fx-page__lead" style="margin: 0 auto 1.8rem;"></p>
+        <div class="fx-test__cta">
+            <a href="/clases-particulares#pedir" class="fx-btn fx-btn--solid">Armar clases para mi nivel</a>
+            <a id="resultado-cta" href="/cursos-todos" class="fx-btn">Ver cursos para tu nivel</a>
         </div>
-        <p id="resultado-descripcion" style="color: #4a5568; font-size: 1.05rem; line-height: 1.7; margin: 0 0 1.5rem 0;"></p>
-        <a id="resultado-cta" href="/cursos-todos" style="display: inline-block; background: #f6e05e; color: #0b2238; font-weight: 800; padding: 0.9rem 2rem; border-radius: 6px; text-decoration: none; font-size: 1rem; font-family: 'Tenor Sans', sans-serif; box-shadow: 0 3px 8px rgba(0,0,0,0.15);">
-            Ver cursos para tu nivel
-        </a>
-        <div style="margin-top: 1.2rem;">
-            <a href="/" style="color: #718096; font-size: 0.9rem;">Volver al inicio</a>
-        </div>
+        <p style="margin: 1.4rem 0 0;"><a href="/" class="fx-test__home">Volver al inicio</a></p>
     </section>
 
 </main>

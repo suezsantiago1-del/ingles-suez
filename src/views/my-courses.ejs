@@ -4,56 +4,46 @@
     <link rel="icon" type="image/svg+xml" href="/img/favicon-suez.svg">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mis Cursos - INGLÉS SUEZ</title>
-    <link rel="stylesheet" href="/css/styles.css">
-    <style>
-        .courses-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 1.5rem;
-            margin-top: 2rem;
-        }
-        .course-card {
-            background: #ffffff;
-            border: 1px solid #cbd5e0;
-            border-radius: 8px;
-            padding: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-    </style>
+    <title>Mis cursos · Inglés Suez</title>
 </head>
-<body>
-
+<body class="tema-flyer">
     <%- include('partials/header') %>
 
-    <main style="max-width: 1000px; margin: 3rem auto; padding: 0 1.5rem;">
-        <h1 style="color: #0b2238;">Mis Cursos</h1>
-        <p style="color: #4a5568;">Accede a tus programas de formación activos:</p>
+    <main class="fx-page">
+        <div class="fx-block__head" style="margin: 0 0 2.2rem;">
+            <div>
+                <h1 class="fx-page__title">Mis <span class="fx-steel">cursos</span></h1>
+                <p class="fx-page__lead">Seguí desde la última clase que dejaste.</p>
+            </div>
+        </div>
 
-        <div class="courses-grid">
+        <div class="fx-grid">
             <% if (cursos && cursos.length > 0) { %>
                 <% cursos.forEach(curso => { %>
-                    <div class="course-card">
-                        <div>
-                            <h3 style="color: #0b2238; margin-top: 0;"><%= curso.titulo %></h3>
-                            <p style="color: #718096; font-size: 0.9rem;"><%= curso.descripcion %></p>
+                    <a href="/classroom/<%= curso.id %>" class="fx-card fx-card--link">
+                        <div class="fx-card__media">
+                            <img src="<%= (curso.id == 1 || curso.titulo.toLowerCase().includes('intensivo')) ? '/img/logo_2.png?v=2' : '/img/logo_3.png?v=2' %>" alt="" loading="lazy">
                         </div>
-                        <div style="margin-top: 1.5rem;">
-                            <a href="/classroom/<%= curso.id %>" style="display: block; text-align: center; background: #184168; color: white; padding: 0.7rem; border-radius: 6px; text-decoration: none; font-weight: bold;">
-                                Ver curso
-                            </a>
+                        <div class="fx-card__body">
+                            <span class="fx-card__tag">Curso online</span>
+                            <h2 class="fx-card__h"><%= curso.titulo %></h2>
+                            <p><%= curso.descripcion %></p>
+                            <span class="fx-card__more">Entrar al aula</span>
                         </div>
-                    </div>
+                    </a>
                 <% }); %>
             <% } else { %>
-                <p style="color: #718096;">Aún no estás inscripto en ningún curso.</p>
+                <div class="fx-card">
+                    <div class="fx-card__body">
+                        <h2 class="fx-card__h">Todavía no tenés cursos</h2>
+                        <p>Cuando compres un curso, aparece acá y entrás al aula con un clic.</p>
+                        <a href="/cursos-todos" class="fx-btn fx-btn--sm" style="align-self: flex-start;">Ver cursos</a>
+                    </div>
+                </div>
             <% } %>
         </div>
     </main>
 
     <%- include('partials/footer') %>
-
 </body>
 </html>

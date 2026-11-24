@@ -4,109 +4,68 @@
     <link rel="icon" type="image/svg+xml" href="/img/favicon-suez.svg">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Todos los Cursos - INGLÉS SUEZ</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=GFS+Didot&family=Tenor+Sans&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/styles.css">
-    <style>
-        body, p, span, div, a, li { font-family: 'GFS Didot', serif; }
-        h1, h2, h3, h4, h5, h6 { font-family: 'Tenor Sans', sans-serif !important; }
-        body { background-color: #e3edf5; margin: 0; padding: 0; }
-        .card-header-logo { 
-            background: #d3e4f2; 
-            padding: 0; 
-            width: 100%;
-            height: 200px;
-            border-bottom: 2px solid #b2cce0; 
-            position: relative;
-            overflow: hidden;
-        }
-        .card-header-logo img { 
-            width: 100%; 
-            height: 100%; 
-            object-fit: cover; 
-            display: block;
-        }
-    </style>
+    <title>Cursos online · Inglés Suez</title>
 
     <!-- Google AdSense Verification -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1854686112404128"
          crossorigin="anonymous"></script>
 </head>
-<body>
-
+<body class="tema-flyer">
     <%- include('partials/header') %>
 
-    <main style="max-width: 1200px; margin: 3.5rem auto; padding: 0 1.5rem;">
-        <div style="text-align: center; margin-bottom: 3rem;">
-            <h1 style="color: #0b2238; font-size: 2.2rem; text-transform: uppercase;">
-                TODOS NUESTROS CURSOS DETALLADOS
-            </h1>
-            <p style="color: #4a5568; font-size: 1.05rem; max-width: 600px; margin: 0 auto;">
-                Explora el programa completo de cada programa y selecciona la formación ideal para llevar tu inglés al siguiente nivel.
-            </p>
+    <main class="fx-page">
+        <div class="fx-block__head" style="margin: 0 0 2.4rem;">
+            <div>
+                <span class="fx-auth__eyebrow">A tu ritmo</span>
+                <h1 class="fx-page__title">Cursos <span class="fx-steel">online</span></h1>
+                <p class="fx-page__lead">Clases grabadas, ejercicios en cada clase y correcciones personalizadas del profesor. Entrás cuando quieras, desde donde quieras.</p>
+            </div>
+            <a href="/clases-particulares" class="fx-btn fx-btn--sm">¿Preferís clases en vivo?</a>
         </div>
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2.5rem;">
+        <div class="fx-grid">
             <% if (cursos && cursos.length > 0) { %>
                 <% cursos.forEach(curso => { %>
-                    <div class="rounded-xl overflow-hidden" style="position: relative; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 12px 30px rgba(11, 34, 56, 0.12), 0 4px 8px rgba(0, 0, 0, 0.04); border: 1px solid #c0d4e5; display: flex; flex-direction: column;">
-                        
-                        <div class="card-header-logo" style="position: relative; overflow: hidden;">
-                            <% if (curso && curso.titulo === 'Ingles Intensivo Desde Cero') { %>
-                                <div class="absolute top-4 left-[-8px] bg-[#002244] text-white text-xs font-bold py-1.5 px-4 shadow-lg rounded-r-md z-20 border-l-4 border-[#0055a5]">CERTIFICADO A1-A2</div>
-                            <% } %>
-                            <img src="<%= (curso.id == 1 || curso.titulo.toLowerCase().includes('intensivo')) ? '/img/logo_2.png?v=2' : '/img/logo_3.png?v=2' %>" alt="<%= curso.titulo %>">
+                    <% const esIntensivo = curso.titulo === 'Inglés Intensivo Desde Cero' || curso.titulo === 'Ingles Intensivo Desde Cero'; %>
+                    <article class="fx-card">
+                        <div class="fx-card__media">
+                            <img src="<%= (curso.id == 1 || curso.titulo.toLowerCase().includes('intensivo')) ? '/img/logo_2.png?v=2' : '/img/logo_3.png?v=2' %>" alt="<%= curso.titulo %>" loading="lazy">
                         </div>
 
-                        <div style="padding: 2rem; display: flex; flex-direction: column; flex-grow: 1;">
-                            <% if (curso && (curso.titulo === 'Inglés Intensivo Desde Cero' || curso.titulo === 'Ingles Intensivo Desde Cero')) { %>
-                                <div class="mb-2">
-                                    <span style="background-color: #002244; color: white; display: inline-block; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; letter-spacing: 0.5px;">CERTIFICADO A1-A2</span>
-                                </div>
-                                <h3 class="course-title" style="color: #0b2238; font-size: 1.4rem; margin: 0.25rem 0 0.8rem 0;">Inglés Intensivo Desde Cero</h3>
+                        <div class="fx-card__body">
+                            <% if (esIntensivo) { %>
+                                <span class="fx-card__tag">Certificado A1–A2</span>
+                                <h2 class="fx-card__h">Inglés Intensivo Desde Cero</h2>
                             <% } else { %>
-                                <h2 style="color: #0b2238; font-size: 1.4rem; margin-top: 0; margin-bottom: 0.8rem;"><%= curso.titulo %></h2>
+                                <h2 class="fx-card__h"><%= curso.titulo %></h2>
                             <% } %>
-                            <p style="color: #4a5568; font-size: 1rem; line-height: 1.6; margin-bottom: 1.5rem; flex-grow: 1;"><%= curso.descripcion %></p>
-                            
-                            <div style="background: #f0f6fa; padding: 1rem; border-radius: 6px; margin-bottom: 1.5rem; font-size: 0.95rem; color: #184168;">
-                                <div>✔ Acceso de por vida</div>
-                                <div>✔ Clases en Video HD</div>
-                                <div>✔ Ejercicios prácticos incluidos</div>
-                            </div>
+                            <p><%= curso.descripcion %></p>
 
-                            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e2ebd5; padding-top: 1.2rem;">
+                            <ul class="fx-checks">
+                                <li>Acceso de por vida</li>
+                                <li>Clases en video</li>
+                                <li>Ejercicios y correcciones del profesor</li>
+                            </ul>
+
+                            <div class="fx-card__foot">
                                 <% if (curso && curso.titulo === 'Conversación y Fluidez Real') { %>
-                                    <div class="badge-coming-soon">Próximamente</div>
+                                    <span class="fx-soon">Próximamente</span>
                                 <% } else if (locals.comprasIds && locals.comprasIds.includes(curso.id)) { %>
-                                    <!-- Curso comprado - Solo mostrar botón "Ir al Aula" -->
-                                    <a href="/classroom/<%= curso.id %>" style="background: #27ae60; color: white; padding: 0.75rem 1.4rem; border-radius: 6px; text-decoration: none; font-size: 0.9rem; font-family: 'Tenor Sans', sans-serif; font-weight: bold; width: 100%; text-align: center;">
-                                        Ir al Aula
-                                    </a>
+                                    <a href="/classroom/<%= curso.id %>" class="fx-btn fx-btn--solid" style="width: 100%;">Ir al aula</a>
                                 <% } else { %>
-                                    <!-- Curso no comprado - Mostrar precio y botón "Ver Detalle" -->
-                                    <div>
-                                        <span style="font-size: 0.75rem; color: #718096; text-transform: uppercase; display: block;">Precio Final</span>
-                                        <span style="color: #0b2238; font-size: 1.4rem; font-weight: bold; font-family: 'Tenor Sans', sans-serif;">$<%= curso.precio %> ARS</span>
-                                    </div>
-                                    <a href="/course/<%= curso.id %>" style="background: #0b2238; color: white; padding: 0.75rem 1.4rem; border-radius: 6px; text-decoration: none; font-size: 0.9rem; font-family: 'Tenor Sans', sans-serif;">
-                                        Ver Detalle →
-                                    </a>
+                                    <span class="fx-price">$<%= curso.precio %><small>ARS</small></span>
+                                    <a href="/course/<%= curso.id %>" class="fx-btn fx-btn--sm">Ver curso</a>
                                 <% } %>
                             </div>
                         </div>
-
-                    </div>
+                    </article>
                 <% }); %>
             <% } else { %>
-                <p style="text-align: center; color: #718096; grid-column: 1 / -1;">No hay cursos disponibles por el momento.</p>
+                <p class="fx-empty">Todavía no hay cursos publicados.</p>
             <% } %>
         </div>
     </main>
 
     <%- include('partials/footer') %>
-
 </body>
 </html>

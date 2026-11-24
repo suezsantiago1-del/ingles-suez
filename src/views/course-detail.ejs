@@ -4,170 +4,92 @@
     <link rel="icon" type="image/svg+xml" href="/img/favicon-suez.svg">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= curso.titulo %> - INGLÉS SUEZ</title>
-    <link rel="stylesheet" href="/css/styles.css">
-    <style>
-        .course-detail-container {
-            max-width: 900px;
-            margin: 3rem auto;
-            padding: 2rem;
-            background: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-            border: 1px solid #e2e8f0;
-        }
-        .btn-action {
-            display: inline-block;
-            padding: 0.9rem 1.8rem;
-            border-radius: 6px;
-            font-weight: bold;
-            font-size: 1rem;
-            text-decoration: none;
-            cursor: pointer;
-            border: none;
-            transition: background 0.2s;
-        }
-        .btn-primary { background: #184168; color: #ffffff; }
-        .btn-primary:hover { background: #0b2238; }
-        .btn-success { background: #0b2238; color: #ffffff; }
-        .btn-success:hover { background: #184168; }
-        .course-info-section {
-            margin-top: 2.5rem;
-            padding-top: 2rem;
-            border-top: 2px solid #e2ebd5;
-        }
-        .course-info-section h2 {
-            color: #0b2238;
-            font-size: 1.35rem;
-            margin-top: 0;
-            margin-bottom: 1.2rem;
-        }
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 1.2rem;
-        }
-        .info-card {
-            background: #f7fafc;
-            border: 1px solid #e2e8f0;
-            border-left: 4px solid #184168;
-            border-radius: 8px;
-            padding: 1.2rem 1.4rem;
-        }
-        .info-card h3 {
-            color: #0b2238;
-            font-size: 1rem;
-            margin: 0 0 0.5rem 0;
-        }
-        .info-card p {
-            color: #4a5568;
-            font-size: 0.95rem;
-            line-height: 1.6;
-            margin: 0;
-        }
-        .course-highlights {
-            margin-top: 1.5rem;
-            background: #e2ebd5;
-            border-radius: 8px;
-            padding: 1.2rem 1.5rem;
-        }
-        .course-highlights ul {
-            margin: 0;
-            padding-left: 1.2rem;
-            color: #2d3748;
-            line-height: 1.8;
-        }
-        .course-highlights li {
-            margin-bottom: 0.3rem;
-        }
-    </style>
+    <title><%= curso.titulo %> · Inglés Suez</title>
 
     <!-- Google AdSense Verification -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1854686112404128"
          crossorigin="anonymous"></script>
 </head>
-<body>
-
+<body class="tema-flyer">
     <%- include('partials/header') %>
 
-    <main class="course-detail-container">
-        <div style="display: flex; gap: 2rem; align-items: center; flex-wrap: wrap;">
-            <% if (curso.imagen_url) { %>
-                <img src="<%= curso.imagen_url %>" alt="<%= curso.titulo %>" style="max-width: 280px; border-radius: 8px;">
-            <% } %>
+    <% const esIntensivo = curso.id == 1 || curso.titulo.toLowerCase().includes('intensivo'); %>
 
-            <div style="flex: 1;">
-                <span style="background: #e2ebd5; color: #184168; padding: 0.3rem 0.8rem; border-radius: 4px; font-size: 0.8rem; font-weight: bold; text-transform: uppercase;">
-                    Curso Oficial
-                </span>
+    <main class="fx-page">
+        <a href="/cursos-todos" class="fx-back">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Todos los cursos
+        </a>
 
-                <h1 style="color: #0b2238; margin-top: 0.8rem; margin-bottom: 0.5rem;"><%= curso.titulo %></h1>
-                <p style="color: #4a5568; font-size: 1.05rem; line-height: 1.6;"><%= curso.descripcion %></p>
+        <div class="fx-course">
+            <div class="fx-course__media">
+                <img src="<%= curso.imagen_url || (esIntensivo ? '/img/logo_2.png?v=2' : '/img/logo_3.png?v=2') %>" alt="<%= curso.titulo %>">
+            </div>
 
-                <div style="margin-top: 1.8rem;">
-                    <% if (locals.user) { %>
-                        <% if (locals.yaComprado) { %>
-                            <!-- Opción A: Usuario logueado e inscripto -->
-                            <a href="/classroom/<%= curso.id %>" class="btn-action btn-primary">
-                                Ir al Aula Virtual
-                            </a>
-                        <% } else { %>
-                            <!-- Opción B: Usuario logueado pero no inscripto -->
-                            <div style="margin-bottom: 1rem;">
-                                <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
-                                    <input type="text" id="codigo-descuento" placeholder="Código de descuento" style="flex: 1; padding: 0.7rem; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 0.9rem;">
-                                    <button type="button" onclick="validarCodigo()" style="padding: 0.7rem 1rem; background: #e2ebd5; color: #184168; border: 1px solid #cbd5e0; border-radius: 4px; cursor: pointer; font-size: 0.9rem;">Aplicar</button>
-                                </div>
-                                <div id="descuento-mensaje" style="font-size: 0.85rem; margin-top: 0.3rem;"></div>
-                                <div id="precio-con-descuento" style="font-weight: bold; color: #22543d; margin-top: 0.5rem; display: none;"></div>
-                            </div>
-                            <form action="/checkout/<%= curso.id %>" method="POST" id="checkout-form" style="display: inline;">
-                                <input type="hidden" name="codigo_descuento" id="codigo-descuento-hidden" value="">
-                                <button type="submit" class="btn-action btn-success" id="btn-inscribir">
-                                    Inscribirme en curso - $<%= curso.precio %> ARS
-                                </button>
-                            </form>
-                        <% } %>
+            <div class="fx-course__info">
+                <span class="fx-card__tag"><%= esIntensivo ? 'Certificado A1–A2' : 'Curso online' %></span>
+                <h1 class="fx-page__title"><%= curso.titulo %></h1>
+                <p class="fx-page__lead"><%= curso.descripcion %></p>
+
+                <div class="fx-course__buy">
+                    <% if (locals.user && locals.yaComprado) { %>
+                        <p class="fx-alert is-ok" style="margin-bottom: 1rem;">Ya estás inscripto en este curso.</p>
+                        <a href="/classroom/<%= curso.id %>" class="fx-btn fx-btn--solid">Ir al aula</a>
                     <% } else { %>
-                        <!-- Opción C: Usuario sin sesión iniciada -->
-                        <a href="/auth/login" class="btn-action btn-success">
-                            Iniciar sesión para inscribirme
-                        </a>
+                        <p class="fx-price fx-course__price">$<%= curso.precio %><small>ARS · pago único</small></p>
+                        <% if (locals.user) { %>
+                            <div class="fx-course__code">
+                                <label for="codigo-descuento" class="fx-hint" style="margin: 0 0 0.4rem; display: block;">¿Tenés un código de descuento?</label>
+                                <div class="fx-course__code-row">
+                                    <input class="fx-input" type="text" id="codigo-descuento" placeholder="Código" autocomplete="off">
+                                    <button type="button" class="fx-btn fx-btn--sm" onclick="validarCodigo()">Aplicar</button>
+                                </div>
+                                <p id="descuento-mensaje" class="fx-status" role="status"></p>
+                                <p id="precio-con-descuento" class="fx-course__discount" style="display: none;"></p>
+                            </div>
+                            <form action="/checkout/<%= curso.id %>" method="POST" id="checkout-form">
+                                <input type="hidden" name="codigo_descuento" id="codigo-descuento-hidden" value="">
+                                <button type="submit" class="fx-btn fx-btn--solid" id="btn-inscribir">Inscribirme · $<%= curso.precio %> ARS</button>
+                            </form>
+                            <p class="fx-hint" style="margin: 0.8rem 0 0;">Pagás con MercadoPago y entrás al aula enseguida.</p>
+                        <% } else { %>
+                            <a href="/auth/login" class="fx-btn fx-btn--solid">Iniciá sesión para inscribirte</a>
+                            <p class="fx-hint" style="margin: 0.8rem 0 0;">¿No tenés cuenta? <a href="/auth/register" style="color: var(--fx-steel);">Creala en un minuto</a>.</p>
+                        <% } %>
                     <% } %>
                 </div>
             </div>
         </div>
 
-        <% if (curso.id == 1 || curso.titulo.toLowerCase().includes('intensivo')) { %>
-        <section class="course-info-section">
-            <h2>¿Qué incluye este curso?</h2>
+        <% if (esIntensivo) { %>
+        <section class="fx-course__more">
+            <div class="fx-block__head">
+                <h2>Qué <span class="fx-steel">incluye</span></h2>
+            </div>
 
-            <div class="info-grid">
-                <div class="info-card">
-                    <h3>Entregables en cada clase</h3>
-                    <p>Todas las clases incluyen actividades y entregables manuales que debés completar para avanzar en el curso.</p>
+            <div class="fx-course__grid">
+                <div class="fx-panel">
+                    <h3 class="fx-course__h3">Entregas en cada clase</h3>
+                    <p>Cada clase tiene actividades para entregar. Al completarlas, se habilita la siguiente.</p>
                 </div>
-                <div class="info-card">
-                    <h3>Corrección personalizada</h3>
-                    <p>Cada entrega es revisada y corregida manualmente por el profesor, con devoluciones detalladas para que puedas mejorar.</p>
+                <div class="fx-panel">
+                    <h3 class="fx-course__h3">Corrección personalizada</h3>
+                    <p>El profesor corrige cada entrega a mano y te manda una devolución con nota.</p>
                 </div>
-                <div class="info-card">
-                    <h3>Certificado de nivel A1-A2</h3>
-                    <p>Al completar y aprobar el curso, recibirás un certificado oficial de nivel A1-A2 que acredita tu formación en inglés básico.</p>
+                <div class="fx-panel">
+                    <h3 class="fx-course__h3">Certificado A1–A2</h3>
+                    <p>Al aprobar el curso descargás tu certificado de nivel A1–A2.</p>
                 </div>
             </div>
 
-            <div class="course-highlights">
-                <ul>
-                    <li><strong>10 clases progresivas</strong> con contenido interactivo y ejercicios prácticos.</li>
-                    <li><strong>Seguimiento individual:</strong> el profesor corrige cada entrega y te envía observaciones personalizadas.</li>
-                    <li><strong>Acceso al aula virtual</strong> las 24 horas para avanzar a tu ritmo.</li>
-                    <li><strong>Certificado descargable</strong> al aprobar la evaluación final del curso.</li>
-                </ul>
-            </div>
+            <ul class="fx-checks" style="margin-top: 1.8rem;">
+                <li>10 clases progresivas con contenido interactivo y ejercicios.</li>
+                <li>Seguimiento individual del profesor en cada entrega.</li>
+                <li>Aula virtual abierta las 24 horas para avanzar a tu ritmo.</li>
+                <li>Certificado descargable al aprobar la evaluación final.</li>
+            </ul>
         </section>
         <% } %>
-
     </main>
 
     <%- include('partials/footer') %>
@@ -178,63 +100,58 @@
             const mensaje = document.getElementById('descuento-mensaje');
             const precioConDescuento = document.getElementById('precio-con-descuento');
             const precioOriginal = <%= curso.precio %>;
-            
+
+            mensaje.classList.remove('is-error');
             if (!codigo) {
                 mensaje.textContent = '';
-                mensaje.style.color = '';
                 precioConDescuento.style.display = 'none';
                 document.getElementById('codigo-descuento-hidden').value = '';
                 actualizarBotonPrecio(precioOriginal);
                 return;
             }
-            
+
             // Validar código con el servidor
             fetch('/validar-codigo-descuento', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ codigo: codigo })
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
                     const precioFinal = Math.floor(precioOriginal * (1 - data.porcentaje / 100));
-                    
                     mensaje.textContent = data.mensaje;
-                    mensaje.style.color = '#22543d';
-                    precioConDescuento.textContent = `Precio original: $${precioOriginal} ARS | Precio con descuento: $${precioFinal} ARS`;
+                    precioConDescuento.innerHTML = '<s>$' + precioOriginal + '</s> $' + precioFinal + ' ARS';
                     precioConDescuento.style.display = 'block';
                     document.getElementById('codigo-descuento-hidden').value = codigo;
                     actualizarBotonPrecio(precioFinal);
                 } else {
                     mensaje.textContent = data.message;
-                    mensaje.style.color = '#9b2c2c';
+                    mensaje.classList.add('is-error');
                     precioConDescuento.style.display = 'none';
                     document.getElementById('codigo-descuento-hidden').value = '';
                     actualizarBotonPrecio(precioOriginal);
                 }
             })
             .catch(error => {
-                mensaje.textContent = 'Error al validar el código. Intente nuevamente.';
-                mensaje.style.color = '#9b2c2c';
+                mensaje.textContent = 'No se pudo validar el código. Probá de nuevo.';
+                mensaje.classList.add('is-error');
                 console.error('Error al validar código:', error);
             });
         }
-        
+
         function actualizarBotonPrecio(precio) {
             const btn = document.getElementById('btn-inscribir');
-            btn.textContent = `Inscribirme en curso - $${precio} ARS`;
+            if (btn) btn.textContent = 'Inscribirme · $' + precio + ' ARS';
         }
-        
-        // Validar cuando el usuario presiona Enter en el campo de código
-        document.getElementById('codigo-descuento').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                validarCodigo();
-            }
-        });
-    </script>
 
+        // Validar cuando el usuario presiona Enter en el campo de código
+        const campoCodigo = document.getElementById('codigo-descuento');
+        if (campoCodigo) {
+            campoCodigo.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') { e.preventDefault(); validarCodigo(); }
+            });
+        }
+    </script>
 </body>
 </html>

@@ -4,243 +4,177 @@
     <link rel="icon" type="image/svg+xml" href="/img/favicon-suez.svg">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel del Profesor - INGLÉS SUEZ</title>
-    <link rel="stylesheet" href="/css/styles.css">
-    <style>
-        body { background-color: #f4f7f6; margin: 0; font-family: system-ui, -apple-system, sans-serif; }
-        
-        /* Barra Superior de Selector de Paneles del Profesor */
-        .teacher-nav-tabs {
-            max-width: 1400px;
-            margin: 1.5rem auto 0 auto;
-            display: flex;
-            gap: 0.5rem;
-            padding: 0 1rem;
-        }
-        .teacher-tab {
-            padding: 0.8rem 1.5rem;
-            background: #cbd5e0;
-            color: #0b2238;
-            text-decoration: none;
-            font-weight: bold;
-            border-radius: 8px 8px 0 0;
-            font-size: 0.95rem;
-            transition: background 0.2s, color 0.2s;
-        }
-        .teacher-tab:hover {
-            background: #a0aec0;
-        }
-        .teacher-tab.active {
-            background: #ffffff;
-            color: #184168;
-            border-top: 3px solid #184168;
-        }
-
-        .teacher-layout { display: flex; height: calc(100vh - 140px); max-width: 1400px; margin: 0 auto 2rem auto; background: #ffffff; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-radius: 0 0 8px 8px; }
-        
-        /* Panel Lateral (Sidebar de Alumnos) */
-        .sidebar-alumnos { width: 340px; background: #ffffff; border-right: 1px solid #cbd5e0; flex-shrink: 0; display: flex; flex-direction: column; }
-        .sidebar-header { padding: 1.2rem 1.5rem; background: #0b2238; color: #ffffff; }
-        .sidebar-header h2 { margin: 0; font-size: 1.1rem; }
-        .lista-alumnos { overflow-y: auto; flex-grow: 1; }
-        
-        .alumno-item { padding: 1rem 1.2rem; border-bottom: 1px solid #edf2f7; cursor: pointer; transition: background 0.2s; display: flex; justify-content: space-between; align-items: center; }
-        .alumno-item:hover { background: #f8fafc; }
-        .alumno-item.active { background: #ebf8ff; border-left: 4px solid #3182ce; }
-        .alumno-nombre { font-weight: bold; color: #0b2238; display: block; font-size: 0.95rem; }
-        .alumno-email { font-size: 0.8rem; color: #718096; }
-        .badge-pendiente { background: #e53e3e; color: #ffffff; border-radius: 12px; padding: 0.15rem 0.5rem; font-size: 0.75rem; font-weight: bold; }
-
-        /* Área Central del Chat / Historial */
-        .chat-container { flex-grow: 1; display: flex; flex-direction: column; background: #f8fafc; }
-        .chat-header { padding: 1.2rem 2rem; background: #ffffff; border-bottom: 1px solid #cbd5e0; }
-        .chat-body { flex-grow: 1; padding: 2rem; overflow-y: auto; }
-        .chat-placeholder { text-align: center; color: #a0aec0; margin-top: 6rem; }
-
-        /* Tarjetas de Entregas */
-        .entrega-card { background: #ffffff; border: 1px solid #cbd5e0; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.8rem; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
-        .badge { background: #e2ebd5; color: #184168; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
-        .devolucion-box { margin-top: 1.2rem; background: #f7fafc; padding: 1.2rem; border-radius: 6px; border: 1px solid #e2e8f0; }
-        .devolucion-existente { background: #ebf8ff; border-left: 4px solid #3182ce; padding: 1rem; border-radius: 4px; margin-top: 1rem; }
-        .nota-badge { background: #2b6cb0; color: #ffffff; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.85rem; font-weight: bold; margin-left: 0.5rem; }
-
-        @media (max-width: 850px) {
-            .teacher-layout { flex-direction: column; height: auto; }
-            .sidebar-alumnos { width: 100%; height: 250px; }
-            .teacher-nav-tabs { flex-wrap: wrap; }
-        }
-    </style>
+    <title>Entregas · Panel del profesor · Inglés Suez</title>
 </head>
-<body class="bg-neutral">
+<body class="tema-flyer">
 
     <%- include('partials/header') %>
 
-    <!-- Pestañas de Navegación del Profesor -->
-    <div class="teacher-nav-tabs">
-        <a href="/profesor/entregas" class="teacher-tab active">Entregas de Cursos</a>
-        <a href="/profesor/gestion" class="teacher-tab">Gestión de Cursos</a>
-        <a href="/profesor/consultas" class="teacher-tab">Consultas de Alumnos</a>
-        <a href="/profesor/particulares" class="teacher-tab">Clases Particulares</a>
-    </div>
+    <%
+        // Agrupar entregas por alumno (renderizado en el servidor: EJS escapa todo lo que escribió el alumno)
+        const lista = typeof entregas !== 'undefined' && Array.isArray(entregas) ? entregas : [];
+        const alumnos = [];
+        const porId = new Map();
+        lista.forEach(e => {
+            if (!porId.has(e.usuario_id)) {
+                const a = { id: e.usuario_id, nombre: e.usuario_nombre, email: e.usuario_email, entregas: [], pendientes: 0 };
+                porId.set(e.usuario_id, a);
+                alumnos.push(a);
+            }
+            const a = porId.get(e.usuario_id);
+            a.entregas.push(e);
+            if (!e.devolucion_mensaje) a.pendientes++;
+        });
+        // Primero quienes tienen entregas sin corregir
+        alumnos.sort((x, y) => (y.pendientes > 0) - (x.pendientes > 0));
+        const totalPendientes = alumnos.reduce((s, a) => s + a.pendientes, 0);
+        const fecha = (f) => f ? new Date(f).toLocaleString('es-AR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
+        const inicial = (n) => (n || '?').trim().charAt(0).toUpperCase();
+        const tieneNota = (n) => n !== null && n !== undefined;
+    %>
 
-    <div class="teacher-layout">
-        <!-- Sidebar: Lista Agrupada por Alumno -->
-        <aside class="sidebar-alumnos bg-primary-navy text-white">
-            <div class="sidebar-header">
-                <h2>Chats por Alumno (Cursos)</h2>
-            </div>
-            <div class="lista-alumnos" id="lista-alumnos">
-                <!-- Se poblará dinámicamente -->
-            </div>
-        </aside>
+    <main class="fx-page">
+        <%- include('partials/teacher-tabs', { activa: '/profesor/entregas' }) %>
 
-        <!-- Área Principal de Conversación -->
-        <main class="chat-container">
-            <div class="chat-header" id="chat-header" style="display: none;">
-                <h3 id="chat-alumno-nombre" style="margin: 0; color: #0b2238;"></h3>
-                <span id="chat-alumno-email" style="color: #718096; font-size: 0.85rem;"></span>
-            </div>
+        <div class="fx-block__head" style="margin: 2.2rem 0 0;">
+            <h1 class="fx-page__title">Entregas <span class="fx-steel">de cursos</span></h1>
+            <p><%= totalPendientes === 0 ? 'Estás al día: no hay entregas sin corregir.' : (totalPendientes === 1 ? 'Hay 1 entrega esperando corrección.' : 'Hay ' + totalPendientes + ' entregas esperando corrección.') %></p>
+        </div>
 
-            <div class="chat-body" id="chat-body">
-                    <div class="chat-placeholder" id="chat-placeholder">
-                    <h3 style="color: #0b2238; margin-top: 0;">Entregas de Cursos</h3>
-                    <p>Selecciona un alumno de la lista lateral para ver el historial de sus entregas y responderle.</p>
+        <% if (alumnos.length === 0) { %>
+            <div class="fx-panel" style="margin-top: 2rem; text-align: center; padding: 3rem 1.5rem;">
+                <h2>Todavía no hay entregas</h2>
+                <p style="margin: 0;">Cuando un alumno entregue una clase, la vas a ver acá para corregirla.</p>
+            </div>
+        <% } else { %>
+        <div class="fx-chat" id="fx-chat">
+            <aside class="fx-chat__side">
+                <div class="fx-chat__side-head" style="flex-wrap: wrap;">
+                    <input type="search" class="fx-input" id="fx-buscar" placeholder="Buscar alumno" aria-label="Buscar alumno" style="padding: 0.55rem 0.9rem; border-radius: 999px;">
                 </div>
+                <ul class="fx-chat__list" role="tablist" aria-label="Alumnos">
+                    <% alumnos.forEach(a => { %>
+                        <li data-nombre="<%= ((a.nombre || '') + ' ' + (a.email || '')).toLowerCase() %>">
+                            <button type="button" class="fx-chat__item fx-chat__item--avatar" role="tab" data-consulta="<%= a.id %>" aria-selected="false">
+                                <span class="fx-avatar" aria-hidden="true"><%= inicial(a.nombre) %></span>
+                                <span style="min-width: 0;">
+                                    <span class="fx-chat__item-top">
+                                        <span class="fx-chat__item-name"><%= a.nombre %></span>
+                                        <% if (a.pendientes > 0) { %><span class="fx-badge-count" title="Sin corregir"><%= a.pendientes %></span><% } %>
+                                    </span>
+                                    <span class="fx-chat__item-prev" style="display: block;"><%= a.entregas.length %> <%= a.entregas.length === 1 ? 'entrega' : 'entregas' %><%= a.pendientes > 0 ? ' · ' + a.pendientes + ' sin corregir' : ' · al día' %></span>
+                                </span>
+                            </button>
+                        </li>
+                    <% }) %>
+                </ul>
+                <p class="fx-chat__empty-list" id="fx-lista-vacia" hidden>No hay alumnos con ese nombre.</p>
+            </aside>
 
-                <div id="contenedor-entregas-alumno" style="display: none;"></div>
+            <div class="fx-chat__main">
+                <div class="fx-chat__blank" id="fx-blank">Elegí un alumno para ver y corregir sus entregas.</div>
+                <% alumnos.forEach(a => { %>
+                    <div class="fx-chat__conv" data-consulta="<%= a.id %>" role="tabpanel" style="display: none; flex-direction: column; flex: 1; min-height: 0;">
+                        <div class="fx-chat__head">
+                            <button type="button" class="fx-chat__back" aria-label="Volver a la lista">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </button>
+                            <span class="fx-avatar" aria-hidden="true"><%= inicial(a.nombre) %></span>
+                            <span style="min-width: 0;">
+                                <span class="fx-chat__head-title" style="display: block;"><%= a.nombre %></span>
+                                <a href="mailto:<%= a.email %>" class="fx-chat__head-meta" style="text-decoration: none;"><%= a.email %></a>
+                            </span>
+                        </div>
+
+                        <div class="fx-entregas">
+                            <% a.entregas.forEach(e => { const corregida = !!e.devolucion_mensaje; %>
+                                <article class="fx-entrega<%= corregida ? '' : ' is-pendiente' %>">
+                                    <header class="fx-entrega__head">
+                                        <div>
+                                            <span class="fx-tag"><%= e.curso_titulo %></span>
+                                            <h3><%= e.leccion_titulo %></h3>
+                                        </div>
+                                        <span class="fx-entrega__fecha"><%= fecha(e.fecha) %></span>
+                                    </header>
+
+                                    <div class="fx-entrega__resp">
+                                        <span>Respuesta del alumno</span>
+                                        <p><%= e.contenido %></p>
+                                    </div>
+
+                                    <% if (corregida) { %>
+                                        <div class="fx-entrega__dev">
+                                            <div>
+                                                <span>Tu devolución · <%= fecha(e.devolucion_fecha) %></span>
+                                                <p><%= e.devolucion_mensaje %></p>
+                                            </div>
+                                            <% if (tieneNota(e.devolucion_nota)) { %>
+                                                <span class="fx-grade"><small>Nota</small><%= e.devolucion_nota %></span>
+                                            <% } %>
+                                        </div>
+                                    <% } %>
+
+                                    <details class="fx-entrega__form" <%= corregida ? '' : 'open' %>>
+                                        <summary><%= corregida ? 'Editar devolución' : 'Corregir esta entrega' %></summary>
+                                        <div class="fx-field">
+                                            <label for="dev-text-<%= e.id %>">Devolución para el alumno</label>
+                                            <textarea class="fx-input" id="dev-text-<%= e.id %>" rows="4" placeholder="Correcciones y comentarios"><%= e.devolucion_mensaje || '' %></textarea>
+                                        </div>
+                                        <div class="fx-entrega__row">
+                                            <div class="fx-field" style="margin: 0;">
+                                                <label for="dev-nota-<%= e.id %>">Nota (1 a 10)</label>
+                                                <input class="fx-input" type="number" id="dev-nota-<%= e.id %>" min="1" max="10" placeholder="8" value="<%= tieneNota(e.devolucion_nota) ? e.devolucion_nota : '' %>" style="width: 110px;">
+                                            </div>
+                                            <button type="button" class="fx-btn fx-btn--solid fx-btn--sm" onclick="enviarDevolucion(<%= e.id %>, <%= e.usuario_id %>, this)"><%= corregida ? 'Actualizar devolución' : 'Enviar devolución' %></button>
+                                        </div>
+
+                                        <div class="fx-field" style="margin-top: 1.3rem;">
+                                            <label for="teacher-note-<%= e.id %>">Nota del profesor (la ve el alumno en el aula)</label>
+                                            <textarea class="fx-input" id="teacher-note-<%= e.id %>" rows="2" placeholder="Un consejo o aviso para el alumno"><%= e.teacher_notes || '' %></textarea>
+                                        </div>
+                                        <button type="button" class="fx-btn fx-btn--sm" onclick="enviarNotaProfesor(<%= e.id %>, this)">Guardar nota</button>
+                                    </details>
+                                </article>
+                            <% }) %>
+                        </div>
+                    </div>
+                <% }) %>
             </div>
-        </main>
-    </div>
-
+        </div>
+        <% } %>
+    </main>
 
     <%- include('partials/footer') %>
 
     <script>
-        // Array global recibido de EJS
-        const entregasGlobales = <%- JSON.stringify(typeof entregas !== 'undefined' ? entregas : []) %>;
-
-        // Agrupar entregas por usuario_id
-        const mapaAlumnos = new Map();
-
-        entregasGlobales.forEach(e => {
-            if (!mapaAlumnos.has(e.usuario_id)) {
-                mapaAlumnos.set(e.usuario_id, {
-                    id: e.usuario_id,
-                    nombre: e.usuario_nombre,
-                    email: e.usuario_email,
-                    entregas: [],
-                    pendientes: 0
-                });
+        // Lista de alumnos: elegir, buscar y volver en celular
+        (function () {
+            var chat = document.getElementById('fx-chat');
+            if (!chat) return;
+            var items = Array.prototype.slice.call(chat.querySelectorAll('.fx-chat__list li'));
+            function abrir(id, enMovil) {
+                if (enMovil) chat.classList.add('is-thread');
+                document.getElementById('fx-blank').style.display = 'none';
+                chat.querySelectorAll('.fx-chat__item').forEach(function (b) { b.setAttribute('aria-selected', b.dataset.consulta === id ? 'true' : 'false'); });
+                chat.querySelectorAll('.fx-chat__conv').forEach(function (c) { c.style.display = c.dataset.consulta === id ? 'flex' : 'none'; });
+                if (enMovil) window.scrollTo(0, chat.offsetTop - 80);
             }
-
-            const alumno = mapaAlumnos.get(e.usuario_id);
-            alumno.entregas.push(e);
-
-            // Contar si hay entregas sin responder
-            if (!e.devolucion_mensaje) {
-                alumno.pendientes++;
-            }
-        });
-
-        // Cargar lista de alumnos en la barra lateral
-        const contenedorLista = document.getElementById('lista-alumnos');
-
-        if (mapaAlumnos.size === 0) {
-            contenedorLista.innerHTML = '<p style="padding: 1.5rem; color: #718096; text-align: center;">Aún no hay entregas registradas.</p>';
-        } else {
-            mapaAlumnos.forEach(alumno => {
-                const div = document.createElement('div');
-                div.className = 'alumno-item';
-                div.id = `item-alumno-${alumno.id}`;
-                div.onclick = () => abrirChatAlumno(alumno.id);
-
-                div.innerHTML = `
-                    <div>
-                        <span class="alumno-nombre">${alumno.nombre}</span>
-                        <span class="alumno-email">${alumno.email}</span>
-                    </div>
-                    ${alumno.pendientes > 0 ? `<span class="badge-pendiente">${alumno.pendientes} sin corregir</span>` : ''}
-                `;
-                contenedorLista.appendChild(div);
+            chat.querySelectorAll('.fx-chat__item').forEach(function (b) {
+                b.addEventListener('click', function () { abrir(b.dataset.consulta, window.matchMedia('(max-width: 860px)').matches); });
             });
-        }
-
-        // Mostrar conversación del alumno seleccionado
-        function abrirChatAlumno(usuarioId) {
-            const alumno = mapaAlumnos.get(usuarioId);
-            if (!alumno) return;
-
-            // Marcar elemento activo en la lista
-            document.querySelectorAll('.alumno-item').forEach(el => el.classList.remove('active'));
-            document.getElementById(`item-alumno-${usuarioId}`).classList.add('active');
-
-            // Mostrar vista de chat
-            document.getElementById('chat-placeholder').style.display = 'none';
-            document.getElementById('chat-header').style.display = 'block';
-            document.getElementById('chat-alumno-nombre').innerText = alumno.nombre;
-            document.getElementById('chat-alumno-email').innerText = `(${alumno.email})`;
-
-            const contenedor = document.getElementById('contenedor-entregas-alumno');
-            contenedor.style.display = 'block';
-            contenedor.innerHTML = '';
-
-            // Generar tarjetas de entrega
-            alumno.entregas.forEach(e => {
-                const card = document.createElement('div');
-                card.className = 'entrega-card';
-
-                const tieneDevolucion = !!e.devolucion_mensaje;
-
-                card.innerHTML = `
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; border-bottom: 1px solid #edf2f7; padding-bottom: 0.5rem;">
-                        <div>
-                            <span class="badge">${e.curso_titulo}</span>
-                            <span style="color: #4a5568; font-size: 0.9rem; margin-left: 0.5rem;"><strong>Clase:</strong> ${e.leccion_titulo}</span>
-                        </div>
-                        <span style="color: #718096; font-size: 0.85rem;">${new Date(e.fecha).toLocaleString('es-AR')}</span>
-                    </div>
-
-                    <div style="background: #ffffff; padding: 1rem; border-left: 4px solid #184168; border-radius: 4px; color: #2d3748; white-space: pre-wrap; border-top: 1px solid #edf2f7; border-right: 1px solid #edf2f7; border-bottom: 1px solid #edf2f7;">
-                        <strong>Respuesta del Alumno:</strong><br>${e.contenido}
-                    </div>
-
-                    ${tieneDevolucion ? `
-                        <div class="devolucion-existente">
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <strong style="color: #2b6cb0;">✍️ Tu Devolución Enviada (${new Date(e.devolucion_fecha).toLocaleString('es-AR')}):</strong>
-                                ${e.devolucion_nota !== null && e.devolucion_nota !== undefined ? `<span class="nota-badge">Nota: ${e.devolucion_nota}/10</span>` : ''}
-                            </div>
-                            <p style="margin: 0.5rem 0 0 0; color: #2d3748; white-space: pre-wrap;">${e.devolucion_mensaje}</p>
-                        </div>
-                    ` : ''}
-
-                    <div class="devolucion-box">
-                        <h4 style="margin-top: 0; color: #0b2238;">${tieneDevolucion ? 'Editar Devolución' : 'Enviar Devolución al Alumno'}</h4>
-                        
-                        <textarea id="dev-text-${e.id}" placeholder="Escribe aquí tus correcciones o comentarios para el alumno..." style="width: 100%; height: 90px; padding: 0.7rem; border: 1px solid #cbd5e0; border-radius: 6px; font-family: inherit; font-size: 0.95rem; margin-bottom: 0.8rem;">${e.devolucion_mensaje || ''}</textarea>
-
-                        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.8rem;">
-                            <label for="dev-nota-${e.id}" style="color: #2d3748; font-weight: bold; font-size: 0.9rem;">Calificación (1 - 10):</label>
-                            <input type="number" id="dev-nota-${e.id}" min="1" max="10" placeholder="Ej: 8" value="${(e.devolucion_nota !== null && e.devolucion_nota !== undefined) ? e.devolucion_nota : ''}" style="width: 80px; padding: 0.4rem 0.6rem; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 0.95rem;">
-                        </div>
-
-                        <button type="button" onclick="enviarDevolucion(${e.id}, ${e.usuario_id}, this)" style="background: #184168; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 6px; font-weight: bold; cursor: pointer;">
-                            ${tieneDevolucion ? 'Actualizar Devolución' : 'Enviar Devolución'}
-                        </button>
-
-                        <hr style="margin:1rem 0; border:none; border-top:1px dashed #e2e8f0;" />
-
-                        <label for="teacher-note-${e.id}" style="display:block; font-weight:bold; color:#184168; margin-bottom:0.4rem;">Nota del Profesor (visible al alumno):</label>
-                        <textarea id="teacher-note-${e.id}" placeholder="Escribe una nota, consejo o advertencia para el alumno..." style="width: 100%; height: 80px; padding: 0.7rem; border: 1px solid #cbd5e0; border-radius: 6px; font-family: inherit; font-size: 0.95rem; margin-top:0.2rem;">${e.teacher_notes || ''}</textarea>
-                        <div style="margin-top:0.6rem; display:flex; gap:0.6rem;">
-                            <button type="button" onclick="enviarNotaProfesor(${e.id}, this)" style="background:#2b6cb0; color:white; border:none; padding:0.5rem 0.9rem; border-radius:6px; cursor:pointer; font-weight:bold;">Guardar Nota</button>
-                        </div>
-                    </div>
-                `;
-
-                contenedor.appendChild(card);
+            chat.querySelectorAll('.fx-chat__back').forEach(function (b) {
+                b.addEventListener('click', function () { chat.classList.remove('is-thread'); });
             });
-        }
+            var buscar = document.getElementById('fx-buscar');
+            buscar.addEventListener('input', function () {
+                var q = buscar.value.trim().toLowerCase();
+                var visibles = 0;
+                items.forEach(function (li) { li.hidden = q && li.dataset.nombre.indexOf(q) === -1; if (!li.hidden) visibles++; });
+                document.getElementById('fx-lista-vacia').hidden = visibles > 0;
+            });
+            // En escritorio, abrir el primer alumno de la lista
+            if (!window.matchMedia('(max-width: 860px)').matches && items.length) abrir(items[0].querySelector('button').dataset.consulta, false);
+        })();
 
         async function enviarDevolucion(entregaId, usuarioId, btn) {
             const textarea = document.getElementById(`dev-text-${entregaId}`);

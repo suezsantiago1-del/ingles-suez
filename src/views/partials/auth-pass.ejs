@@ -1,0 +1,12 @@
+<script>
+// Botón "Mostrar" en los campos de contraseña
+document.querySelectorAll('.fx-pass button').forEach(function (b) {
+    b.addEventListener('click', function () {
+        var input = b.previousElementSibling;
+        var ver = input.type === 'password';
+        input.type = ver ? 'text' : 'password';
+        b.textContent = ver ? 'Ocultar' : 'Mostrar';
+        b.setAttribute('aria-pressed', ver ? 'true' : 'false');
+    });
+});
+</script>

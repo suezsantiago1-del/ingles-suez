@@ -4,85 +4,79 @@
     <link rel="icon" type="image/svg+xml" href="/img/favicon-suez.svg">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Perfil - INGLÉS SUEZ</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=GFS+Didot&family=Tenor+Sans&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/styles.css">
-    <style>
-        body, p, span, div, a, li, label, input, button { font-family: 'GFS Didot', serif; }
-        h1, h2, h3, h4, h5, h6 { font-family: 'Tenor Sans', sans-serif !important; }
-        body { background-color: #e3edf5; margin: 0; padding: 0; color: #1a202c; }
-    </style>
+    <title>Mi perfil · Inglés Suez</title>
 </head>
-<body>
-
+<body class="tema-flyer">
     <%- include('partials/header') %>
 
-    <main style="max-width: 700px; margin: 4rem auto; padding: 0 1.5rem;">
-        <div style="background: white; border-radius: 12px; padding: 2.5rem; box-shadow: 0 12px 30px rgba(11, 34, 56, 0.12), 0 4px 8px rgba(0, 0, 0, 0.04); border: 1px solid #c0d4e5;">
-            
-            <h1 style="color: #0b2238; font-size: 2rem; margin-top: 0; margin-bottom: 0.5rem;">MI PERFIL</h1>
-            <p style="color: #718096; margin-bottom: 2rem; font-size: 1.05rem;">Gestiona la información de tu cuenta personal.</p>
+    <% const nombre = (locals.usuario && usuario.nombre) ? usuario.nombre : (locals.user ? user.nombre : '');
+       const email = (locals.usuario && usuario.email) ? usuario.email : (locals.user ? user.email : ''); %>
 
-            <% if (locals.error) { %>
-                <div style="background: #fed7d7; color: #9b2c2c; padding: 0.8rem 1rem; border-radius: 6px; margin-bottom: 1.5rem; font-size: 0.95rem;">
-                    <%= error %>
-                </div>
-            <% } %>
-
-            <% if (locals.success) { %>
-                <div style="background: #c6f6d5; color: #22543d; padding: 0.8rem 1rem; border-radius: 6px; margin-bottom: 1.5rem; font-size: 0.95rem;">
-                    <%= success %>
-                </div>
-            <% } %>
-
-            <!-- FORMULARIO 1: DATO PERSONALES -->
-            <form action="/auth/profile/update" method="POST" style="display: flex; flex-direction: column; gap: 1.2rem; margin-bottom: 2.5rem; border-bottom: 1px solid #edf2f7; padding-bottom: 2rem;">
-                <div>
-                    <label style="display: block; color: #0b2238; font-weight: bold; margin-bottom: 0.4rem; font-size: 1rem;">Nombre Completo:</label>
-                    <input type="text" name="nombre" value="<%= (locals.usuario && usuario.nombre) ? usuario.nombre : (locals.user ? user.nombre : '') %>" required style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 1rem; box-sizing: border-box;">
-                </div>
-
-                <div>
-                    <label style="display: block; color: #0b2238; font-weight: bold; margin-bottom: 0.4rem; font-size: 1rem;">Correo Electrónico:</label>
-                    <input type="email" name="email" value="<%= (locals.usuario && usuario.email) ? usuario.email : (locals.user ? user.email : '') %>" required style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 1rem; box-sizing: border-box;">
-                </div>
-
-                <div style="display: flex; gap: 1rem;">
-                    <button type="submit" style="background: #0b2238; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 6px; font-size: 0.95rem; cursor: pointer; font-family: 'Tenor Sans', sans-serif;">
-                        Guardar Información
-                    </button>
-                    <a href="/mis-cursos" style="background: #edf2f7; color: #2d3748; text-decoration: none; padding: 0.8rem 1.5rem; border-radius: 6px; font-size: 0.95rem; font-family: 'Tenor Sans', sans-serif; text-align: center;">
-                        Ver Mis Cursos
-                    </a>
-                </div>
-            </form>
-
-            <!-- FORMULARIO 2: CAMBIAR CONTRASEÑA -->
-            <h2 style="color: #0b2238; font-size: 1.3rem; margin-top: 0; margin-bottom: 1rem;">CAMBIAR CONTRASEÑA</h2>
-            <form action="/auth/profile/password" method="POST" style="display: flex; flex-direction: column; gap: 1.2rem;">
-                <div>
-                    <label style="display: block; color: #0b2238; font-weight: bold; margin-bottom: 0.4rem; font-size: 1rem;">Contraseña Actual:</label>
-                    <input type="password" name="currentPassword" required placeholder="Tu contraseña actual" style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 1rem; box-sizing: border-box;">
-                </div>
-
-                <div>
-                    <label style="display: block; color: #0b2238; font-weight: bold; margin-bottom: 0.4rem; font-size: 1rem;">Nueva Contraseña:</label>
-                    <input type="password" name="newPassword" required minlength="6" placeholder="Mínimo 6 caracteres" style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 1rem; box-sizing: border-box;">
-                </div>
-
-                <div>
-                    <button type="submit" style="background: #184168; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 6px; font-size: 0.95rem; cursor: pointer; font-family: 'Tenor Sans', sans-serif;">
-                        Actualizar Contraseña
-                    </button>
-                </div>
-            </form>
-
+    <main class="fx-page" style="max-width: 860px;">
+        <div class="fx-profile__head">
+            <span class="fx-avatar fx-avatar--lg" aria-hidden="true"><%= (nombre || '?').trim().charAt(0).toUpperCase() %></span>
+            <div>
+                <h1 class="fx-page__title">Mi <span class="fx-steel">perfil</span></h1>
+                <p class="fx-page__lead" style="margin: 0.3rem 0 0;"><%= email %></p>
+            </div>
         </div>
+
+        <% if (locals.error) { %>
+            <p class="fx-alert is-error" role="alert"><%= error %></p>
+        <% } %>
+        <% if (locals.success) { %>
+            <p class="fx-alert is-ok" role="status"><%= success %></p>
+        <% } %>
+
+        <div class="fx-profile">
+            <section class="fx-panel">
+                <h2>Tus datos</h2>
+                <p>Así aparecés en tus entregas y en tu certificado.</p>
+                <form action="/auth/profile/update" method="POST">
+                    <div class="fx-field">
+                        <label for="nombre">Nombre y apellido</label>
+                        <input class="fx-input" type="text" id="nombre" name="nombre" value="<%= nombre %>" autocomplete="name" required>
+                    </div>
+                    <div class="fx-field">
+                        <label for="email">Email</label>
+                        <input class="fx-input" type="email" id="email" name="email" value="<%= email %>" autocomplete="email" required>
+                    </div>
+                    <button type="submit" class="fx-btn fx-btn--solid fx-btn--sm">Guardar cambios</button>
+                </form>
+            </section>
+
+            <section class="fx-panel">
+                <h2>Contraseña</h2>
+                <p>Para cambiarla, primero confirmá la actual.</p>
+                <form action="/auth/profile/password" method="POST">
+                    <div class="fx-field">
+                        <label for="currentPassword">Contraseña actual</label>
+                        <div class="fx-pass">
+                            <input class="fx-input" type="password" id="currentPassword" name="currentPassword" autocomplete="current-password" required>
+                            <button type="button" aria-pressed="false">Mostrar</button>
+                        </div>
+                    </div>
+                    <div class="fx-field">
+                        <label for="newPassword">Contraseña nueva</label>
+                        <div class="fx-pass">
+                            <input class="fx-input" type="password" id="newPassword" name="newPassword" minlength="6" autocomplete="new-password" required>
+                            <button type="button" aria-pressed="false">Mostrar</button>
+                        </div>
+                    </div>
+                    <p class="fx-hint">Mínimo 6 caracteres.</p>
+                    <button type="submit" class="fx-btn fx-btn--sm">Cambiar contraseña</button>
+                </form>
+            </section>
+        </div>
+
+        <nav class="fx-profile__links" aria-label="Accesos rápidos">
+            <a href="/mis-cursos" class="fx-btn fx-btn--sm">Mis cursos</a>
+            <a href="/messages" class="fx-btn fx-btn--sm">Mis mensajes</a>
+            <a href="/auth/forgot-password" class="fx-profile__forgot">¿No te acordás de tu contraseña?</a>
+        </nav>
     </main>
 
     <%- include('partials/footer') %>
-
+    <%- include('partials/auth-pass') %>
 </body>
 </html>

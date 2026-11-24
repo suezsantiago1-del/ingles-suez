@@ -4,193 +4,44 @@
     <link rel="icon" type="image/svg+xml" href="/img/favicon-suez.svg">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verificar Email - INGLÉS SUEZ</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=GFS+Didot&family=Tenor+Sans&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/styles.css">
-    <style>
-        body {
-            background: linear-gradient(135deg, #0b2238 0%, #1e4d77 50%, #85abc9 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0;
-            font-family: 'GFS Didot', serif;
-        }
-        
-        .verify-container {
-            background: white;
-            border-radius: 12px;
-            padding: 3rem;
-            max-width: 500px;
-            width: 90%;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-            text-align: center;
-        }
-        
-        .verify-icon {
-            font-size: 4rem;
-            margin-bottom: 1.5rem;
-        }
-        
-        .verify-title {
-            font-family: 'Tenor Sans', sans-serif;
-            color: #0b2238;
-            font-size: 1.8rem;
-            margin-bottom: 1rem;
-        }
-        
-        .verify-message {
-            color: #4a5568;
-            line-height: 1.6;
-            margin-bottom: 2rem;
-        }
-        
-        .success-message {
-            background: #f0fff4;
-            border: 1px solid #c6f6d5;
-            color: #22543d;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1.5rem;
-        }
-        
-        .error-message {
-            background: #fff5f5;
-            border: 1px solid #feb2b2;
-            color: #9b2c2c;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1.5rem;
-        }
-        
-        .btn-primary {
-            background: #184168;
-            color: white;
-            padding: 0.8rem 2rem;
-            border: none;
-            border-radius: 6px;
-            font-family: 'Tenor Sans', sans-serif;
-            font-size: 1rem;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-            transition: background 0.2s;
-        }
-        
-        .btn-primary:hover {
-            background: #0b2238;
-        }
-        
-        .btn-secondary {
-            background: transparent;
-            color: #184168;
-            padding: 0.8rem 2rem;
-            border: 1px solid #184168;
-            border-radius: 6px;
-            font-family: 'Tenor Sans', sans-serif;
-            font-size: 1rem;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-            transition: background 0.2s;
-        }
-        
-        .btn-secondary:hover {
-            background: #f0f9ff;
-        }
-        
-        .email-display {
-            background: #f7fafc;
-            padding: 0.8rem;
-            border-radius: 6px;
-            font-family: monospace;
-            color: #2d3748;
-            margin-bottom: 1.5rem;
-            word-break: break-all;
-        }
-        
-        .resend-form {
-            margin-top: 2rem;
-            padding-top: 2rem;
-            border-top: 1px solid #e2e8f0;
-        }
-        
-        .resend-form input {
-            width: 100%;
-            padding: 0.8rem;
-            border: 1px solid #cbd5e0;
-            border-radius: 6px;
-            margin-bottom: 1rem;
-            font-family: inherit;
-        }
-        
-        .links {
-            margin-top: 2rem;
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        
-        .links a {
-            color: #184168;
-            text-decoration: none;
-            font-size: 0.9rem;
-        }
-        
-        .links a:hover {
-            text-decoration: underline;
-        }
-    </style>
+    <title>Verificá tu email · Inglés Suez</title>
 </head>
-<body>
+<body class="tema-flyer">
+    <%- include('partials/header') %>
 
-    <div class="verify-container">
-        <% if (success) { %>
-            <div class="verify-icon">✅</div>
-            <h1 class="verify-title">¡Verificación Exitosa!</h1>
-            <div class="success-message">
-                <%= success %>
-            </div>
-        <% } else if (error) { %>
-            <div class="verify-icon">⚠️</div>
-            <h1 class="verify-title">Error de Verificación</h1>
-            <div class="error-message">
-                <%= error %>
-            </div>
-        <% } else { %>
-            <div class="verify-icon">📧</div>
-            <h1 class="verify-title">Verifica tu Email</h1>
-            <p class="verify-message">
-                Hemos enviado un enlace de verificación a tu correo electrónico. 
-                Por favor haz clic en el enlace para activar tu cuenta.
-            </p>
-            
-            <% if (email) { %>
-                <div class="email-display">
-                    <%= email %>
-                </div>
+    <main class="fx-auth">
+        <div class="fx-auth__card">
+            <%- include('partials/auth-star') %>
+            <% if (success) { %>
+                <span class="fx-auth__icon is-ok" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>
+                <h1 class="fx-auth__title">¡Cuenta <span class="fx-steel">verificada!</span></h1>
+                <p class="fx-alert is-ok" role="status"><%= success %></p>
+                <a href="/auth/login" class="fx-btn fx-btn--solid" style="width: 100%; justify-content: center;">Iniciar sesión</a>
+            <% } else if (error) { %>
+                <span class="fx-auth__icon is-error" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 7v6"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="9.5"/></svg></span>
+                <h1 class="fx-auth__title">No pudimos <span class="fx-steel">verificarla</span></h1>
+                <p class="fx-alert is-error" role="alert"><%= error %></p>
+            <% } else { %>
+                <span class="fx-auth__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.5 6.5l8.5 6.5 8.5-6.5"/></svg></span>
+                <h1 class="fx-auth__title">Revisá tu <span class="fx-steel">email</span></h1>
+                <p class="fx-auth__lead">Te mandamos un enlace para activar tu cuenta. Abrilo desde tu correo y listo.</p>
+                <% if (email) { %>
+                    <p class="fx-auth__email"><%= email %></p>
+                <% } %>
             <% } %>
-        <% } %>
-        
-        <% if (!success && email) { %>
-            <div class="resend-form">
-                <p style="color: #4a5568; margin-bottom: 1rem;">¿No recibiste el email?</p>
-                <form action="/auth/resend-verification" method="POST">
-                    <input type="email" name="email" value="<%= email %>" placeholder="Ingresa tu correo electrónico" required>
-                    <button type="submit" class="btn-secondary">Reenviar Email de Verificación</button>
-                </form>
-            </div>
-        <% } %>
-        
-        <div class="links">
-            <a href="/auth/login">Iniciar Sesión</a>
-            <a href="/">Volver al Inicio</a>
-        </div>
-    </div>
 
+            <% if (!success && email) { %>
+                <form action="/auth/resend-verification" method="POST" style="margin-top: 0.4rem;">
+                    <p class="fx-hint" style="margin: 0 0 0.8rem;">¿No te llegó? Mirá en spam o pedilo de nuevo.</p>
+                    <input type="hidden" name="email" value="<%= email %>">
+                    <button type="submit" class="fx-btn">Reenviar el email</button>
+                </form>
+            <% } %>
+
+            <p class="fx-auth__foot"><a href="/auth/login">Iniciar sesión</a> &nbsp;·&nbsp; <a href="/">Volver al inicio</a></p>
+        </div>
+    </main>
+
+    <%- include('partials/footer') %>
 </body>
 </html>

@@ -1,0 +1,11 @@
+<nav class="fx-tabs" aria-label="Secciones del profesor">
+    <% [
+        ['/profesor/entregas', 'Entregas de cursos'],
+        ['/profesor/gestion', 'Gestión de cursos'],
+        ['/profesor/consultas', 'Consultas de alumnos'],
+        ['/profesor/particulares', 'Clases particulares'],
+        ['/profesor/rachas', 'Rachas']
+    ].forEach(([href, texto]) => { %>
+        <a href="<%= href %>" <%- activa === href ? 'aria-current="page"' : '' %>><%= texto %></a>
+    <% }) %>
+</nav>

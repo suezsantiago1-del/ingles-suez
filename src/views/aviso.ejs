@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <link rel="icon" type="image/svg+xml" href="/img/favicon-suez.svg">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= titulo %> · Inglés Suez</title>
+</head>
+<body class="tema-flyer">
+    <%- include('partials/header') %>
+
+    <main class="fx-auth">
+        <div class="fx-auth__card" style="text-align: center;">
+            <%- include('partials/auth-star') %>
+            <h1 class="fx-auth__title"><%= titulo %></h1>
+            <p class="fx-auth__lead"><%= mensaje %></p>
+            <a href="<%= locals.boton ? boton.href : '/' %>" class="fx-btn fx-btn--solid" style="width: 100%;"><%= locals.boton ? boton.texto : 'Volver al inicio' %></a>
+            <% if (locals.secundario) { %>
+                <p class="fx-auth__foot"><a href="<%= secundario.href %>"><%= secundario.texto %></a></p>
+            <% } %>
+        </div>
+    </main>
+
+    <%- include('partials/footer') %>
+</body>
+</html>
