@@ -1244,3 +1244,14 @@ a.fx-lesson:hover { color: var(--fx-text); background: rgba(241, 242, 244, 0.04)
 @keyframes fx-sparkle { 0%, 100% { opacity: 0; transform: scale(0.4) rotate(0); } 45%, 55% { opacity: var(--o, 0.7); transform: scale(1) rotate(45deg); } }
 @keyframes fx-drift { from { translate: 0 0; } to { translate: var(--dx, 12px) var(--dy, -18px); } }
 @keyframes fx-ring { 0% { box-shadow: 0 0 0 0 rgba(143, 173, 214, 0.55); } 70%, 100% { box-shadow: 0 0 0 14px rgba(143, 173, 214, 0); } }
+
+/* Celular: que el header entre completo en 360-390px */
+@media (max-width: 480px) {
+  .fx-nav__inner { gap: 0.6rem; padding: 0.7rem 0.9rem; }
+  .fx-nav__end { gap: 0.4rem; }
+  .fx-nav .fx-logo { margin-right: 2.2em; }
+  .fx-menu-btn { padding: 0.3rem; margin-right: -0.3rem; }
+}
+@media (max-width: 360px) {
+  .fx-nav__end .fx-btn--sm { padding: 0.45rem 0.7rem; font-size: 0.8rem; }
+}

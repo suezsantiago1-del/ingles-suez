@@ -1,4 +1,5 @@
 import pg from 'pg';
+import { readFileSync } from 'fs';
 import { seedLecciones } from './seeds.js';
 import { seedDatosDePrueba } from './devSeeds.js';
 
@@ -194,6 +195,28 @@ const dbPromise = (async () => {
 
     await adapter.pgPool.query(`ALTER TABLE desafios_diarios ADD COLUMN IF NOT EXISTS tipo VARCHAR(30) NOT NULL DEFAULT 'quiz'`);
     await adapter.pgPool.query(`ALTER TABLE desafios_diarios ADD COLUMN IF NOT EXISTS texto_audio TEXT`);
+
+    // Que siempre haya desafío del día: si la tabla está vacía, cargar el banco de seeds/.
+    // Solo con la tabla vacía, así nunca pisa ni duplica lo que ya esté cargado.
+    const desafiosRes = await adapter.pgPool.query('SELECT COUNT(*) FROM desafios_diarios');
+    if (parseInt(desafiosRes.rows[0].count, 10) === 0) {
+        try {
+            const banco = JSON.parse(readFileSync(new URL('../../seeds/banco-desafios.json', import.meta.url), 'utf8'));
+            for (let i = 0; i < banco.length; i++) {
+                const d = banco[i];
+                await adapter.pgPool.query(
+                    `INSERT INTO desafios_diarios
+                        (pregunta, opcion_a, opcion_b, opcion_c, respuesta_correcta, explicacion, ejemplo, categoria, tipo, texto_audio, orden)
+                     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
+                    [d.pregunta, d.opcion_a, d.opcion_b, d.opcion_c, String(d.respuesta_correcta).toUpperCase(),
+                     d.explicacion, d.ejemplo, d.categoria, d.tipo || 'quiz', d.texto_audio || null, i + 1]
+                );
+            }
+            console.log(`Desafíos diarios cargados desde seeds: ${banco.length}`);
+        } catch (err) {
+            console.error('No se pudo cargar el banco de desafíos:', err.message);
+        }
+    }
 
     // Tabla de completados del desafío diario (para racha y XP)
     await adapter.pgPool.query(`

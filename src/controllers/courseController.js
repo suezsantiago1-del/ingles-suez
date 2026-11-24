@@ -174,9 +174,13 @@ export const obtenerDesafioDiario = async (req, res) => {
             }
         }
 
+        // Si los "orden" tienen huecos (filas borradas), tomar el que esté en esa posición
         const desafio = await db.get(
             'SELECT * FROM desafios_diarios WHERE orden = ?',
             [indiceDesafio]
+        ) || await db.get(
+            'SELECT * FROM desafios_diarios ORDER BY orden, id LIMIT 1 OFFSET ?',
+            [indiceDesafio - 1]
         );
         
         if (desafio) {

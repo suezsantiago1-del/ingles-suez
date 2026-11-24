@@ -12,6 +12,12 @@
         .teacher-tab { padding: 0.8rem 1.5rem; background: #cbd5e0; color: #0b2238; text-decoration: none; font-weight: bold; border-radius: 8px 8px 0 0; font-size: 0.95rem; transition: background 0.2s, color 0.2s; }
         .teacher-tab:hover { background: #a0aec0; }
         .teacher-tab.active { background: #ffffff; color: #184168; border-top: 3px solid #184168; }
+        @media (max-width: 700px) {
+            /* Los inputs tienen min-width inline de 300-320px: en celular que ocupen el ancho disponible */
+            .form-control { min-width: 0 !important; max-width: 100% !important; width: 100%; box-sizing: border-box; }
+            section { box-sizing: border-box; max-width: 100% !important; width: 100%; }
+            section > div, .card { min-width: 0; }
+        }
     </style>
 </head>
 <body class="bg-neutral">
